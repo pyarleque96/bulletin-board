@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Map Pin Bounce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 12-map-pin-bounce.html
+    SPEC:   Pin de mapa temático (Wisconsin Dells) haciendo bounce vertical
+            con física de rebote (squash al aterrizar, stretch al subir).
+            La sombra elíptica en el suelo se contrae/expande en sincronía
+            con el bounce, reforzando la ilusión de altura. El pin lleva
+            la inicial "D" de Dells en naranja.
+    CUÁNDO: Búsqueda con filtro de ubicación / resultados de mapa /
+            carga inicial de listings con coordenadas.
+    BLAZOR HOOK: Wrapper <MapPinLoader Visible="@isLoading" />.
+                 Quitar la clase [hidden] del contenedor cuando isLoading=true.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      pointer-events: none;
+    }
+
+    /* Grupo pin + sombra */
+    .pin-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      animation: group-intro 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes group-intro {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Pin SVG — aplica bounce + squash/stretch */
+    .pin-svg-wrap {
+      animation: pin-bounce 1.1s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.4s infinite;
+    }
+    @keyframes pin-bounce {
+      0%   { transform: translateY(0)    scaleX(1)    scaleY(1); }
+      30%  { transform: translateY(-32px) scaleX(0.9)  scaleY(1.1); }
+      50%  { transform: translateY(-36px) scaleX(0.88) scaleY(1.12); }
+      70%  { transform: translateY(-4px)  scaleX(1.08) scaleY(0.94); }
+      80%  { transform: translateY(0)    scaleX(1.1)  scaleY(0.92); }
+      90%  { transform: translateY(-6px)  scaleX(0.98) scaleY(1.02); }
+      100% { transform: translateY(0)    scaleX(1)    scaleY(1); }
+    }
+
+    /* Pin SVG */
+    .pin-svg { display: block; }
+
+    /* Sombra elíptica — se contrae cuando el pin sube */
+    .shadow-ellipse {
+      width: 36px;
+      height: 10px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      margin-top: 2px;
+      transform-origin: center center;
+      animation: shadow-pulse 1.1s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.4s infinite;
+    }
+    @keyframes shadow-pulse {
+      0%   { transform: scaleX(1)    opacity: 0.5; opacity: 0.5; }
+      30%  { transform: scaleX(0.45); opacity: 0.2; }
+      50%  { transform: scaleX(0.38); opacity: 0.15; }
+      70%  { transform: scaleX(0.85); opacity: 0.4; }
+      80%  { transform: scaleX(1.1);  opacity: 0.6; }
+      90%  { transform: scaleX(0.95); opacity: 0.45; }
+      100% { transform: scaleX(1);    opacity: 0.5; }
+    }
+
+    /* Texto */
+    .label {
+      margin-top: 28px;
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.5s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .pin-svg-wrap { animation: none; }
+      .shadow-ellipse { animation: none; transform: scaleX(1); opacity: 0.5; }
+      .pin-group, .label { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Locating providers in Wisconsin Dells · Buscando proveedores en Wisconsin Dells"
+  >
+    <div class="pin-group">
+      <div class="pin-svg-wrap">
+        <!-- Pin SVG — estilo mapa con cabeza redonda y punta inferior -->
+        <svg class="pin-svg" width="48" height="64" viewBox="0 0 48 64" fill="none" aria-hidden="true">
+          <!-- Cuerpo del pin -->
+          <path
+            d="M24 0C11.85 0 2 9.85 2 22c0 16.5 22 42 22 42s22-25.5 22-42C46 9.85 36.15 0 24 0z"
+            fill="#fd8c1b"
+          />
+          <!-- Círculo interior blanco -->
+          <circle cx="24" cy="21" r="10" fill="#ffffff" />
+          <!-- Letra D de Dells -->
+          <text
+            x="24" y="26"
+            text-anchor="middle"
+            font-family="Inter, system-ui, sans-serif"
+            font-size="13"
+            font-weight="700"
+            fill="#fd8c1b"
+          >D</text>
+          <!-- Sombra interna en la punta -->
+          <ellipse cx="24" cy="22" rx="10" ry="10" fill="none" stroke="#e87a12" stroke-width="1" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="shadow-ellipse"></div>
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Locating providers</p>
+      <p class="text-xs text-slate-400 mt-0.5">Buscando en Wisconsin Dells…</p>
+    </div>
+  </div>
+
+</body>
+</html>

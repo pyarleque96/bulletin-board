@@ -1,0 +1,300 @@
+<!--
+  SCREEN: 10 — Compass Rotating
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga de búsqueda / filtros / localización de proveedores
+  CONCEPTO: Brújula SVG con aguja que gira errática al inicio y luego se
+            estabiliza apuntando hacia arriba (Norte = providers found).
+            La aguja es bicolor: punta naranja (norte) / gris (sur).
+            Eyebrow "Finding providers near you · Buscando proveedores"
+  HIGH-END: Soft Structuralism + Double-Bezel. La aguja usa spring
+            physics simulado con cubic-bezier muy custom (overshoot).
+            El dial tiene graduación fina tipo instrumentación.
+  BLAZOR HOOK: Montar cuando SearchResults está en estado "Querying".
+               Desmontar al recibir primera página de resultados.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Main wrap intro ── */
+    .compass-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      transform: scale(0.92);
+      animation: wrap-in 0.8s cubic-bezier(0.32,0.72,0,1) 0.25s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; transform: scale(1); } }
+
+    /* ── Compass Double-Bezel ── */
+    .bezel-outer {
+      width: 12rem;
+      height: 12rem;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(30,41,59,0.06);
+      padding: 7px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 24px 64px -24px rgba(30,41,59,0.1);
+    }
+    .bezel-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.9);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SVG compass */
+    .compass-svg {
+      width: 9.5rem;
+      height: 9.5rem;
+    }
+
+    /* Needle group — animated */
+    .needle-group {
+      transform-origin: 60px 60px; /* center of 120x120 viewBox */
+      /* Phase 1: wild spinning */
+      animation:
+        needle-spin 1.4s cubic-bezier(0.4,0,0.6,1) 0.6s,
+        needle-settle 1.2s cubic-bezier(0.1,1.5,0.5,1) 2.1s forwards;
+    }
+
+    @keyframes needle-spin {
+      0%   { transform: rotate(0deg); }
+      30%  { transform: rotate(420deg); }
+      60%  { transform: rotate(180deg); }
+      80%  { transform: rotate(560deg); }
+      100% { transform: rotate(720deg); }
+    }
+    @keyframes needle-settle {
+      0%   { transform: rotate(720deg); }
+      40%  { transform: rotate(756deg); }
+      65%  { transform: rotate(716deg); }
+      82%  { transform: rotate(722deg); }
+      92%  { transform: rotate(718deg); }
+      100% { transform: rotate(720deg); } /* = 0deg = pointing north */
+    }
+
+    /* ── Labels ── */
+    .compass-labels {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: lab-in 0.6s cubic-bezier(0.32,0.72,0,1) 0.8s forwards;
+    }
+    @keyframes lab-in { to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    /* Status pill — updates when needle settles */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.25rem 0.75rem;
+      transition: all 0.5s cubic-bezier(0.32,0.72,0,1);
+    }
+    .status-pill.found {
+      color: #c2650a;
+      background: #fef3e2;
+      border-color: #fde8c8;
+    }
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: background 0.4s;
+    }
+    .status-pill.found .status-dot {
+      background: #fd8c1b;
+    }
+
+    .brand-label {
+      margin-top: 0.5rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+    }
+
+    /* ── Halo ── */
+    .halo {
+      position: absolute;
+      width: 16rem;
+      height: 16rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253,140,27,0.04) 0%, transparent 65%);
+      pointer-events: none;
+      opacity: 0;
+      animation: halo-in 1.6s cubic-bezier(0.32,0.72,0,1) 0.5s forwards;
+    }
+    @keyframes halo-in { to { opacity: 1; } }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Finding providers near you · Buscando proveedores cerca">
+
+    <!-- Halo -->
+    <div class="halo" aria-hidden="true"></div>
+
+    <div class="compass-wrap">
+
+      <!-- Compass Double-Bezel -->
+      <div class="bezel-outer" aria-hidden="true">
+        <div class="bezel-inner">
+          <svg class="compass-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- Outer ring -->
+            <circle cx="60" cy="60" r="56" fill="none" stroke="#f1f5f9" stroke-width="0.75"/>
+
+            <!-- Degree marks — major every 30deg, minor every 10deg -->
+            <g stroke="#e2e8f0" stroke-linecap="round">
+              <!-- Minor marks at 10deg intervals -->
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(10  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(20  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(40  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(50  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(70  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(80  60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(100 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(110 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(130 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(140 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(160 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(170 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(190 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(200 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(220 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(230 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(250 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(260 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(280 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(290 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(310 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(320 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(340 60 60)"/>
+              <line x1="60" y1="6"  x2="60" y2="10" stroke-width="0.8" transform="rotate(350 60 60)"/>
+            </g>
+            <!-- Major marks (N/E/S/W) -->
+            <g stroke="#cbd5e1" stroke-width="1.2" stroke-linecap="round">
+              <line x1="60" y1="6" x2="60" y2="13"/>
+              <line x1="60" y1="6" x2="60" y2="13" transform="rotate(90  60 60)"/>
+              <line x1="60" y1="6" x2="60" y2="13" transform="rotate(180 60 60)"/>
+              <line x1="60" y1="6" x2="60" y2="13" transform="rotate(270 60 60)"/>
+            </g>
+
+            <!-- Cardinal letters -->
+            <text x="60" y="20" text-anchor="middle" font-family="Outfit, sans-serif" font-size="7" font-weight="600" fill="#fd8c1b" letter-spacing="0.5">N</text>
+            <text x="60" y="107" text-anchor="middle" font-family="Outfit, sans-serif" font-size="7" font-weight="400" fill="#cbd5e1" letter-spacing="0.5">S</text>
+            <text x="107" y="62.5" text-anchor="middle" font-family="Outfit, sans-serif" font-size="7" font-weight="400" fill="#cbd5e1" letter-spacing="0.5">E</text>
+            <text x="13" y="62.5" text-anchor="middle" font-family="Outfit, sans-serif" font-size="7" font-weight="400" fill="#cbd5e1" letter-spacing="0.5">W</text>
+
+            <!-- Inner circle -->
+            <circle cx="60" cy="60" r="32" fill="#f8fafc" stroke="#f1f5f9" stroke-width="0.75"/>
+
+            <!-- Needle -->
+            <g class="needle-group">
+              <!-- North — orange -->
+              <polygon points="60,28 55.5,60 64.5,60" fill="#fd8c1b"/>
+              <!-- South — slate -->
+              <polygon points="60,92 55.5,60 64.5,60" fill="#94a3b8"/>
+            </g>
+
+            <!-- Center jewel -->
+            <circle cx="60" cy="60" r="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+            <circle cx="60" cy="60" r="2" fill="#fd8c1b"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Labels -->
+      <div class="compass-labels">
+        <p class="eyebrow">Finding providers near you · Buscando proveedores</p>
+        <div id="statusPill" class="status-pill">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Scanning…</span>
+        </div>
+        <p class="brand-label">Bulletin Dells · Wisconsin Dells</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: Replace timeout with actual search result callback */
+    /* Update status when GET /api/v1/listings?... returns results */
+    const pill = document.getElementById('statusPill');
+    const statusText = document.getElementById('statusText');
+
+    // After needle settles (≈3.5s), show "found"
+    setTimeout(() => {
+      pill.classList.add('found');
+      statusText.textContent = 'Providers found · Proveedores encontrados';
+    }, 3500);
+  </script>
+</body>
+</html>

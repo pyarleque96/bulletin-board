@@ -1,0 +1,37 @@
+@*
+    ListingStatusBadge — dispatcher de badges de estado para tablas /admin.
+    Reutiliza los badges canónicos de /manage (Components/Badges/) para
+    mantener un único lenguaje visual en toda la plataforma.
+
+    Parámetros:
+      Status   — "Approved" | "Pending" | "Rejected" | "NeedsChanges" (cualquier otro → fallback neutro).
+      IconOnly — true para versión circular sin texto (útil en filas densas).
+*@
+
+@using Bulletin.Board.Web.Client.Components.Badges
+
+@switch (Status)
+{
+    case "Approved":
+        <ApprovedBadge IconOnly="IconOnly" />
+        break;
+    case "Pending":
+        <PendingBadge IconOnly="IconOnly" />
+        break;
+    case "Rejected":
+        <RejectedBadge IconOnly="IconOnly" />
+        break;
+    case "NeedsChanges":
+        <NeedsChangesBadge IconOnly="IconOnly" />
+        break;
+    default:
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+            @Status
+        </span>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired] public string Status { get; set; } = "";
+    [Parameter] public bool IconOnly { get; set; } = false;
+}

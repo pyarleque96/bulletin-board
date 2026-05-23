@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Letters Bounce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 13-letters-bounce.html
+    SPEC:   Las 5 letras de "DELLS" hacen bounce escalonado con delay
+            progresivo. La primera "D" y las dos "L" están en naranja
+            marca (#fd8c1b); la "E" y la "S" en slate-800. Cada letra
+            tiene squash/stretch al aterrizar. Debajo, un subtítulo
+            "Wisconsin Dells" en slate-400 aparece con fade suave.
+    CUÁNDO: Splash / pantalla de bienvenida de la sección principal
+            o transición entre secciones del marketplace.
+    BLAZOR HOOK: Componente <DellsLetterLoader /> reemplaza este bloque.
+                 Mostrar con @if (isLoading) en el layout principal.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    /* Fila de letras */
+    .letters-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      opacity: 0;
+      animation: row-intro 0.4s ease-out 0.15s forwards;
+    }
+    @keyframes row-intro {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .letter {
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+      display: inline-block;
+      animation: letter-bounce 1.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+      transform-origin: bottom center;
+    }
+
+    /* Colores: D naranja, E slate, L naranja, L naranja, S slate */
+    .letter-D { color: #fd8c1b; animation-delay: 0s; }
+    .letter-E { color: #1e293b; animation-delay: 0.1s; }
+    .letter-L1 { color: #fd8c1b; animation-delay: 0.2s; }
+    .letter-L2 { color: #fd8c1b; animation-delay: 0.3s; }
+    .letter-S { color: #1e293b; animation-delay: 0.4s; }
+
+    @keyframes letter-bounce {
+      0%   { transform: translateY(0)     scaleX(1)    scaleY(1); }
+      20%  { transform: translateY(-22px)  scaleX(0.92) scaleY(1.08); }
+      35%  { transform: translateY(-26px)  scaleX(0.90) scaleY(1.1); }
+      55%  { transform: translateY(-2px)   scaleX(1.08) scaleY(0.93); }
+      65%  { transform: translateY(0)      scaleX(1.1)  scaleY(0.91); }
+      75%  { transform: translateY(-6px)   scaleX(0.97) scaleY(1.03); }
+      85%  { transform: translateY(0)      scaleX(1.02) scaleY(0.99); }
+      100% { transform: translateY(0)      scaleX(1)    scaleY(1); }
+    }
+
+    /* Subtítulo */
+    .subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: sub-in 0.6s ease-out 0.55s forwards;
+    }
+    @keyframes sub-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Línea decorativa naranja debajo de las letras */
+    .deco-line {
+      width: 40px;
+      height: 3px;
+      border-radius: 2px;
+      background: #fd8c1b;
+      margin: 0 auto;
+      opacity: 0;
+      animation: sub-in 0.5s ease-out 0.7s forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .letter { animation: none; transform: none; }
+      .letters-row, .subtitle, .deco-line { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="letters-row" aria-hidden="true">
+      <span class="letter letter-D">D</span>
+      <span class="letter letter-E">E</span>
+      <span class="letter letter-L1">L</span>
+      <span class="letter letter-L2">L</span>
+      <span class="letter letter-S">S</span>
+    </div>
+
+    <div class="deco-line"></div>
+
+    <p class="subtitle">Wisconsin Dells</p>
+  </div>
+
+</body>
+</html>

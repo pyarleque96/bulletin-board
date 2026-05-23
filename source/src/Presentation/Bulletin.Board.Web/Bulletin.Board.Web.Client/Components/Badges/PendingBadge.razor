@@ -1,0 +1,33 @@
+@*
+    PendingBadge — Badge de estado "Pending".
+    Amarillo — manage/index.html .status-pending:
+      background:#fef9c3; color:#854d0e.
+    Icono: dot circular bg-amber-500 (sin SVG — punto animado en el mockup).
+
+    Parámetros:
+      IconOnly (bool, default false) — muestra solo el icono sin texto, padding circular.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<span class="@WrapperClass" aria-label="@_localizer["Badge_Pending"]" role="img">
+    @* Dot circular — idéntico al mockup manage/index.html listing 2 *@
+    <span class="@DotClass rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+    @if (!IconOnly)
+    {
+        <span>@_localizer["Badge_Pending"]</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Cuando es true, muestra solo el icono (padding circular, sin texto).
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; } = false;
+
+    private string WrapperClass => IconOnly
+        ? "pending-badge pending-badge--icon-only inline-flex items-center justify-center"
+        : "pending-badge inline-flex items-center gap-1";
+
+    private string DotClass => IconOnly ? "w-3.5 h-3.5" : "w-2 h-2";
+}

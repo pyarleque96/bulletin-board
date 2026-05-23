@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skeleton — Search Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #F8FAFC; }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .sk {
+      background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    .sk-d1 { animation-delay: 0s; }
+    .sk-d2 { animation-delay: 0.08s; }
+    .sk-d3 { animation-delay: 0.16s; }
+    .sk-d4 { animation-delay: 0.24s; }
+    .sk-d5 { animation-delay: 0.32s; }
+    .sk-d6 { animation-delay: 0.40s; }
+
+    .page-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    @media (min-width: 900px) {
+      .page-wrap { grid-template-columns: 260px 1fr; }
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body aria-busy="true">
+
+<!-- NAV -->
+<div style="background:white; border-bottom:1px solid #F1F5F9; padding:14px 24px;">
+  <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:16px;">
+    <div class="sk sk-d1" style="width:130px; height:24px; flex-shrink:0;"></div>
+    <!-- Search bar in nav -->
+    <div style="flex:1; max-width:460px;">
+      <div class="sk sk-d2" style="height:38px; border-radius:999px;"></div>
+    </div>
+    <div class="sk sk-d3" style="width:80px; height:34px; border-radius:999px; flex-shrink:0;"></div>
+  </div>
+</div>
+
+<!-- SEARCH HEADER BANNER -->
+<div style="background:white; border-bottom:1px solid #F1F5F9; padding:14px 24px;">
+  <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <!-- Active filter chips -->
+    <div class="sk sk-d1" style="width:90px; height:28px; border-radius:999px;"></div>
+    <div class="sk sk-d2" style="width:70px; height:28px; border-radius:999px;"></div>
+    <div class="sk sk-d3" style="width:110px; height:28px; border-radius:999px;"></div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- SIDEBAR: Filters -->
+  <aside aria-label="Filters loading">
+    <div style="background:white; border-radius:16px; border:1px solid #F1F5F9; padding:24px; display:flex; flex-direction:column; gap:24px;">
+
+      <!-- Filter label -->
+      <div class="sk sk-d1" style="width:70px; height:16px;"></div>
+
+      <!-- Filter group 1 — Category -->
+      <div>
+        <div class="sk sk-d2" style="width:80px; height:13px; margin-bottom:12px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d2" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d3" style="height:12px; flex:1;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d3" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d4" style="height:12px; width:70%;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d4" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d5" style="height:12px; width:85%;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d5" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d6" style="height:12px; width:60%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:#F8FAFC;"></div>
+
+      <!-- Filter group 2 — Price -->
+      <div>
+        <div class="sk sk-d2" style="width:60px; height:13px; margin-bottom:12px;"></div>
+        <div class="sk sk-d3" style="height:6px; border-radius:999px; margin-bottom:8px;"></div>
+        <div style="display:flex; justify-content:space-between;">
+          <div class="sk sk-d4" style="width:50px; height:11px;"></div>
+          <div class="sk sk-d4" style="width:50px; height:11px;"></div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:#F8FAFC;"></div>
+
+      <!-- Filter group 3 — Rating -->
+      <div>
+        <div class="sk sk-d3" style="width:70px; height:13px; margin-bottom:12px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d3" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div style="display:flex; gap:3px;">
+              <div class="sk sk-d4" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d4" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d4" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d4" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d4" style="width:13px; height:13px; border-radius:2px;"></div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d4" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div style="display:flex; gap:3px;">
+              <div class="sk sk-d5" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d5" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d5" style="width:13px; height:13px; border-radius:2px;"></div>
+              <div class="sk sk-d5" style="width:13px; height:13px; border-radius:2px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:#F8FAFC;"></div>
+
+      <!-- Filter group 4 — Tier -->
+      <div>
+        <div class="sk sk-d4" style="width:90px; height:13px; margin-bottom:12px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d4" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d5" style="height:12px; width:55%;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d5" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d6" style="height:12px; width:45%;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d6" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d6" style="height:12px; width:60%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px; background:#F8FAFC;"></div>
+
+      <!-- Filter group 5 — Language -->
+      <div>
+        <div class="sk sk-d5" style="width:100px; height:13px; margin-bottom:12px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d5" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d6" style="height:12px; width:65%;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="sk sk-d6" style="width:16px; height:16px; border-radius:3px; flex-shrink:0;"></div>
+            <div class="sk sk-d6" style="height:12px; width:55%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apply button -->
+      <div class="sk sk-d6" style="height:40px; border-radius:999px;"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN: Results -->
+  <main>
+    <!-- Results header row -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+      <div class="sk sk-d1" style="width:130px; height:16px;"></div>
+      <div class="sk sk-d2" style="width:160px; height:36px; border-radius:8px;"></div>
+    </div>
+
+    <!-- Results grid 2 cols, 6 cards -->
+    <div class="results-grid" style="margin-bottom:32px;">
+
+      <!-- Card helper macro — repeat 6 times with varying widths -->
+      <!-- Card 1 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d1" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d2" style="width:50px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d3" style="height:15px; width:85%; margin-bottom:6px;"></div>
+          <div class="sk sk-d4" style="height:15px; width:68%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d4" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d4" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d4" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d5" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+      <!-- Card 2 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d2" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d3" style="width:65px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d4" style="height:15px; width:78%; margin-bottom:6px;"></div>
+          <div class="sk sk-d5" style="height:15px; width:55%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d6" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d3" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d4" style="width:44px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d5" style="height:15px; width:90%; margin-bottom:6px;"></div>
+          <div class="sk sk-d6" style="height:15px; width:72%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d6" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+      <!-- Card 4 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d1" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d2" style="width:58px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d3" style="height:15px; width:82%; margin-bottom:6px;"></div>
+          <div class="sk sk-d4" style="height:15px; width:60%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d4" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d4" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d5" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+      <!-- Card 5 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d2" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d3" style="width:76px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d4" style="height:15px; width:75%; margin-bottom:6px;"></div>
+          <div class="sk sk-d5" style="height:15px; width:50%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d5" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d6" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+      <!-- Card 6 -->
+      <article style="background:white; border-radius:16px; border:1px solid #F1F5F9; overflow:hidden;">
+        <div class="sk sk-d3" style="width:100%; aspect-ratio:16/9; border-radius:0;"></div>
+        <div style="padding:16px 18px 18px;">
+          <div class="sk sk-d4" style="width:48px; height:18px; border-radius:999px; margin-bottom:10px;"></div>
+          <div class="sk sk-d5" style="height:15px; width:88%; margin-bottom:6px;"></div>
+          <div class="sk sk-d6" style="height:15px; width:65%; margin-bottom:12px;"></div>
+          <div style="display:flex; gap:4px; margin-bottom:12px;">
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+            <div class="sk sk-d6" style="width:12px; height:12px; border-radius:2px;"></div>
+          </div>
+          <div class="sk sk-d6" style="height:36px; border-radius:999px;"></div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- PAGINATION skeleton -->
+    <div style="display:flex; align-items:center; justify-content:center; gap:8px; padding-top:16px;">
+      <div class="sk sk-d2" style="width:36px; height:36px; border-radius:10px;"></div>
+      <div class="sk sk-d3" style="width:36px; height:36px; border-radius:10px;"></div>
+      <!-- Active page highlight (brighter) -->
+      <div style="width:36px; height:36px; border-radius:10px; background:#BFDBFE;"></div>
+      <div class="sk sk-d4" style="width:36px; height:36px; border-radius:10px;"></div>
+      <div class="sk sk-d5" style="width:36px; height:36px; border-radius:10px;"></div>
+      <div class="sk sk-d6" style="width:36px; height:36px; border-radius:10px;"></div>
+    </div>
+
+  </main>
+
+</div>
+
+<div role="status" class="sr-only" aria-live="polite">
+  Loading search results — Cargando resultados de búsqueda
+</div>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Orbital Spinner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 08-orbital-spinner.html
+    SPEC:   Tres órbitas concéntricas girando a velocidades distintas
+            alrededor de un núcleo naranja. Cada órbita lleva un satélite
+            (punto) de distinto tamaño. Sensación de sistema solar en
+            miniatura — activo, preciso, confiable.
+    CUÁNDO: Carga de cualquier sección pesada (búsqueda, mapa,
+            inicialización de datos del directorio).
+    BLAZOR HOOK: Reemplazar el <div class="stage"> con un componente
+                 <OrbitalLoader /> que se muestra con @if (isLoading).
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    /* Núcleo */
+    .nucleus {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      position: absolute;
+      box-shadow: 0 0 0 4px #fde8c8;
+      opacity: 0;
+      animation: nucleus-intro 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes nucleus-intro {
+      from { opacity: 0; transform: scale(0.4); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Anillos orbitales */
+    .orbit {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid #e2e8f0;
+      opacity: 0;
+      animation: ring-intro 0.6s ease-out forwards;
+    }
+    .orbit-1 { width: 64px;  height: 64px;  animation-delay: 0.25s; }
+    .orbit-2 { width: 108px; height: 108px; animation-delay: 0.35s; }
+    .orbit-3 { width: 160px; height: 160px; animation-delay: 0.45s; }
+    @keyframes ring-intro {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Satélites — posicionados en el borde del anillo y rotados alrededor */
+    .satellite-track {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
+      animation: track-intro 0.7s ease-out forwards, spin linear infinite;
+    }
+    .satellite-track::before {
+      content: '';
+      position: absolute;
+      background: #fd8c1b;
+      border-radius: 50%;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Órbita 1: rápida, satélite pequeño */
+    .sat-1 {
+      width: 64px; height: 64px;
+      animation-delay: 0.3s, 0.3s;
+      animation-duration: 0.7s, 1.4s;
+    }
+    .sat-1::before { width: 8px; height: 8px; top: -4px; }
+
+    /* Órbita 2: media, satélite mediano */
+    .sat-2 {
+      width: 108px; height: 108px;
+      animation-delay: 0.4s, 0.4s;
+      animation-duration: 0.7s, 2.6s;
+    }
+    .sat-2::before { width: 10px; height: 10px; top: -5px; background: #f97316; }
+
+    /* Órbita 3: lenta, satélite grande */
+    .sat-3 {
+      width: 160px; height: 160px;
+      animation-delay: 0.5s, 0.5s;
+      animation-duration: 0.7s, 4.2s;
+    }
+    .sat-3::before { width: 12px; height: 12px; top: -6px; background: #fde8c8; border: 2px solid #fd8c1b; }
+
+    @keyframes track-intro {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* Texto */
+    .loading-text {
+      position: absolute;
+      bottom: calc(50% - 120px);
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      text-align: center;
+      opacity: 0;
+      animation: text-intro 0.6s ease-out 0.6s forwards;
+    }
+    @keyframes text-intro {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .satellite-track { animation: none; opacity: 1; }
+      .nucleus, .orbit, .loading-text { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <!-- Núcleo -->
+    <div class="nucleus"></div>
+
+    <!-- Anillos estáticos -->
+    <div class="orbit orbit-1"></div>
+    <div class="orbit orbit-2"></div>
+    <div class="orbit orbit-3"></div>
+
+    <!-- Satélites giratorios -->
+    <div class="satellite-track sat-1"></div>
+    <div class="satellite-track sat-2"></div>
+    <div class="satellite-track sat-3"></div>
+
+    <!-- Texto centrado debajo -->
+    <div class="loading-text">
+      <p class="text-sm font-medium text-slate-700">Loading</p>
+      <p class="text-xs text-slate-400 mt-0.5">Cargando…</p>
+    </div>
+  </div>
+
+</body>
+</html>

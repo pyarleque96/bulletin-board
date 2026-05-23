@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Housing · Photos (Regular)
+     REGLA #4: GM decide qué es público. Regular: 10 fotos por propiedad. Variante housing
+     incluye selector de propiedad (multi-property listing common). -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Housing · Photos — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}[data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">M</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Mirror Lake Cabins</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Mirror Lake Cabins</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">Housing</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/availability" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Availability</a>
+      <a href="/manage/{id}/inquiries" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Inquiries <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span></a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Photos <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">18</span></span>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Property gallery</h2>
+      <p class="text-sm text-muted mt-0.5">Each property can have up to <strong class="text-ink">10 public photos</strong>. The GM reviews every upload.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <select class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-ink bg-white" aria-label="Filter by property">
+        <option>All properties (3)</option><option>Lakefront Cabin · 2BR</option><option>Downtown Loft · 1BR</option><option>3BR House · Kalahari area</option>
+      </select>
+      <label for="upload" data-tooltip="New uploads return listing to Pending review" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload photos
+      </label>
+      <input id="upload" type="file" multiple class="sr-only"/>
+    </div>
+  </div>
+
+  <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="note">
+    <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p class="text-xs text-ink leading-relaxed"><strong>The GM decides which photos are public.</strong> Editing or replacing any photo returns the listing to Pending review.</p>
+  </div>
+
+  <!-- Filter pills -->
+  <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group">
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white" aria-pressed="true">All <span class="ml-1 bg-white/20 px-1.5 rounded-full">18</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Public <span class="ml-1 bg-green-100 text-green-800 px-1.5 rounded-full">14</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Pending GM review <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 rounded-full">3</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Hidden by GM <span class="ml-1 bg-slate-200 text-slate-700 px-1.5 rounded-full">1</span></button>
+  </div>
+
+  <!-- Group: Property A -->
+  <section class="mb-8">
+    <h3 class="text-sm font-semibold text-ink mb-3">Lakefront Cabin · 2BR <span class="text-muted font-normal">· 6 of 10 slots used</span></h3>
+    <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
+      <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+        <div class="relative aspect-[4/3] bg-slate-200">
+          <img src="https://picsum.photos/seed/cabin-1/600/450" alt="Lakefront Cabin exterior" class="w-full h-full object-cover"/>
+          <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Public</span>
+          <span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">Cover</span>
+        </div>
+        <div class="p-3 flex items-center justify-between"><span class="text-[11px] text-muted">Approved May 9</span><button class="text-[11px] text-red-600 hover:text-red-700" data-tooltip="Returns listing to Pending">Delete</button></div>
+      </li>
+      <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/cabin-2/600/450" alt="Living room" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div><div class="p-3 flex items-center justify-between"><button class="text-[11px] text-ink hover:underline">Set as cover</button><button class="text-[11px] text-red-600 hover:text-red-700">Delete</button></div></li>
+      <li class="bg-white rounded-2xl border border-amber-200 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/cabin-3/600/450" alt="Kitchen" class="w-full h-full object-cover opacity-90"/><span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/95 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending GM review</span></div><div class="p-3"><p class="text-[11px] text-amber-700">Uploaded today, 14:22</p></div></li>
+      <li class="bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/cabin-blurry/600/450" alt="Bedroom — quality issue" class="w-full h-full object-cover grayscale opacity-60"/><span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/95 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-full font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> Hidden by GM</span></div><div class="p-3"><p class="text-[11px] text-muted"><strong class="text-ink">GM note:</strong> Photo is over-exposed. Please re-upload.</p><button class="text-[11px] text-brand-600 hover:underline mt-1">Replace</button></div></li>
+    </ul>
+  </section>
+
+  <!-- VIP upsell -->
+  <div class="rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-4 flex items-center gap-3 flex-wrap">
+    <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full text-white font-semibold" style="background:linear-gradient(135deg,#fb923c,#f97316);">VIP</span>
+    <p class="text-sm text-ink flex-1 min-w-[200px]">Need more than 10 photos per property? VIP listings unlock unlimited uploads and per-photo analytics.</p>
+    <a href="/account/upgrade" class="px-3 py-1.5 rounded-xl bg-ink text-white text-xs font-semibold no-underline">Upgrade</a>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Jobs · Applications (VIP)
+     Diferencias vs jobs-manage-vip.html v2 (que ya existe): pipeline kanban + tags + filters
+     avanzados + bulk actions. WhatsApp + GM copy preservados. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Jobs · Applications VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">K</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Kalahari Seasonal Hiring</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Kalahari Seasonal Hiring · Summer 2026</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Jobs</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Applications <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">28</span></span>
+      <a href="/manage/{id}/analytics" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Analytics <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">Pipeline <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></h2>
+      <p class="text-sm text-muted mt-0.5">Drag candidates between stages. All messages go through WhatsApp — GM is copied.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <select class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-ink bg-white"><option>All positions</option><option>Lifeguard</option><option>Kitchen prep</option><option>Front desk</option></select>
+      <select class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-ink bg-white"><option>All sources</option><option>J1 visa</option><option>Local</option></select>
+    </div>
+  </div>
+
+  <!-- Kanban board -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+    <!-- Column: New -->
+    <div class="rounded-3xl border border-slate-100 bg-slate-50/60 p-3">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-xs font-semibold text-ink uppercase tracking-wider">New <span class="text-muted">·</span> <span class="tabular-nums text-muted">12</span></h3></div>
+      <ul class="space-y-2" role="list">
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Esperanza Núñez</p><div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">J1 visa</span><span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Lifeguard</span></div><p class="text-[11px] text-muted mt-1">Applied today, 09:14</p></li>
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Tarell Quincey</p><div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Local</span><span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Kitchen prep</span></div></li>
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Aaliyah Tessmer</p><div class="flex items-center gap-1.5 mt-1 flex-wrap"><span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">J1 visa</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Column: Contacted -->
+    <div class="rounded-3xl border border-slate-100 bg-slate-50/60 p-3">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-xs font-semibold text-ink uppercase tracking-wider">Contacted <span class="text-muted">·</span> <span class="tabular-nums text-muted">8</span></h3></div>
+      <ul class="space-y-2" role="list">
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><div class="flex items-center justify-between"><p class="font-semibold text-ink text-sm">Diego Penaranda</p><a href="https://wa.me/16085551082" class="text-[#25D366] text-[10px] hover:underline">WA</a></div><p class="text-[11px] text-muted mt-1">Last msg: 2h ago</p></li>
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Naomi Halverson</p><p class="text-[11px] text-muted mt-1">Awaiting reply · 4h</p></li>
+      </ul>
+    </div>
+
+    <!-- Column: Interview -->
+    <div class="rounded-3xl border border-slate-100 bg-slate-50/60 p-3">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-xs font-semibold text-ink uppercase tracking-wider">Interview <span class="text-muted">·</span> <span class="tabular-nums text-muted">5</span></h3></div>
+      <ul class="space-y-2" role="list">
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Sophia Lindqvist-Park</p><p class="text-[11px] text-muted mt-1">Scheduled May 16, 10:00</p></li>
+        <li class="bg-white rounded-2xl border border-slate-100 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Marcus T. Halverson</p><p class="text-[11px] text-muted mt-1">Scheduled May 17, 14:30</p></li>
+      </ul>
+    </div>
+
+    <!-- Column: Hired -->
+    <div class="rounded-3xl border border-green-100 bg-green-50/60 p-3">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-xs font-semibold text-green-800 uppercase tracking-wider">Hired <span class="text-green-700">·</span> <span class="tabular-nums text-green-700">3</span></h3></div>
+      <ul class="space-y-2" role="list">
+        <li class="bg-white rounded-2xl border border-green-200 shadow-soft p-3"><p class="font-semibold text-ink text-sm">Camila Espinoza-Reyes</p><p class="text-[11px] text-muted mt-1">Lifeguard · starts Jun 1</p></li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="text-[11px] text-muted mt-5">All candidate communication uses WhatsApp — GM is copied on every thread for compliance.</p>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Pipeline view, tags, candidate analytics, CSV export
+  </div>
+</main>
+</body>
+</html>

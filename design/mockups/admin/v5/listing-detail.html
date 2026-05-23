@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Listing Detail Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 50:'#fff7ed', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc',
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.06)',
+            lift: '0 4px 16px rgba(0,0,0,0.10)',
+            float: '0 8px 32px rgba(0,0,0,0.14)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; background-color: rgb(248 250 252); }
+    #sidebar {
+      transition: width 300ms cubic-bezier(0.32,0.72,0,1);
+      background: #050f1a !important;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      min-height: 100vh;
+    }
+    #sidebar::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 30%, rgba(37,99,235,0.25) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 80%, rgba(249,115,22,0.10) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    #sidebar > * { position: relative; z-index: 1; }
+    #sidebar:not(.collapsed) { width: 256px; }
+    #sidebar.collapsed { width: 64px; }
+    #sidebar .label {
+      transition: opacity 200ms ease, max-width 250ms cubic-bezier(0.32,0.72,0,1);
+      max-width: 300px; overflow: hidden; white-space: nowrap;
+    }
+    #sidebar.collapsed .label { opacity: 0; max-width: 0; pointer-events: none; }
+    #sidebar.collapsed .logo-header { justify-content: center; }
+    #sidebar nav { overflow-x: hidden; }
+    .sidebar-item {
+      transition: background 200ms ease, color 200ms ease, transform 100ms ease;
+      border-radius: 8px; position: relative;
+    }
+    .sidebar-item:hover { transform: translateX(2px); }
+    .sidebar-item.active { background: rgba(96,165,250,0.18); color: #93c5fd; }
+    .sidebar-item.active svg { color: #93c5fd; }
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 60%; background: #F97316; border-radius: 0 3px 3px 0;
+    }
+    .sidebar-item:hover .nav-icon,
+    .sidebar-item.active .nav-icon { box-shadow: 0 0 12px rgba(59, 130, 246, 0.4); border-radius: 6px; }
+    .logo-icon-glow { box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+    main, #main-content { position: relative; z-index: 1; }
+    .photo-card:hover .photo-overlay { opacity: 1; }
+    .photo-overlay { opacity: 0; transition: opacity 0.2s ease; }
+    .toggle-switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+    .toggle-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .toggle-track { width: 36px; height: 20px; background: #cbd5e1; border-radius: 10px; transition: background 0.2s; }
+    input:checked + .toggle-track { background: #2563eb; }
+    .toggle-thumb { position: absolute; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    input:checked ~ .toggle-thumb { transform: translateX(16px); }
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .badge-pulse { animation: pulse-soft 2s ease-in-out infinite; }
+    .stat-card, .card { transition: transform 200ms ease, box-shadow 200ms ease; }
+    .stat-card:hover, .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  </style>
+</head>
+<body class="text-ink flex min-h-screen">
+
+  <aside id="sidebar" class="text-white flex flex-col shadow-float">
+    <div class="logo-header flex items-center h-16 px-4 border-b border-white/10">
+      <div class="label flex items-center gap-2.5 flex-1 min-w-0">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0 logo-icon-glow">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold leading-tight text-white">Bulletin Dells</p>
+          <p class="text-xs" style="color:#60a5fa;">Admin Panel</p>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" class="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md cursor-pointer transition-colors" style="color:rgba(148,163,184,0.6);" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='rgba(148,163,184,0.6)';this.style.background=''" aria-label="Toggle sidebar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 py-4 px-3 space-y-1">
+      <p class="label text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500">Overview</p>
+      <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer">
+        <span class="nav-icon flex-shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+        <span class="label">Dashboard</span>
+      </a>
+      <p class="label text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500 mt-4">Moderation</p>
+      <a href="listings-queue.html" class="sidebar-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 cursor-pointer">
+        <span class="nav-icon flex-shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
+        <span class="label">Listings Queue</span>
+        <span class="label ml-auto bg-yellow-400 text-yellow-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full badge-pulse">12</span>
+      </a>
+      <a href="reviews-queue.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer">
+        <span class="nav-icon flex-shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></span>
+        <span class="label">Reviews Queue</span>
+        <span class="label ml-auto bg-orange-400 text-orange-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full badge-pulse">5</span>
+      </a>
+      <p class="label text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500 mt-4">Management</p>
+      <a href="providers.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer">
+        <span class="nav-icon flex-shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
+        <span class="label">Providers</span>
+      </a>
+      <a href="categories.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer">
+        <span class="nav-icon flex-shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 9V4a1 1 0 011-1z"/></svg></span>
+        <span class="label">Categories</span>
+      </a>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-700 flex-shrink-0">GM</div>
+        <div class="label min-w-0">
+          <p class="text-sm font-500 truncate">General Manager</p>
+          <p class="text-xs text-brand-400 truncate">gm@bulletindells.com</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main-content" class="flex-1 flex flex-col min-h-screen">
+    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center gap-4 sticky top-0 z-20 shadow-soft">
+      <a href="listings-queue.html" class="flex items-center gap-2 text-brand-600 hover:text-brand-700 transition-colors cursor-pointer">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        <span class="text-sm">Back to Queue</span>
+      </a>
+      <div class="h-5 w-px bg-slate-200"></div>
+      <div class="flex-1">
+        <h1 class="text-lg font-semibold text-ink">Maria's Nail &amp; Beauty Studio</h1>
+        <p class="text-xs text-muted">Listing ID: #LST-2026-0482 · Submitted May 2, 2026</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-medium px-3 py-1.5 rounded-full">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+          Pending Review
+        </span>
+        <button class="relative cursor-pointer text-muted hover:text-ink transition-colors" aria-label="Notifications">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full text-[9px] text-white flex items-center justify-center font-bold">17</span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold text-white cursor-pointer">GM</div>
+      </div>
+    </header>
+
+    <div class="flex-1 p-5">
+      <div class="max-w-6xl mx-auto grid grid-cols-3 gap-6">
+
+        <div class="col-span-2 space-y-6">
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-sm font-600 text-ink">Listing Information</h2>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-600 uppercase tracking-wider text-muted bg-slate-100 px-2 py-0.5 rounded">Beauty</span>
+                <span class="text-[10px] font-700 text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">VIP Provider</span>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Title (English)</p>
+                  <p class="text-sm text-ink font-500">Maria's Nail & Beauty Studio</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Title (Spanish)</p>
+                  <p class="text-sm text-ink font-500">Estudio de Uñas y Belleza de Maria</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Description (English)</p>
+                  <p class="text-sm text-ink leading-relaxed">Professional nail art, acrylic nails, waxing, and facials. Bilingual service. Walk-ins welcome. Located in Wisconsin Dells.</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Description (Spanish)</p>
+                  <p class="text-sm text-ink leading-relaxed">Uñas acrílicas, arte de uñas, depilación y faciales profesionales. Servicio bilingüe. Se aceptan clientes sin cita. Wisconsin Dells.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">WhatsApp</p>
+                  <a href="#" class="text-sm text-green-600 font-500 hover:underline cursor-pointer">+1 (608) 392-4817</a>
+                </div>
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Category</p>
+                  <p class="text-sm text-ink">Beauty</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted font-500 mb-1">Location</p>
+                  <p class="text-sm text-ink">Wisconsin Dells, WI</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-sm font-600 text-ink">Photos — GM Controls Visibility</h2>
+              <p class="text-xs text-muted">Toggle each photo's public visibility</p>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-brand-400 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p1/280/180" alt="Beauty salon interior" class="w-full h-28 object-cover" />
+                <div class="photo-overlay absolute inset-0 bg-brand-900/30"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-brand-700">PUBLIC</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-brand-400 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p2/280/180" alt="Nail work" class="w-full h-28 object-cover" />
+                <div class="photo-overlay absolute inset-0 bg-brand-900/30"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-brand-700">PUBLIC</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-slate-200 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p3/280/180" alt="Tools" class="w-full h-28 object-cover grayscale opacity-60" />
+                <div class="photo-overlay absolute inset-0 bg-slate-900/20"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-muted">HIDDEN</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-brand-400 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p4/280/180" alt="Service area" class="w-full h-28 object-cover" />
+                <div class="photo-overlay absolute inset-0 bg-brand-900/30"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-brand-700">PUBLIC</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-slate-200 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p5/280/180" alt="Products" class="w-full h-28 object-cover grayscale opacity-60" />
+                <div class="photo-overlay absolute inset-0 bg-slate-900/20"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-muted">HIDDEN</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="photo-card relative rounded-xl overflow-hidden border-2 border-brand-400 group cursor-pointer">
+                <img src="https://picsum.photos/seed/beauty-p6/280/180" alt="Results" class="w-full h-28 object-cover" />
+                <div class="photo-overlay absolute inset-0 bg-brand-900/30"></div>
+                <div class="absolute bottom-0 left-0 right-0 bg-white/95 px-3 py-2 flex items-center justify-between">
+                  <span class="text-[10px] font-600 text-brand-700">PUBLIC</span>
+                  <label class="toggle-switch" aria-label="Toggle photo public">
+                    <input type="checkbox" checked />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-thumb"></span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+            <p class="text-xs text-muted mt-3">4 of 6 photos are currently public. Hidden photos are not visible to marketplace users.</p>
+          </div>
+
+        </div>
+
+        <div class="space-y-4">
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5">
+            <h3 class="text-sm font-600 text-ink mb-3">Provider Details</h3>
+            <div class="flex items-center gap-3 mb-3">
+              <img src="https://picsum.photos/seed/provider-maria/48/48" alt="Maria Reyes" class="w-12 h-12 rounded-full object-cover border-2 border-amber-300" />
+              <div>
+                <p class="text-sm font-600 text-ink">Maria Guadalupe Reyes</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-[10px] font-700 text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">VIP</span>
+                  <span class="text-[10px] text-muted">Hierarchy: 850</span>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span class="text-muted">Phone verified</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span class="text-muted">ID / Passport verified</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span class="text-muted">Social media verified</span>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-100">
+              <p class="text-xs text-muted">Member since Jan 2025 · 3 approved listings</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-600 text-ink">GM Featured</p>
+                <p class="text-xs text-muted mt-0.5">Appears first in search results</p>
+              </div>
+              <label class="toggle-switch" aria-label="Toggle GM Featured">
+                <input type="checkbox" checked />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+            </div>
+            <div class="mt-3 bg-brand-50 rounded-lg px-3 py-2 text-xs text-brand-700">
+              This listing is currently featured. It appears above all non-featured listings in its category.
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5">
+            <h3 class="text-sm font-600 text-ink mb-3">Listing Status</h3>
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-green-400 has-[:checked]:bg-green-50">
+                <input type="radio" name="status" value="Approved" class="w-4 h-4 accent-green-600" />
+                <div>
+                  <p class="text-sm font-500 text-ink">Approve</p>
+                  <p class="text-xs text-muted">Publish to marketplace immediately</p>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50">
+                <input type="radio" name="status" value="NeedsChanges" class="w-4 h-4 accent-orange-500" />
+                <div>
+                  <p class="text-sm font-500 text-ink">Needs Changes</p>
+                  <p class="text-xs text-muted">Notify provider to update listing</p>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
+                <input type="radio" name="status" value="Rejected" class="w-4 h-4 accent-red-500" />
+                <div>
+                  <p class="text-sm font-500 text-ink">Reject</p>
+                  <p class="text-xs text-muted">Deny and notify provider</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5">
+            <h3 class="text-sm font-600 text-ink mb-2">GM Note</h3>
+            <p class="text-xs text-muted mb-2">This note is sent to the provider via email and WhatsApp when status is not Approved.</p>
+            <textarea rows="4" placeholder="Optional note for the provider..." class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <button class="w-full bg-brand-600 text-white text-sm font-600 py-3 rounded-xl cursor-pointer hover:bg-brand-700 transition-colors active:scale-95 shadow-lift">
+              Save Changes & Submit Decision
+            </button>
+            <a href="listings-queue.html" class="block w-full text-center border border-slate-200 text-sm font-500 text-muted py-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
+              Cancel — Back to Queue
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+  </script>
+
+</body>
+</html>

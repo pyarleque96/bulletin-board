@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/Bulletin.Board.Application/Bulletin.Board.Application.csproj" />
+    <Project Path="src/Core/Bulletin.Board.Domain/Bulletin.Board.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/Bulletin.Board.Infrastructure/Bulletin.Board.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/Bulletin.Board.API/Bulletin.Board.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/Bulletin.Board.Web/">
+    <Project Path="src/Presentation/Bulletin.Board.Web/Bulletin.Board.Web.Client/Bulletin.Board.Web.Client.csproj" />
+    <Project Path="src/Presentation/Bulletin.Board.Web/Bulletin.Board.Web/Bulletin.Board.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bulletin.Board.Application.Tests/Bulletin.Board.Application.Tests.csproj" />
+    <Project Path="tests/Bulletin.Board.Domain.Tests/Bulletin.Board.Domain.Tests.csproj" />
+    <Project Path="tests/Bulletin.Board.Infrastructure.IntegrationTests/Bulletin.Board.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/Bulletin.Board.Web.Tests/Bulletin.Board.Web.Tests.csproj" />
+  </Folder>
+</Solution>

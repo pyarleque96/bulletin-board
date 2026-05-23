@@ -1,0 +1,358 @@
+<!--
+  SCREEN: 05 — Flip Counter Airport (Solari Board)
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga de categorías / listados al inicializar la app
+  CONCEPTO: Flip counter estilo Solari/aeropuerto que cuenta de 0 a 12 categorías,
+            con micro-shake visual de "click" mecánico en cada flip.
+            Fondo blanco, flip cards slate/white, naranja para el número final.
+            Sensación: precisión mecánica, datos reales cargando, no genérico.
+  HIGH-END: Cada dígito flip con Double-Bezel card, shadow tinted,
+            cubic-bezier cuidado para simular peso mecánico.
+  BLAZOR HOOK: Bind counter target to actual category count from
+               GET /api/v1/categories response.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Flip counter card ── */
+    .flip-unit-outer {
+      width: 5.5rem;
+      height: 7rem;
+      border-radius: 0.875rem;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(30,41,59,0.06);
+      padding: 4px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 12px 40px -12px rgba(30,41,59,0.10);
+    }
+    .flip-unit-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: calc(0.875rem - 4px);
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Horizontal center line — Solari detail */
+    .flip-unit-inner::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(226,232,240,0.9);
+      z-index: 3;
+    }
+
+    /* The digit — upper half has slight shadow to simulate fold */
+    .flip-digit {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      position: relative;
+      z-index: 2;
+      transition: color 0.15s cubic-bezier(0.32,0.72,0,1);
+      user-select: none;
+    }
+    .flip-digit.final {
+      color: #fd8c1b;
+    }
+
+    /* Flip animation — rotateX on upper half */
+    .flip-anim {
+      animation: flip-down 0.28s cubic-bezier(0.32,0.72,0,1) forwards;
+    }
+    @keyframes flip-down {
+      0%   { transform: rotateX(-90deg) translateY(-8px); opacity: 0; }
+      60%  { transform: rotateX(6deg);  opacity: 1; }
+      80%  { transform: rotateX(-2deg); }
+      100% { transform: rotateX(0deg) translateY(0); opacity: 1; }
+    }
+
+    /* Shake on each flip */
+    .shake {
+      animation: micro-shake 0.2s cubic-bezier(0.32,0.72,0,1) forwards;
+    }
+    @keyframes micro-shake {
+      0%  { transform: translateX(0) translateY(0); }
+      25% { transform: translateX(-1px) translateY(1px); }
+      50% { transform: translateX(1px) translateY(-1px); }
+      75% { transform: translateX(-0.5px) translateY(0.5px); }
+      100%{ transform: translateX(0) translateY(0); }
+    }
+
+    /* ── Counter container intro ── */
+    .counter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: wrap-in 0.7s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes wrap-in {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Eyebrow row */
+    .eyebrow-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    /* Digit + label row */
+    .digit-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+    }
+
+    .total-label {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding-bottom: 0.6rem;
+    }
+
+    /* Sub-label */
+    .sub-label {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 400;
+      color: #94a3b8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: wrap-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.8s forwards;
+    }
+
+    /* Progress dots */
+    .progress-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .pdot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: background 0.3s cubic-bezier(0.32,0.72,0,1),
+                  transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .pdot.active {
+      background: #fd8c1b;
+      transform: scale(1.3);
+    }
+
+    /* Brand stamp */
+    .brand-stamp {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading categories · Cargando categorías">
+
+    <div class="counter-wrap">
+      <!-- Eyebrow -->
+      <div class="eyebrow-row">
+        <span>Loading categories</span>
+        <span style="color:#e2e8f0">·</span>
+        <span>Cargando categorías</span>
+      </div>
+
+      <!-- Flip digits + / total -->
+      <div class="digit-row">
+        <!-- Tens digit -->
+        <div id="flipTens">
+          <div class="flip-unit-outer">
+            <div class="flip-unit-inner">
+              <span class="flip-digit" id="digitTens">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Units digit -->
+        <div id="flipUnits">
+          <div class="flip-unit-outer">
+            <div class="flip-unit-inner">
+              <span class="flip-digit" id="digitUnits">0</span>
+            </div>
+          </div>
+        </div>
+
+        <span class="total-label">/ 12</span>
+      </div>
+
+      <!-- Progress dots — 12 dots, one per category -->
+      <div class="progress-dots" id="progressDots" aria-hidden="true">
+        <!-- Generated by JS -->
+      </div>
+
+      <!-- Sub label -->
+      <p class="sub-label" id="subLabel">Fetching service providers…</p>
+    </div>
+
+    <!-- Brand stamp -->
+    <div class="brand-stamp" aria-hidden="true">Bulletin Dells · Wisconsin Dells</div>
+
+  </div>
+
+  <script>
+    /* ── Flip counter logic ── */
+    /* BLAZOR HOOK: Replace setTimeout chain with actual API response events */
+    /* Bind: totalCategories from GET /api/v1/categories */
+
+    const TARGET = 12;
+    let current = 0;
+
+    // Build progress dots
+    const dotsContainer = document.getElementById('progressDots');
+    for (let i = 0; i < TARGET; i++) {
+      const d = document.createElement('div');
+      d.className = 'pdot';
+      d.id = `dot-${i}`;
+      dotsContainer.appendChild(d);
+    }
+
+    const subLabels = [
+      'Fetching service providers…',
+      'Loading housing listings…',
+      'Preparing transportation…',
+      'Indexing mechanics…',
+      'Scanning job boards…',
+      'Gathering beauty services…',
+      'Compiling car rentals…',
+      'Loading ride services…',
+      'Mapping local businesses…',
+      'Verifying VIP providers…',
+      'Applying GM rankings…',
+      'Bulletin Dells ready · Listo'
+    ];
+
+    const subLabelEl = document.getElementById('subLabel');
+    const digitTens = document.getElementById('digitTens');
+    const digitUnits = document.getElementById('digitUnits');
+
+    function setDigits(n, animate) {
+      const tens = Math.floor(n / 10);
+      const units = n % 10;
+
+      function updateEl(el, val, isFinal) {
+        if (animate) {
+          el.classList.remove('flip-anim');
+          // Force reflow
+          void el.offsetWidth;
+          el.classList.add('flip-anim');
+          el.parentElement.classList.add('shake');
+          setTimeout(() => el.parentElement.classList.remove('shake'), 220);
+        }
+        el.textContent = val;
+        if (isFinal) {
+          el.classList.add('final');
+        } else {
+          el.classList.remove('final');
+        }
+      }
+
+      updateEl(digitTens, tens, n === TARGET);
+      updateEl(digitUnits, units, n === TARGET);
+    }
+
+    function increment() {
+      if (current >= TARGET) return;
+      current++;
+      setDigits(current, true);
+
+      // Update dot
+      const dot = document.getElementById(`dot-${current - 1}`);
+      if (dot) dot.classList.add('active');
+
+      // Update sub-label
+      if (subLabels[current - 1]) {
+        subLabelEl.style.opacity = '0';
+        setTimeout(() => {
+          subLabelEl.textContent = subLabels[current - 1];
+          subLabelEl.style.opacity = '1';
+          subLabelEl.style.transition = 'opacity 0.3s';
+        }, 100);
+      }
+    }
+
+    // Start animation after brief intro delay
+    let delay = 600;
+    for (let i = 0; i < TARGET; i++) {
+      setTimeout(increment, delay);
+      // Accelerate slightly as we progress
+      delay += Math.max(180, 380 - i * 18);
+    }
+  </script>
+</body>
+</html>

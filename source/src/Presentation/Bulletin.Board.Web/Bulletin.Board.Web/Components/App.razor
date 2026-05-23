@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+@{
+    var htmlLang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+<html lang="@htmlLang">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader />
+
+    <!-- DM Sans self-hosted: preload del archivo variable normal (cubre pesos 300-700) -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/dm-sans/dm-sans-latin-variable-normal.woff2" crossorigin />
+
+    <!-- Tailwind CSS — generado por Tailwind CLI (npm run css:build). Ver tailwind.config.js -->
+    <link rel="stylesheet" href="@Assets["tailwind.css"]" />
+
+    <!-- Base styles -->
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["Bulletin.Board.Web.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="new InteractiveAutoRenderMode(prerender: false)" />
+</head>
+
+@{
+    // Error.razor lives in the server assembly — the client Router never sees it.
+    // Render it directly as SSR here so UseExceptionHandler("/Error") and direct
+    // navigation to /Error both work without going through the interactive Router.
+    var isErrorPath = HttpContext?.Request.Path.StartsWithSegments("/Error") == true;
+}
+<body class="font-sans bg-surface text-ink antialiased">
+    @if (isErrorPath)
+    {
+        <Bulletin.Board.Web.Components.Pages.Error />
+    }
+    else
+    {
+        <Routes @rendermode="new InteractiveAutoRenderMode(prerender: false)" />
+        <ReconnectModal />
+        <!-- getCultureFromCookie MUST be defined before blazor.web.js so the WASM
+             entry point (Program.cs) can call it synchronously during startup. -->
+        <script>
+            window.getCultureFromCookie = function () {
+                var name = '.AspNetCore.Culture=';
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var c = cookies[i].trim();
+                    if (c.indexOf(name) === 0) {
+                        var val = decodeURIComponent(c.substring(name.length));
+                        var m = val.match(/c=([^|]+)/);
+                        return m ? m[1] : 'en';
+                    }
+                }
+                return 'en';
+            };
+        </script>
+        <script src="@Assets["_framework/blazor.web.js"]"></script>
+        <script src="@Assets["js/nav-indicator.js"]" defer></script>
+        <script src="@Assets["js/_fadeUpInit.js"]" defer></script>
+        <script src="@Assets["js/dell-landing.js"]" defer></script>
+    }
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+}

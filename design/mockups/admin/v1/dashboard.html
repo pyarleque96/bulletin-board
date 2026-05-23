@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 50:'#fff7ed', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc',
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.06)',
+            lift: '0 4px 16px rgba(0,0,0,0.10)',
+            float: '0 8px 32px rgba(0,0,0,0.14)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .sidebar-item.active { background: rgba(255,255,255,0.12); border-left: 3px solid #F97316; }
+    .sidebar-item { border-left: 3px solid transparent; }
+    .kpi-card:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+  </style>
+</head>
+<body class="bg-surface text-ink flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 min-h-screen bg-brand-900 text-white flex flex-col fixed left-0 top-0 z-30 shadow-float">
+    <!-- Logo -->
+    <div class="px-6 py-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-700 leading-tight">Bulletin Dells</p>
+          <p class="text-xs text-brand-300">Admin Panel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <p class="text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500">Overview</p>
+
+      <a href="dashboard.html" class="sidebar-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 cursor-pointer transition-colors hover:bg-white/10">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+
+      <p class="text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500 mt-4">Moderation</p>
+
+      <a href="listings-queue.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Listings Queue
+        <span class="ml-auto bg-yellow-400 text-yellow-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">12</span>
+      </a>
+
+      <a href="reviews-queue.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        Reviews Queue
+        <span class="ml-auto bg-orange-400 text-orange-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">5</span>
+      </a>
+
+      <p class="text-[10px] uppercase tracking-widest text-brand-400 px-3 py-2 font-500 mt-4">Management</p>
+
+      <a href="providers.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Providers
+      </a>
+
+      <a href="categories.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 9V4a1 1 0 011-1z"/></svg>
+        Categories
+      </a>
+    </nav>
+
+    <!-- Bottom user -->
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-700 flex-shrink-0">GM</div>
+        <div class="min-w-0">
+          <p class="text-sm font-500 truncate">General Manager</p>
+          <p class="text-xs text-brand-400 truncate">gm@bulletindells.com</p>
+        </div>
+        <button class="ml-auto text-brand-400 hover:text-white transition-colors cursor-pointer" aria-label="Sign out">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="ml-64 flex-1 flex flex-col min-h-screen">
+    <!-- Top bar -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-soft">
+      <div>
+        <h1 class="text-lg font-600 text-ink">Dashboard</h1>
+        <p class="text-xs text-muted">Sunday, May 4, 2026 — Wisconsin Dells, WI</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="relative cursor-pointer text-muted hover:text-ink transition-colors" aria-label="Notifications">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full text-[9px] text-white flex items-center justify-center font-700">17</span>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-700 text-white cursor-pointer">GM</div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <div class="flex-1 p-8 space-y-8">
+
+      <!-- KPI Cards -->
+      <section>
+        <h2 class="text-sm font-600 text-muted uppercase tracking-widest mb-4">Today at a Glance</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <!-- Pending listings -->
+          <div class="kpi-card bg-white rounded-xl border border-slate-200 p-5 shadow-soft cursor-pointer transition-all hover:shadow-lift hover:border-yellow-300">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span class="text-[10px] font-600 text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">Urgent</span>
+            </div>
+            <p class="text-3xl font-700 text-ink">12</p>
+            <p class="text-sm text-muted mt-1">Pending Listings</p>
+            <p class="text-xs text-yellow-600 mt-2 font-500">3 waiting 48+ hrs</p>
+          </div>
+
+          <!-- Providers today -->
+          <div class="kpi-card bg-white rounded-xl border border-slate-200 p-5 shadow-soft cursor-pointer transition-all hover:shadow-lift hover:border-brand-300">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-10 h-10 bg-brand-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              </div>
+              <span class="text-[10px] font-600 text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">+3 today</span>
+            </div>
+            <p class="text-3xl font-700 text-ink">47</p>
+            <p class="text-sm text-muted mt-1">Total Providers</p>
+            <p class="text-xs text-brand-600 mt-2 font-500">12 VIP · 18 Verified</p>
+          </div>
+
+          <!-- Contacts today -->
+          <div class="kpi-card bg-white rounded-xl border border-slate-200 p-5 shadow-soft cursor-pointer transition-all hover:shadow-lift hover:border-green-300">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              </div>
+              <span class="text-[10px] font-600 text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Live</span>
+            </div>
+            <p class="text-3xl font-700 text-ink">28</p>
+            <p class="text-sm text-muted mt-1">Contacts Today</p>
+            <p class="text-xs text-green-600 mt-2 font-500">All via WhatsApp</p>
+          </div>
+
+          <!-- Reviews pending -->
+          <div class="kpi-card bg-white rounded-xl border border-slate-200 p-5 shadow-soft cursor-pointer transition-all hover:shadow-lift hover:border-orange-300">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <span class="text-[10px] font-600 text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Review</span>
+            </div>
+            <p class="text-3xl font-700 text-ink">5</p>
+            <p class="text-sm text-muted mt-1">Pending Reviews</p>
+            <p class="text-xs text-orange-600 mt-2 font-500">Awaiting GM approval</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Quick Actions + Recent Activity -->
+      <div class="grid grid-cols-3 gap-6">
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-6">
+          <h3 class="text-sm font-600 text-ink mb-4">Quick Actions</h3>
+          <div class="space-y-2">
+            <a href="listings-queue.html" class="flex items-center gap-3 p-3 rounded-lg bg-yellow-50 hover:bg-yellow-100 cursor-pointer transition-colors group">
+              <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                <svg class="w-4 h-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-500 text-yellow-800">Review Listings</p>
+                <p class="text-xs text-yellow-600">12 pending approval</p>
+              </div>
+              <svg class="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="reviews-queue.html" class="flex items-center gap-3 p-3 rounded-lg bg-orange-50 hover:bg-orange-100 cursor-pointer transition-colors group">
+              <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                <svg class="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-500 text-orange-800">Approve Reviews</p>
+                <p class="text-xs text-orange-600">5 pending review</p>
+              </div>
+              <svg class="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="providers.html" class="flex items-center gap-3 p-3 rounded-lg bg-brand-50 hover:bg-brand-100 cursor-pointer transition-colors group">
+              <div class="w-8 h-8 bg-brand-100 rounded-lg flex items-center justify-center group-hover:bg-brand-200 transition-colors">
+                <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-500 text-brand-800">Manage Providers</p>
+                <p class="text-xs text-brand-600">Set tiers &amp; hierarchy</p>
+              </div>
+              <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="categories.html" class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors group">
+              <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+                <svg class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 9V4a1 1 0 011-1z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-500 text-slate-700">Edit Categories</p>
+                <p class="text-xs text-slate-500">Manage EN/ES labels</p>
+              </div>
+              <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-span-2 bg-white rounded-xl border border-slate-200 shadow-soft p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-600 text-ink">Recent Activity</h3>
+            <button class="text-xs text-brand-600 hover:text-brand-700 font-500 cursor-pointer">View all</button>
+          </div>
+          <div class="space-y-4">
+
+            <!-- Activity item -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">Approved</span> "Maria's Beauty Salon" listing</p>
+                <p class="text-xs text-muted mt-0.5">Beauty · Wisconsin Dells</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">2 min ago</span>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">Promoted</span> "Carlos Auto Repair" to VIP tier</p>
+                <p class="text-xs text-muted mt-0.5">Car Repair · Hierarchy: 850</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">18 min ago</span>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">Rejected</span> "Dells Taxi Co." — missing info</p>
+                <p class="text-xs text-muted mt-0.5">Rides · Sent GM note to provider</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">34 min ago</span>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-brand-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">New contact</span> via WhatsApp — Alejandro Torres</p>
+                <p class="text-xs text-muted mt-0.5">Housing · Email copy sent to GM</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">1 hr ago</span>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">Verified</span> identity of "Luisa Rental Cars"</p>
+                <p class="text-xs text-muted mt-0.5">Car Rental · Phone + ID confirmed</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">2 hr ago</span>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-ink"><span class="font-500">Published</span> review for "Gonzalez Housing"</p>
+                <p class="text-xs text-muted mt-0.5">Housing · 4 stars · Verified contact</p>
+              </div>
+              <span class="text-xs text-muted flex-shrink-0">3 hr ago</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tier breakdown -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-soft p-6">
+        <h3 class="text-sm font-600 text-ink mb-4">Provider Distribution</h3>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="text-center p-4 bg-slate-50 rounded-lg">
+            <div class="text-2xl font-700 text-slate-600">17</div>
+            <div class="text-xs text-muted mt-1">Regular</div>
+            <div class="mt-2 h-1.5 bg-slate-200 rounded-full"><div class="h-full bg-slate-400 rounded-full" style="width:36%"></div></div>
+            <div class="text-[10px] text-muted mt-1">36%</div>
+          </div>
+          <div class="text-center p-4 bg-brand-50 rounded-lg">
+            <div class="text-2xl font-700 text-brand-600">18</div>
+            <div class="text-xs text-muted mt-1">Verified</div>
+            <div class="mt-2 h-1.5 bg-brand-100 rounded-full"><div class="h-full bg-brand-500 rounded-full" style="width:38%"></div></div>
+            <div class="text-[10px] text-muted mt-1">38%</div>
+          </div>
+          <div class="text-center p-4 bg-amber-50 rounded-lg">
+            <div class="text-2xl font-700 text-amber-600">12</div>
+            <div class="text-xs text-muted mt-1">VIP</div>
+            <div class="mt-2 h-1.5 bg-amber-100 rounded-full"><div class="h-full bg-amber-500 rounded-full" style="width:26%"></div></div>
+            <div class="text-[10px] text-muted mt-1">26%</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

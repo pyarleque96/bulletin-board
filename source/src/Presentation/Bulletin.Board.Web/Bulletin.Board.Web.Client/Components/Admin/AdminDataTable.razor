@@ -1,0 +1,224 @@
+@namespace Bulletin.Board.Web.Client.Components.Admin
+
+@*
+    AdminDataTable — tabla administrativa reutilizable con estados loading / error / empty / data.
+    Encapsula: wrapper card, toolbar, thead sticky, tbody scrollable, footer de paginación.
+
+    Parámetros de contenido (RenderFragment):
+      ToolbarContent  — slot superior dentro del card (filtros, botones)
+      HeaderContent   — columnas <th> del thead
+      RowContent      — filas <tr> del tbody
+      FooterLeft      — slot izquierdo del footer (p.ej. "Showing X of Y")
+
+    Parámetros de estado:
+      IsLoading       — muestra skeleton de 5 filas con animate-pulse
+      HasError        — muestra estado de error con botón Retry
+      IsEmpty         — muestra estado vacío
+      EmptyMessage    — texto del estado vacío (default "No data found")
+      OnRetry         — callback del botón Retry
+      OnEmptyAction   — callback opcional del botón en estado vacío
+      EmptyActionLabel — etiqueta del botón vacío (default "")
+
+    Parámetros de paginación:
+      CurrentPage     — página actual (1-based)
+      TotalPages      — total de páginas
+      OnPageChanged   — callback al cambiar de página, recibe int
+*@
+
+<div class="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden"
+     style="flex:1; min-height:0; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+
+    @* ── Toolbar ── *@
+    @if (ToolbarContent is not null)
+    {
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-3 flex-shrink-0 flex-wrap">
+            @ToolbarContent
+        </div>
+    }
+
+    @* ── Contenido: loading / error / vacío / tabla ── *@
+    @if (IsLoading)
+    {
+        <div class="flex-1 overflow-y-auto" aria-busy="true" aria-label="Loading">
+            @for (var i = 0; i < 5; i++)
+            {
+                <div class="flex items-center gap-4 px-5 py-4 border-b border-slate-50 animate-pulse">
+                    <div class="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-3 bg-slate-200 rounded-full w-2/5"></div>
+                        <div class="h-3 bg-slate-100 rounded-full w-1/4"></div>
+                    </div>
+                    <div class="h-6 w-16 bg-slate-200 rounded-full"></div>
+                    <div class="h-8 w-20 bg-slate-200 rounded-lg"></div>
+                    <div class="h-8 w-24 bg-slate-200 rounded-lg"></div>
+                </div>
+            }
+        </div>
+    }
+    else if (HasError)
+    {
+        <div class="flex-1 flex flex-col items-center justify-center py-16 gap-3">
+            <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p class="text-sm font-medium text-ink">Failed to load data</p>
+            <button type="button"
+                    @onclick="() => OnRetry.InvokeAsync()"
+                    class="text-sm text-blue-600 hover:text-blue-800 cursor-pointer transition-colors">
+                Try again
+            </button>
+        </div>
+    }
+    else if (IsEmpty)
+    {
+        <div class="flex-1 flex flex-col items-center justify-center py-16 gap-3">
+            <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <p class="text-sm font-medium text-ink">@EmptyMessage</p>
+            @if (OnEmptyAction.HasDelegate && !string.IsNullOrEmpty(EmptyActionLabel))
+            {
+                <button type="button"
+                        @onclick="() => OnEmptyAction.InvokeAsync()"
+                        class="text-sm text-blue-600 hover:text-blue-800 cursor-pointer transition-colors">
+                    @EmptyActionLabel
+                </button>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="flex-1 overflow-y-auto" style="min-height:0;">
+            <table class="w-full" role="grid">
+                <thead class="bg-slate-50 sticky top-0 z-10">
+                    <tr>
+                        @HeaderContent
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @RowContent
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @* ── Footer de paginación ── *@
+    <div class="px-4 py-2 border-t border-slate-200 flex items-center justify-between bg-slate-100 flex-shrink-0">
+
+        @* Slot izquierdo (texto informativo) *@
+        @if (FooterLeft is not null)
+        {
+            @FooterLeft
+        }
+        else
+        {
+            <span></span>
+        }
+
+        @* Controles de paginación *@
+        @if (TotalPages > 1)
+        {
+            <div class="flex items-center gap-1" role="navigation" aria-label="Pagination">
+
+                @* Prev *@
+                <button type="button"
+                        @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)"
+                        disabled="@(CurrentPage <= 1)"
+                        class="w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:bg-slate-200 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Previous page">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                @* Números de página *@
+                @for (var p = 1; p <= TotalPages; p++)
+                {
+                    var pageNum = p;
+                    <button type="button"
+                            @onclick="() => OnPageChanged.InvokeAsync(pageNum)"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg text-sm cursor-pointer transition-colors @(pageNum == CurrentPage ? "bg-blue-600 text-white font-semibold" : "text-muted hover:bg-slate-200")"
+                            aria-label="Page @pageNum"
+                            aria-current="@(pageNum == CurrentPage ? "page" : null)">
+                        @pageNum
+                    </button>
+                }
+
+                @* Next *@
+                <button type="button"
+                        @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)"
+                        disabled="@(CurrentPage >= TotalPages)"
+                        class="w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:bg-slate-200 cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Next page">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+
+            </div>
+        }
+        else
+        {
+            <span></span>
+        }
+
+    </div>
+
+</div>
+
+@code {
+    // ── Slots ──────────────────────────────────────────────────────────────────
+
+    /// <summary>Contenido del toolbar (filtros, búsqueda, botones de acción).</summary>
+    [Parameter] public RenderFragment? ToolbarContent { get; set; }
+
+    /// <summary>Columnas &lt;th&gt; del thead.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Filas &lt;tr&gt; del tbody.</summary>
+    [Parameter] public RenderFragment? RowContent { get; set; }
+
+    /// <summary>Slot izquierdo del footer (texto "Showing X of Y").</summary>
+    [Parameter] public RenderFragment? FooterLeft { get; set; }
+
+    // ── Estado ─────────────────────────────────────────────────────────────────
+
+    /// <summary>Cuando true muestra skeleton de 5 filas.</summary>
+    [Parameter] public bool IsLoading { get; set; }
+
+    /// <summary>Cuando true muestra estado de error con botón Retry.</summary>
+    [Parameter] public bool HasError { get; set; }
+
+    /// <summary>Cuando true muestra estado vacío.</summary>
+    [Parameter] public bool IsEmpty { get; set; }
+
+    /// <summary>Texto del estado vacío.</summary>
+    [Parameter] public string EmptyMessage { get; set; } = "No data found";
+
+    /// <summary>Callback del botón Retry en estado de error.</summary>
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    /// <summary>Callback opcional del botón en estado vacío.</summary>
+    [Parameter] public EventCallback OnEmptyAction { get; set; }
+
+    /// <summary>Etiqueta del botón en estado vacío.</summary>
+    [Parameter] public string EmptyActionLabel { get; set; } = "";
+
+    // ── Paginación ─────────────────────────────────────────────────────────────
+
+    /// <summary>Página actual (1-based).</summary>
+    [Parameter] public int CurrentPage { get; set; } = 1;
+
+    /// <summary>Total de páginas.</summary>
+    [Parameter] public int TotalPages { get; set; } = 1;
+
+    /// <summary>Callback al cambiar de página — recibe el número de página destino.</summary>
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+}

@@ -1,0 +1,46 @@
+@* TASK-32: RatingStars — display 1-5 estrellas + score numérico + count *@
+
+<div class="flex items-center gap-1.5 @(Compact ? "text-xs" : "text-sm")"
+     role="img" aria-label="Rating: @Score.ToString("F1") out of 5@(Compact ? "" : $", {Count} reviews")">
+
+    @* Stars *@
+    <span class="flex items-center gap-0.5" aria-hidden="true">
+        @for (int i = 1; i <= 5; i++)
+        {
+            var starIndex = i;
+            <svg class="@(Compact ? "w-3.5 h-3.5" : "w-4 h-4") @GetStarColor(starIndex)"
+                 viewBox="0 0 24 24" fill="@GetStarFill(starIndex)" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+        }
+    </span>
+
+    @* Score *@
+    <span class="font-semibold text-gray-800">@Score.ToString("F1")</span>
+
+    @* Count (hidden in compact mode) *@
+    @if (!Compact && Count > 0)
+    {
+        <span class="text-gray-400">(@Count @(Count == 1 ? "review" : "reviews"))</span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Score   { get; set; }
+    [Parameter] public int    Count   { get; set; }
+    [Parameter] public bool   Compact { get; set; } = false;
+
+    private string GetStarColor(int position)
+    {
+        if (Score >= position) return "text-amber-400";
+        if (Score >= position - 0.5) return "text-amber-300";
+        return "text-gray-300";
+    }
+
+    private string GetStarFill(int position)
+    {
+        if (Score >= position) return "currentColor";
+        return "none";
+    }
+}

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — /manage — My Listings (Nivel 1)
+  ====================================================
+  Archivo:    design/mockups/v5/manage/index.html
+  Ruta:       /manage  (provider dashboard raíz)
+  Descripción: Lista TODOS los anuncios del proveedor, sin importar el tipo.
+               Cada card muestra título, tipo, estado, tier, métricas y acciones.
+  Responsive: 375px / 768px / 1280px
+  Accesibilidad: WCAG 2.1 AA — focus, ARIA, colores contrastados
+  Bilingüe:   EN principal | data-es / comentarios para ES
+  Stack:      Tailwind CDN (en Blazor: tailwind.css compilado)
+  ====================================================
+  DATOS QUE ESPERA DEL BACKEND:
+    - Listings: ProviderListingDto[]
+        · Id: Guid
+        · Title: string
+        · ShortDescription: string
+        · CategorySlug: "car-rental" | "housing" | "jobs" | "beauty" | ...
+        · Status: Pending | Approved | Rejected | NeedsChanges
+        · ProviderTier: Regular | Verified | VIP
+        · Hierarchy: int (si > 0 y asignado por GM → "Featured by GM")
+        · IsGmFeatured: bool
+        · Views: int
+        · ContactCount: int
+        · AvgRating: float? (null si no hay ratings)
+        · IsActive: bool
+    - TotalCount: int
+    - Filters: status, categorySlug, search
+  ====================================================
+  BINDING POINTS BLAZOR:
+    - @foreach (var l in _listings) → cada ListingCard
+    - @_totalCount → contador "X listings"
+    - @_filterStatus, @_filterCategory, @_searchQuery → <select>/<input>
+    - @onclick="() => NavManager.NavigateTo($"/manage/{l.Id}")" → botón Manage
+    - @onclick="() => ToggleActive(l.Id)" → Pause/Activate
+    - @onclick="() => DeleteListing(l.Id)" → Delete (con confirmación)
+  ====================================================
+  REGLAS DE NEGOCIO REFLEJADAS:
+    1. Estado Pending: banner amarillo — "Awaiting GM approval"
+    2. Estado Rejected / NeedsChanges: mensaje de feedback visible
+    3. Ningún listing Pending/Rejected es visible al público (indicado visualmente)
+    4. VIP requiere verificación previa — si !IsVerified, "Upgrade to VIP" deshabilitado
+    5. Cualquier edición regresa el listing a Pending (aviso en tooltip de Edit)
+    6. Botón "Manage" lleva a /manage/{listingId} (Nivel 2, type-specific)
+  ====================================================
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Listings — Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:'#fff7ed', 100:'#ffedd5', 200:'#fed7aa',
+              300:'#fdba74', 400:'#fb923c', 500:'#f97316',
+              600:'#ea580c', 700:'#c2410c', 800:'#9a3412',
+            },
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+          boxShadow: {
+            soft:  '0 4px 24px -4px rgba(30,41,59,0.08)',
+            lift:  '0 8px 32px -6px rgba(30,41,59,0.12)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* ── Status badge helpers ── */
+    /* Approved: shield icon + blue-brand (home-8 trust banner pattern) */
+    .status-approved    { background:#dbeafe; color:#1d4ed8; }
+    .status-pending     { background:#fef9c3; color:#854d0e; }
+    .status-rejected    { background:#fee2e2; color:#b91c1c; }
+    .status-needschange { background:#ffedd5; color:#c2410c; }
+
+    /* ── Tier badge helpers ── */
+    /* VIP: orange gradient + white text (home-8 .badge-vip) */
+    .tier-vip      { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; border:none; }
+    /* Verified: emerald green + check-circle icon (home-8 trust banner) */
+    .tier-verified { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+    .tier-regular  { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+
+    /* ── Type badge helpers ── */
+    .type-car-rental { background:#ede9fe; color:#6d28d9; }
+    .type-housing    { background:#d1fae5; color:#065f46; }
+    .type-jobs       { background:#dbeafe; color:#1d4ed8; }
+    .type-beauty     { background:#fce7f3; color:#9d174d; }
+    .type-mechanic   { background:#fef3c7; color:#92400e; }
+    .type-transport  { background:#e0f2fe; color:#0369a1; }
+    .type-other      { background:#f1f5f9; color:#475569; }
+
+    /* ── Tab indicator — water-drop system (matches detail pages) — legado, no usado en este view ── */
+    .manage-tablist-wrap { position: relative; }
+    .tab-indicator {
+      position: absolute; bottom: 0; height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+      box-shadow: 0 -1px 8px -1px rgba(249,115,22,0.35);
+      transition: left 0.38s cubic-bezier(0.32,0.72,0,1),
+                  width 0.38s cubic-bezier(0.32,0.72,0,1);
+      pointer-events: none;
+      will-change: left, width;
+    }
+    .tab-indicator::after {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit;
+      background: inherit; opacity: 0.25; filter: blur(4px);
+    }
+    .manage-tab { position:relative; transition:color 0.18s cubic-bezier(0.32,0.72,0,1); }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+
+    /* ── Card hover ── */
+    /*
+      Sin overflow:hidden en el article — los tooltips deben poder salir.
+      El rounded-2xl no necesita overflow:hidden para funcionar en los bordes
+      de la card (solo los banners superiores necesitan el clip).
+    */
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1),
+                  box-shadow 0.3s cubic-bezier(0.32,0.72,0,1);
+      /* IMPORTANTE: transform crea stacking context — por eso el tooltip
+         necesita z-index:9999 para perforarlo */
+    }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.12); }
+
+    /* Banner superior de cada card — tiene overflow:hidden propio para clip en esquinas */
+    .listing-card-banner {
+      overflow: hidden;
+      border-radius: 16px 16px 0 0; /* coincide con rounded-2xl del article */
+    }
+
+    /* ── Pending pulse dot ── */
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .pulse-dot { animation:pulse-dot 2s ease-in-out infinite; }
+
+    /* ── Tooltip genérico (data-tooltip) — mantener para botones de acción ── */
+    [data-tooltip] { position:relative; }
+    [data-tooltip]::after {
+      content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px);
+      left:50%; transform:translateX(-50%); white-space:nowrap;
+      background:#1e293b; color:#fff; font-size:11px; padding:5px 9px;
+      border-radius:8px; pointer-events:none; opacity:0;
+      transition:opacity 0.15s ease; z-index:50;
+    }
+    [data-tooltip]:hover::after { opacity:1; }
+
+    /* ── GM Feedback tooltip — para badges de Rejected/NeedsChanges ──
+       Usa un card flotante más ancho con salto de línea (no whitespace:nowrap).
+       El badge .gm-feedback-badge es el trigger; .gm-feedback-card es el panel.
+       En mobile: toggle con JS (click). En desktop: hover + focus.
+       Accesibilidad: aria-describedby conecta badge con card (rol "tooltip").
+    */
+    .gm-feedback-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 0;
+      background: transparent;
+      text-decoration: underline dotted;
+      text-underline-offset: 2px;
+      transition: opacity 0.15s ease;
+      user-select: none;
+    }
+    /* Rejected variant */
+    .gm-feedback-badge.rejected {
+      color: #b91c1c;
+      text-decoration-color: rgba(185,28,28,0.5);
+    }
+    /* NeedsChanges variant */
+    .gm-feedback-badge.needschange {
+      color: #c2410c;
+      text-decoration-color: rgba(194,65,12,0.5);
+    }
+    .gm-feedback-badge:hover { opacity: 0.8; }
+    .gm-feedback-badge:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Tooltip card — posicionado relativo al wrapper .gm-feedback-wrap */
+    /*
+      FIX TOOLTIP CLIPPING:
+      El .gm-feedback-wrap necesita overflow: visible (inherited por defecto).
+      El problema raíz era overflow:hidden en el <article> padre que cortaba
+      todo lo que salía del bounding-box. Se resolvió eliminando overflow-hidden
+      del article y poniéndolo solo en .listing-banner-clip (solo el banner superior
+      necesita clip para las esquinas redondeadas). El z-index sube a 9999 para
+      perforar cualquier stacking context creado por transform en .card-hover.
+    */
+    .gm-feedback-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      /* Crea su propio stacking context para que el tooltip salga POR ENCIMA */
+      isolation: isolate;
+    }
+
+    .gm-feedback-card {
+      position: absolute;
+      /* Por defecto: encima del badge; JS ajusta si se corta en mobile */
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      width: 260px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 400;
+      padding: 10px 13px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px -6px rgba(15,23,42,0.28), 0 2px 8px -2px rgba(15,23,42,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.32,0.72,0,1);
+      /* z-index 9999: perfora stacking contexts creados por transform en .card-hover */
+      z-index: 9999;
+      white-space: normal;
+      text-align: left;
+    }
+    /* Flecha del tooltip */
+    .gm-feedback-card::before {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 10px;
+      background: #1e293b;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transform: translateX(-50%) rotate(45deg);
+    }
+    /* Estados visible / oculto */
+    .gm-feedback-card.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    /* Hover/focus — desktop */
+    .gm-feedback-wrap:hover .gm-feedback-card,
+    .gm-feedback-badge:focus-visible ~ .gm-feedback-card {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    /* Label "GM Feedback" dentro del card */
+    .gm-feedback-card .gm-feedback-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(226,232,240,0.5);
+      margin-bottom: 4px;
+    }
+
+    /* ── Fade-up reveal ── */
+    .fade-up { opacity:0; transform:translateY(14px);
+               transition:opacity 0.5s ease, transform 0.5s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+      .fade-up { opacity:1; transform:none; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink min-h-[100dvh]">
+
+<!-- ======================================================
+     NAVBAR
+     En Blazor: <GlobalNavbar /> — solo representado aquí
+     ====================================================== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"
+     aria-label="Main navigation / Navegación principal">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-soft"
+       style="backdrop-filter:blur(20px);">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 no-underline" aria-label="Bulletin Dells — home">
+      <div class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center" aria-hidden="true">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="font-bold text-sm tracking-tight text-ink">Bulletin <span class="text-brand-500">Dells</span></span>
+    </a>
+    <div class="flex items-center gap-2">
+      <button class="text-xs text-muted px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer border-0"
+              aria-label="Switch language / Cambiar idioma">EN / ES</button>
+      <!-- data-binding: @currentUser.Initials -->
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold cursor-pointer"
+           title="Account settings" aria-label="Account menu">P</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ======================================================
+     1. BANDA HEADER — patrón /browse exacto
+        bg-white border-b border-slate-100 pt-24 px-4 py-5
+     ====================================================== -->
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <span class="text-ink font-medium" aria-current="page">
+        Manage <!-- ES: Administrar -->
+      </span>
+    </nav>
+
+    <!-- Título + contador + botón principal -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+      <div>
+        <h1 class="text-2xl font-bold text-ink tracking-tight">
+          My Listings
+          <!-- ES: Mis Anuncios -->
+        </h1>
+        <p class="text-sm text-muted mt-0.5">
+          <!-- data-binding: @_listings.Count -->
+          <span class="font-medium text-ink" aria-live="polite">5 listings</span>
+          &nbsp;·&nbsp; Editing any listing sends it back to GM for re-approval.
+          <!-- ES: Editar un anuncio lo regresa a revisión del GM. -->
+        </p>
+      </div>
+
+      <!-- "+ New Listing" → abre flujo de creación con selección de tipo -->
+      <!-- data-binding: @onclick="() => NavManager.NavigateTo("/manage/new")" -->
+      <a href="/manage/new"
+         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer no-underline flex-shrink-0"
+         aria-label="Create a new listing / Crear un nuevo anuncio">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Listing
+        <!-- ES: Nuevo Anuncio -->
+      </a>
+    </div>
+
+    <!-- ── Filtros: estado + tipo + search ── -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 pb-4">
+
+      <!-- Filtro por estado -->
+      <div class="relative">
+        <label for="filter-status" class="sr-only">Filter by status / Filtrar por estado</label>
+        <select id="filter-status"
+                class="appearance-none pl-3 pr-9 py-2 text-xs text-ink bg-white border border-slate-200 rounded-xl hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors cursor-pointer"
+                aria-label="Filter listings by status">
+          <!-- data-binding: @bind="_filterStatus" -->
+          <option value="">All statuses</option>
+          <option value="Pending">Pending (1)</option>
+          <option value="Approved">Approved (2)</option>
+          <option value="Rejected">Rejected (1)</option>
+          <option value="NeedsChanges">Needs Changes (1)</option>
+        </select>
+        <svg class="w-3.5 h-3.5 text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <!-- Filtro por tipo -->
+      <div class="relative">
+        <label for="filter-type" class="sr-only">Filter by type / Filtrar por tipo</label>
+        <select id="filter-type"
+                class="appearance-none pl-3 pr-9 py-2 text-xs text-ink bg-white border border-slate-200 rounded-xl hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors cursor-pointer"
+                aria-label="Filter listings by type">
+          <!-- data-binding: @bind="_filterCategory" -->
+          <option value="">All types</option>
+          <option value="car-rental">Car rental</option>
+          <option value="housing">Housing</option>
+          <option value="jobs">Jobs</option>
+          <option value="beauty">Beauty</option>
+          <option value="mechanic">Mechanic</option>
+          <option value="transport">Transport</option>
+        </select>
+        <svg class="w-3.5 h-3.5 text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <!-- Search box -->
+      <div class="relative flex-1 min-w-[180px]">
+        <label for="search-listings" class="sr-only">Search listings / Buscar anuncios</label>
+        <svg class="w-3.5 h-3.5 text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="search-listings" type="search" placeholder="Search listings…"
+               class="w-full pl-8 pr-3 py-2 text-xs text-ink bg-white border border-slate-200 rounded-xl placeholder-muted hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors"
+               aria-label="Search listings"
+               data-es-placeholder="Buscar anuncios…" />
+               <!-- data-binding: @bind="_searchQuery" @oninput="OnSearchInput" -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ======================================================
+     2. LISTADO DE ANUNCIOS — max-w-6xl mx-auto
+     ====================================================== -->
+<main class="max-w-6xl mx-auto px-4 py-8" id="listings-main" aria-label="My listings / Mis anuncios">
+
+  <!-- data-binding: @foreach (var listing in _filteredListings) -->
+
+  <!-- ── LISTING 1: Car Rental — Approved — VIP — GM Featured ── -->
+  <!-- overflow-hidden REMOVIDO del article: clipeaba los tooltips .gm-feedback-card -->
+  <!-- Las esquinas redondeadas siguen funcionando con rounded-2xl sin necesitar overflow:hidden -->
+  <article class="card-hover bg-white rounded-2xl border border-slate-200 shadow-soft mb-4 fade-up"
+           aria-label="Dells Premier Car Rentals — Approved">
+
+    <!-- GM Featured banner -->
+    <!-- data-binding: @if (listing.Hierarchy > 0 && listing.IsGmFeatured) -->
+    <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
+      <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+      <span class="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
+        Featured by GM <!-- ES: Destacado por el GM -->
+      </span>
+      <!-- data-binding: @listing.Hierarchy -->
+      <span class="ml-auto text-[10px] text-amber-600 font-medium bg-amber-100 px-1.5 py-0.5 rounded-full">
+        Priority #9999
+      </span>
+    </div>
+
+    <div class="p-5">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+
+        <!-- Foto representativa del listing -->
+        <div class="w-full sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+          <img src="https://picsum.photos/seed/carrent1/160/160" alt="Car rental listing photo"
+               class="w-full h-full object-cover" loading="lazy" />
+        </div>
+
+        <!-- Info principal -->
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <!-- Tipo de anuncio -->
+            <span class="type-car-rental inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+              Car Rental
+            </span>
+            <!-- Estado del listing -->
+            <!-- data-binding: StatusClass(@listing.Status) -->
+            <span class="status-approved inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Approved <!-- ES: Aprobado -->
+            </span>
+            <!-- Tier del proveedor -->
+            <!-- data-binding: TierClass(@listing.ProviderTier) -->
+            <span class="tier-vip inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              VIP
+            </span>
+          </div>
+
+          <!-- Título -->
+          <h2 class="text-base font-semibold text-ink leading-snug truncate">
+            <!-- data-binding: @listing.Title -->
+            Dells Premier Car Rentals
+          </h2>
+
+          <!-- Descripción corta -->
+          <p class="text-xs text-muted mt-0.5 line-clamp-2">
+            <!-- data-binding: @listing.ShortDescription -->
+            Professional car rental service in Wisconsin Dells. 12+ vehicles, daily and weekly rates, airport pickups.
+            <!-- ES: Servicio de renta de autos en Wisconsin Dells. +12 vehículos, tarifas diarias y semanales. -->
+          </p>
+        </div>
+
+        <!-- Métricas rápidas (columna derecha en desktop) -->
+        <div class="flex sm:flex-col items-start gap-4 sm:gap-2 sm:text-right flex-wrap">
+          <!-- Views -->
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <!-- data-binding: @listing.Views -->
+            <span class="text-xs font-medium text-ink">342</span>
+            <span class="text-xs text-muted">views</span><!-- ES: vistas -->
+          </div>
+          <!-- Contacts -->
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <!-- data-binding: @listing.ContactCount -->
+            <span class="text-xs font-medium text-ink">47</span>
+            <span class="text-xs text-muted">contacts</span><!-- ES: contactos -->
+          </div>
+          <!-- Rating -->
+          <!-- data-binding: @if (listing.AvgRating != null) -->
+          <div class="flex items-center gap-1 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <!-- data-binding: @listing.AvgRating.ToString("F1") -->
+            <span class="text-xs font-medium text-ink">4.8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divisor -->
+      <div class="border-t border-slate-100 mt-4 pt-4">
+        <!-- Acciones rápidas -->
+        <div class="flex flex-wrap items-center gap-2">
+
+          <!-- Manage (entrar al detalle level 2) -->
+          <!-- data-binding: href="/manage/@listing.Id" -->
+          <a href="detail-overview.html"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline"
+             aria-label="Manage this listing / Gestionar este anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Manage <!-- ES: Gestionar -->
+          </a>
+
+          <!-- Edit listing info -->
+          <!-- data-binding: @onclick="EditListing" — tooltip avisa que regresa a Pending -->
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                  data-tooltip="Editing sends listing back to Pending review"
+                  aria-label="Edit listing info / Editar información del anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit <!-- ES: Editar -->
+          </button>
+
+          <!-- Pause (listing está activo) -->
+          <!-- data-binding: @onclick="ToggleActive(listing.Id)" + @listing.IsActive label -->
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                  aria-label="Pause this listing / Pausar este anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            Pause <!-- ES: Pausar -->
+          </button>
+
+          <!-- View public page -->
+          <a href="/listing/dells-premier-car-rentals"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer no-underline"
+             aria-label="View public listing / Ver anuncio público"
+             target="_blank" rel="noopener">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Public view <!-- ES: Ver público -->
+          </a>
+
+          <!-- Delete (acción destructiva — siempre al final) -->
+          <!-- data-binding: @onclick="() => ConfirmDelete(listing.Id)" -->
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                  aria-label="Delete this listing / Eliminar este anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Delete <!-- ES: Eliminar -->
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── LISTING 2: Housing — Pending (awaiting GM approval) ── -->
+  <article class="card-hover bg-white rounded-2xl border border-amber-200 shadow-soft mb-4 fade-up"
+           aria-label="Studio Apt near Duck Pond — Pending approval">
+
+    <!-- PENDING BANNER — Regla de negocio #1: no visible al público hasta aprobación -->
+    <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
+      <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+      <span class="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
+        Awaiting GM approval — not visible to the public
+        <!-- ES: En espera de aprobación del GM — no visible al público -->
+      </span>
+    </div>
+
+    <div class="p-5">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div class="w-full sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+          <img src="https://picsum.photos/seed/housing2/160/160" alt="Housing listing photo"
+               class="w-full h-full object-cover" loading="lazy" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="type-housing inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Housing <!-- ES: Vivienda -->
+            </span>
+            <span class="status-pending inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <span class="w-2 h-2 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+              Pending <!-- ES: Pendiente -->
+            </span>
+            <span class="tier-verified inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Verified <!-- ES: Verificado -->
+            </span>
+          </div>
+          <h2 class="text-base font-semibold text-ink leading-snug truncate">Studio Apt near Duck Pond</h2>
+          <p class="text-xs text-muted mt-0.5 line-clamp-2">
+            Furnished studio, utilities included, 3-min walk to Duck Pond area. Ideal for J1/seasonal workers.
+            <!-- ES: Estudio amueblado, servicios incluidos, 3 min a pie al área de Duck Pond. -->
+          </p>
+        </div>
+        <div class="flex sm:flex-col items-start gap-4 sm:gap-2 sm:text-right flex-wrap">
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="text-xs font-medium text-ink">18</span>
+            <span class="text-xs text-muted">views</span>
+          </div>
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="text-xs font-medium text-ink">2</span>
+            <span class="text-xs text-muted">contacts</span>
+          </div>
+          <!-- Sin rating aún porque está Pending -->
+          <span class="text-[10px] text-muted italic">No ratings yet</span><!-- ES: Sin calificaciones -->
+        </div>
+      </div>
+      <div class="border-t border-slate-100 mt-4 pt-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Manage no aplica a listings type sin tab-specific UI aún, pero se puede acceder -->
+          <a href="#"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline"
+             aria-label="Manage listing / Gestionar anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Manage
+          </a>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                  data-tooltip="Editing sends listing back to Pending review"
+                  aria-label="Edit listing / Editar anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <!-- "View public" deshabilitado — no aprobado -->
+          <button type="button" disabled
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 text-slate-300 text-xs font-medium border border-slate-100 cursor-not-allowed"
+                  data-tooltip="Not visible to public until approved"
+                  aria-label="Not visible to the public yet"
+                  aria-disabled="true">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Public view
+          </button>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                  aria-label="Delete listing / Eliminar anuncio">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── LISTING 3: Beauty — Rejected ── -->
+  <article class="card-hover bg-white rounded-2xl border border-red-200 shadow-soft mb-4 fade-up"
+           aria-label="Nails &amp; Glam Studio — Rejected">
+
+    <!-- REJECTED BANNER — feedback inline reemplazado por badge + tooltip -->
+    <!-- data-binding: @if (listing.Status == "Rejected") -->
+    <div class="flex items-center gap-2 px-4 py-2 bg-red-50 border-b border-red-100">
+      <svg class="w-4 h-4 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+
+      <!-- Badge compacto + tooltip de gota (feedback del GM) -->
+      <!-- data-binding: aria-describedby="gm-feedback-@listing.Id" -->
+      <div class="gm-feedback-wrap">
+        <button
+          type="button"
+          class="gm-feedback-badge rejected"
+          aria-describedby="gm-feedback-beauty3"
+          aria-label="Rejected by GM — click to see feedback"
+          data-feedback-toggle="gm-feedback-beauty3"
+        >
+          Rejected by GM
+          <!-- ES: Rechazado por el GM -->
+          <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </button>
+
+        <!-- Tooltip card con el mensaje del GM -->
+        <!-- data-binding: id="gm-feedback-@listing.Id" role="tooltip" -->
+        <div
+          id="gm-feedback-beauty3"
+          class="gm-feedback-card"
+          role="tooltip"
+          aria-live="polite"
+        >
+          <span class="gm-feedback-label">GM Feedback</span><!-- ES: Comentario del GM -->
+          <!-- data-binding: @listing.GmFeedback -->
+          "Photos are not clear enough. Please upload higher quality images of your workspace."
+        </div>
+      </div>
+
+      <span class="text-[10px] text-red-400 font-medium ml-auto">Not visible to public</span><!-- ES: No visible al público -->
+    </div>
+
+    <div class="p-5">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div class="w-full sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 relative">
+          <img src="https://picsum.photos/seed/beauty3/160/160" alt="Beauty listing photo"
+               class="w-full h-full object-cover opacity-50" loading="lazy" />
+          <div class="absolute inset-0 flex items-center justify-center bg-red-50/60">
+            <svg class="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="type-beauty inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Beauty <!-- ES: Belleza -->
+            </span>
+            <span class="status-rejected inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Rejected <!-- ES: Rechazado -->
+            </span>
+            <span class="tier-regular inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              Regular
+            </span>
+          </div>
+          <h2 class="text-base font-semibold text-slate-500 leading-snug truncate">Nails &amp; Glam Studio</h2>
+          <p class="text-xs text-muted mt-0.5 line-clamp-2">
+            Professional nail care, gel extensions, and nail art in downtown Dells.
+          </p>
+        </div>
+        <div class="flex sm:flex-col items-start gap-4 sm:gap-2 sm:text-right flex-wrap">
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="text-xs font-medium text-muted">0</span>
+            <span class="text-xs text-muted">views</span>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 mt-4 pt-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer"
+                  aria-label="Edit and resubmit listing / Editar y reenviar anuncio"
+                  data-tooltip="Fix issues and resubmit for GM review">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit &amp; Resubmit <!-- ES: Editar y reenviar -->
+          </button>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                  aria-label="Delete listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── LISTING 4: Jobs — Needs Changes ── -->
+  <article class="card-hover bg-white rounded-2xl border border-orange-200 shadow-soft mb-4 fade-up"
+           aria-label="Seasonal Kitchen Staff Hiring — Needs Changes">
+
+    <!-- NEEDS CHANGES BANNER — feedback inline reemplazado por badge + tooltip -->
+    <!-- data-binding: @if (listing.Status == "NeedsChanges") -->
+    <div class="flex items-center gap-2 px-4 py-2 bg-orange-50 border-b border-orange-100">
+      <svg class="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+
+      <!-- Badge compacto + tooltip de gota -->
+      <!-- data-binding: aria-describedby="gm-feedback-@listing.Id" -->
+      <div class="gm-feedback-wrap">
+        <button
+          type="button"
+          class="gm-feedback-badge needschange"
+          aria-describedby="gm-feedback-jobs4"
+          aria-label="Needs changes — click to see GM feedback"
+          data-feedback-toggle="gm-feedback-jobs4"
+        >
+          Needs Changes
+          <!-- ES: Necesita cambios -->
+          <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </button>
+
+        <!-- Tooltip card con el mensaje del GM -->
+        <!-- data-binding: id="gm-feedback-@listing.Id" role="tooltip" -->
+        <div
+          id="gm-feedback-jobs4"
+          class="gm-feedback-card"
+          role="tooltip"
+          aria-live="polite"
+        >
+          <span class="gm-feedback-label">GM Feedback</span><!-- ES: Comentario del GM -->
+          <!-- data-binding: @listing.GmFeedback -->
+          "Please add more detail about hourly pay range and schedule. Also specify if housing is provided."
+        </div>
+      </div>
+
+      <span class="text-[10px] text-orange-400 font-medium ml-auto">Not visible to public</span><!-- ES: No visible al público -->
+    </div>
+
+    <div class="p-5">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div class="w-full sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+          <img src="https://picsum.photos/seed/jobs4/160/160" alt="Jobs listing photo"
+               class="w-full h-full object-cover" loading="lazy" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="type-jobs inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Jobs <!-- ES: Empleos -->
+            </span>
+            <span class="status-needschange inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              Needs Changes <!-- ES: Necesita cambios -->
+            </span>
+            <span class="tier-regular inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">Regular</span>
+          </div>
+          <h2 class="text-base font-semibold text-ink leading-snug truncate">Seasonal Kitchen Staff Hiring</h2>
+          <p class="text-xs text-muted mt-0.5 line-clamp-2">
+            Looking for kitchen help for summer season at a busy Dells restaurant. All shifts available.
+          </p>
+        </div>
+        <div class="flex sm:flex-col items-start gap-4 sm:gap-2 sm:text-right flex-wrap">
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="text-xs font-medium text-ink">31</span>
+            <span class="text-xs text-muted">views</span>
+          </div>
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="text-xs font-medium text-ink">9</span>
+            <span class="text-xs text-muted">contacts</span>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 mt-4 pt-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer"
+                  aria-label="Edit and resubmit listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit &amp; Resubmit
+          </button>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                  aria-label="Delete listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── LISTING 5: Transport — Approved — Regular — VIP upgrade notice ── -->
+  <article class="card-hover bg-white rounded-2xl border border-slate-200 shadow-soft mb-4 fade-up"
+           aria-label="Airport Rides to Chicago — Approved">
+    <div class="p-5">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div class="w-full sm:w-20 h-16 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+          <img src="https://picsum.photos/seed/transport5/160/160" alt="Transport listing photo"
+               class="w-full h-full object-cover" loading="lazy" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="type-transport inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              Transport <!-- ES: Transporte -->
+            </span>
+            <span class="status-approved inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Approved
+            </span>
+            <span class="tier-regular inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">Regular</span>
+          </div>
+          <h2 class="text-base font-semibold text-ink leading-snug truncate">Airport Rides to Chicago &amp; Milwaukee</h2>
+          <p class="text-xs text-muted mt-0.5 line-clamp-2">
+            Reliable, 24/7 airport rides from Wisconsin Dells to O'Hare, Midway, and MKE. Book in advance.
+          </p>
+
+          <!-- VIP Upgrade prompt — Regla de negocio: VIP requiere verificación previa -->
+          <!-- data-binding: @if (!listing.IsVerified) — botón deshabilitado con tooltip -->
+          <div class="mt-2 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="text-[10px] text-muted">
+              Want more visibility?&nbsp;
+              <!-- ES: ¿Quieres más visibilidad? -->
+            </span>
+            <!-- Deshabilitado: provider no está verificado aún -->
+            <!-- data-binding: disabled="@(!provider.IsVerified)" -->
+            <button type="button" disabled
+                    class="text-[10px] font-semibold text-slate-300 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-full cursor-not-allowed"
+                    data-tooltip="Complete verification (phone + ID) before upgrading to VIP"
+                    aria-disabled="true"
+                    aria-label="Upgrade to VIP — requires verification first / Upgrade a VIP — requiere verificación primero">
+              Upgrade to VIP <!-- ES: Upgrade a VIP -->
+            </button>
+            <span class="text-[10px] text-slate-400">(verify first)</span><!-- ES: (verifica primero) -->
+          </div>
+        </div>
+        <div class="flex sm:flex-col items-start gap-4 sm:gap-2 sm:text-right flex-wrap">
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="text-xs font-medium text-ink">87</span>
+            <span class="text-xs text-muted">views</span>
+          </div>
+          <div class="flex items-center gap-1.5 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="text-xs font-medium text-ink">11</span>
+            <span class="text-xs text-muted">contacts</span>
+          </div>
+          <div class="flex items-center gap-1 sm:justify-end">
+            <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="text-xs font-medium text-ink">4.3</span>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 mt-4 pt-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="#"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline"
+             aria-label="Manage listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Manage
+          </a>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                  data-tooltip="Editing sends listing back to Pending review"
+                  aria-label="Edit listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                  aria-label="Pause listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            Pause
+          </button>
+          <a href="#"
+             class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer no-underline"
+             target="_blank" rel="noopener" aria-label="View public listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Public view
+          </a>
+          <button type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                  aria-label="Delete listing">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── Empty state (cuando no hay listings / filtros activos sin resultados) ── -->
+  <!-- data-binding: @if (_filteredListings.Count == 0) -->
+  <!--
+  <div class="text-center py-16" role="status" aria-live="polite">
+    <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+    </div>
+    <h3 class="text-base font-semibold text-ink mb-1">No listings found</h3>
+    <p class="text-sm text-muted mb-4">Try adjusting your filters or create a new listing.</p>
+    <a href="/manage/new" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold cursor-pointer no-underline">
+      + New Listing
+    </a>
+  </div>
+  -->
+
+</main>
+
+<!-- ======================================================
+     FOOTER
+     ====================================================== -->
+<footer class="border-t border-slate-100 bg-white mt-8 py-6">
+  <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-xs text-muted">
+      &copy; 2025 Bulletin Dells · Wisconsin Dells, WI
+    </p>
+    <div class="flex items-center gap-4 text-xs text-muted">
+      <a href="/terms" class="hover:text-ink transition-colors cursor-pointer">Terms</a><!-- ES: Términos -->
+      <a href="/privacy" class="hover:text-ink transition-colors cursor-pointer">Privacy</a><!-- ES: Privacidad -->
+      <a href="/help" class="hover:text-ink transition-colors cursor-pointer">Help</a><!-- ES: Ayuda -->
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── IntersectionObserver fade-up reveal ──
+  // En Blazor: este JS puede eliminarse si el componente gestiona clases con @ref + OnAfterRender
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        const delay = (i * 60);
+        setTimeout(() => entry.target.classList.add('visible'), delay);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05 });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── GM Feedback tooltip — click-toggle para mobile ──
+  // En desktop el hover/focus CSS maneja la visibilidad.
+  // En mobile (pointer: coarse) se usa click para toggle.
+  // Blazor: reemplazar con @onclick + _showFeedback[id] bool.
+  (function() {
+    var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+    document.querySelectorAll('[data-feedback-toggle]').forEach(function(btn) {
+      var targetId = btn.getAttribute('data-feedback-toggle');
+      var card = document.getElementById(targetId);
+      if (!card) return;
+
+      if (isTouchDevice) {
+        // Mobile: click-to-toggle (CSS hover no funciona en touch)
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var isOpen = card.classList.contains('visible');
+          // Cerrar todos los tooltips abiertos
+          document.querySelectorAll('.gm-feedback-card.visible').forEach(function(c) {
+            c.classList.remove('visible');
+          });
+          if (!isOpen) {
+            card.classList.add('visible');
+            // Ajustar posición si el card se corta en la parte superior
+            var rect = card.getBoundingClientRect();
+            if (rect.top < 8) {
+              card.style.bottom = 'auto';
+              card.style.top = 'calc(100% + 10px)';
+              // Revertir la flecha (apunta hacia arriba)
+              card.style.setProperty('--arrow-top', '1');
+            }
+          }
+        });
+        // Click fuera cierra
+        document.addEventListener('click', function() {
+          document.querySelectorAll('.gm-feedback-card.visible').forEach(function(c) {
+            c.classList.remove('visible');
+          });
+        });
+      }
+
+      // Teclado: Enter/Space toggle (accesibilidad universal)
+      btn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          var isOpen = card.classList.contains('visible');
+          document.querySelectorAll('.gm-feedback-card.visible').forEach(function(c) {
+            c.classList.remove('visible');
+          });
+          if (!isOpen) card.classList.add('visible');
+        }
+        if (e.key === 'Escape') {
+          card.classList.remove('visible');
+        }
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

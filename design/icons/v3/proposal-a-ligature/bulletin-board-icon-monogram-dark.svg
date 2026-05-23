@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Ligature Monogram (Dark ink on light surface)</title>
+  <!-- Convention: "dark" = navy + orange ink, designed for light surfaces (#FFFFFF / #F8FAFC) -->
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!--
+    Custom BB ligature monogram.
+    A single SHARED VERTICAL STEM, with mirrored bowls on each side.
+    Left side (navy) = first B (Bulletin). Right side (orange) = second B (Board).
+    Purpose-drawn vector glyph, not typeset — distinguishes us from Booking.com (which is a typeset wordmark).
+    Symmetry axis at x=256. Bowls built with cubic Bézier C-curves for clean industrial feel.
+  -->
+  <g>
+    <!-- Shared vertical stem (navy) — the spine of the ligature -->
+    <rect x="242" y="86" width="28" height="340" fill="#101A3D"/>
+
+    <!-- LEFT side: navy B (first B = Bulletin) -->
+    <!-- Upper bowl — solid filled with hole using evenodd -->
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 242 86
+      L 156 86
+      C 100 86, 70 116, 70 166
+      C 70 216, 100 246, 156 246
+      L 242 246
+      Z
+      M 242 120
+      L 168 120
+      C 130 120, 110 138, 110 166
+      C 110 194, 130 212, 168 212
+      L 242 212
+      Z
+    "/>
+    <!-- Lower bowl — slightly larger than upper, classic B proportion -->
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 242 266
+      L 146 266
+      C 86 266, 54 298, 54 346
+      C 54 394, 86 426, 146 426
+      L 242 426
+      Z
+      M 242 300
+      L 158 300
+      C 122 300, 100 320, 100 346
+      C 100 372, 122 392, 158 392
+      L 242 392
+      Z
+    "/>
+
+    <!-- RIGHT side: orange B (second B = Board) — mirror of the left -->
+    <path fill="#F39323" fill-rule="evenodd" d="
+      M 270 86
+      L 356 86
+      C 412 86, 442 116, 442 166
+      C 442 216, 412 246, 356 246
+      L 270 246
+      Z
+      M 270 120
+      L 344 120
+      C 382 120, 402 138, 402 166
+      C 402 194, 382 212, 344 212
+      L 270 212
+      Z
+    "/>
+    <path fill="#F39323" fill-rule="evenodd" d="
+      M 270 266
+      L 366 266
+      C 426 266, 458 298, 458 346
+      C 458 394, 426 426, 366 426
+      L 270 426
+      Z
+      M 270 300
+      L 354 300
+      C 390 300, 412 320, 412 346
+      C 412 372, 390 392, 354 392
+      L 270 392
+      Z
+    "/>
+
+    <!-- Pushpin dot — orange head with subtle inner shadow for haptic depth.
+         Replaces the 'i' dot from the original wordmark, sits atop the shared stem. -->
+    <circle cx="256" cy="60" r="22" fill="#F39323"/>
+    <circle cx="256" cy="60" r="9" fill="#101A3D" opacity="0.22"/>
+  </g>
+</svg>

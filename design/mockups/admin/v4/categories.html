@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Categories</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['DM Sans','system-ui','sans-serif']},colors:{brand:{400:'#60a5fa',500:'#3b82f6',600:'#2563eb'}}}}}</script>
+  <style>
+    body{font-family:'DM Sans',system-ui,sans-serif;background:#050f1a;color:#e2e8f0}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,rgba(37,99,235,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(249,115,22,.08) 0%,transparent 50%)}
+    #sidebar{transition:width 300ms cubic-bezier(.32,.72,0,1);overflow:hidden;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(255,255,255,.04);border-right:1px solid rgba(255,255,255,.08);position:relative;z-index:10}
+    #sidebar .label{transition:opacity 200ms cubic-bezier(.32,.72,0,1)}
+    #sidebar.collapsed .label{opacity:0;width:0;overflow:hidden;white-space:nowrap}
+    #sidebar.collapsed{width:64px}#sidebar:not(.collapsed){width:256px}
+    .nav-item{transition:background-color 150ms ease;border-radius:.5rem}.nav-item:hover{background:rgba(255,255,255,.07)}.nav-item.active{background:rgba(96,165,250,.18);color:#93c5fd}
+    .glass-card{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+    tbody tr{transition:background-color 150ms ease;cursor:default}tbody tr:hover td{background:rgba(255,255,255,.04)}
+    button{transition:all 200ms cubic-bezier(.32,.72,0,1)}button:active{transform:scale(.98)}
+    input[type="text"]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#e2e8f0}
+    input[type="text"]::placeholder{color:rgba(148,163,184,.4)}
+    input[type="text"]:focus{outline:none;border-color:rgba(96,165,250,.4);box-shadow:0 0 0 2px rgba(96,165,250,.1)}
+  </style>
+</head>
+<body class="min-h-[100dvh] flex relative">
+
+  <aside id="sidebar" class="flex flex-col min-h-[100dvh] flex-shrink-0">
+    <div class="flex items-center gap-3 px-4 py-5" style="border-bottom:1px solid rgba(255,255,255,.08)"><div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0" style="box-shadow:0 0 12px rgba(59,130,246,.4)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span></div>
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer w-full text-left text-slate-400" style="border-bottom:1px solid rgba(255,255,255,.08)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg><span class="label text-xs font-medium">Collapse</span></button>
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="label text-sm">Dashboard</span></a>
+      <a href="listings-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="label text-sm">Listings Queue</span></a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label text-sm">Providers</span></a>
+      <a href="categories.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 cursor-pointer text-brand-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg><span class="label text-sm">Categories</span></a>
+      <a href="reviews-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="label text-sm">Reviews Queue</span></a>
+    </nav>
+    <div class="p-3" style="border-top:1px solid rgba(255,255,255,.08)"><div class="flex items-center gap-3 px-2 py-2"><div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">GM</div><div class="label min-w-0"><p class="text-xs font-medium text-white truncate">General Manager</p><p class="text-[11px] text-slate-500 truncate">admin@bulletindells.com</p></div></div></div>
+  </aside>
+
+  <main class="flex-1 overflow-auto min-h-[100dvh] relative z-10">
+    <header class="px-6 py-4 flex items-center justify-between sticky top-0 z-20" style="backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(5,15,26,.8);border-bottom:1px solid rgba(255,255,255,.07)">
+      <div><h1 class="text-lg font-semibold text-white">Categories</h1><p class="text-xs text-slate-500">Predefined — providers cannot add their own</p></div>
+      <button onclick="document.getElementById('modal').classList.toggle('hidden')" class="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-xl hover:bg-brand-500 active:scale-[0.98]" style="box-shadow:0 0 16px rgba(59,130,246,.25)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Category
+      </button>
+    </header>
+
+    <div class="p-6">
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left" style="background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.07)">
+              <th class="px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Icon</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name (EN)</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name (ES)</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Slug</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Listings</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Housing</td>
+              <td class="px-4 py-4 text-slate-400">Vivienda</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">housing</code></td>
+              <td class="px-4 py-4 font-mono text-white">17</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.15)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Car Rental</td>
+              <td class="px-4 py-4 text-slate-400">Renta de Autos</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">car-rental</code></td>
+              <td class="px-4 py-4 font-mono text-white">11</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 000 6h20"/><path d="M2 13l3-3 4 4 3-3 4 4 3-3 2 2"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Airport Rides</td>
+              <td class="px-4 py-4 text-slate-400">Rides al Aeropuerto</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">airport-rides</code></td>
+              <td class="px-4 py-4 font-mono text-white">9</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Beauty &amp; Nails</td>
+              <td class="px-4 py-4 text-slate-400">Belleza y Unas</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">beauty-nails</code></td>
+              <td class="px-4 py-4 font-mono text-white">7</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Mechanics</td>
+              <td class="px-4 py-4 text-slate-400">Mecanicos</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">mechanics</code></td>
+              <td class="px-4 py-4 font-mono text-white">6</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Food &amp; Catering</td>
+              <td class="px-4 py-4 text-slate-400">Comida y Catering</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">food-catering</code></td>
+              <td class="px-4 py-4 font-mono text-white">5</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-4"><div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.18)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></td>
+              <td class="px-4 py-4 font-medium text-slate-200">Home Services</td>
+              <td class="px-4 py-4 text-slate-400">Servicios del Hogar</td>
+              <td class="px-4 py-4"><code class="text-xs font-mono px-1.5 py-0.5 rounded" style="background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)">home-services</code></td>
+              <td class="px-4 py-4 font-mono text-white">8</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(96,165,250,.12);color:#60a5fa;border:1px solid rgba(96,165,250,.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Delete</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0" style="background:rgba(5,15,26,.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)" onclick="document.getElementById('modal').classList.add('hidden')"></div>
+    <div class="relative rounded-2xl w-full max-w-lg mx-4 p-6" style="background:rgba(15,23,42,.95);border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-base font-semibold text-white">New Category</h2>
+        <button onclick="document.getElementById('modal').classList.add('hidden')" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-300" style="background:rgba(255,255,255,.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div><label class="block text-xs font-medium text-slate-400 mb-1.5" for="v4-cat-en">Name (English)</label><input id="v4-cat-en" type="text" placeholder="e.g. Car Rental" class="w-full text-sm rounded-xl px-4 py-2.5"/></div>
+        <div><label class="block text-xs font-medium text-slate-400 mb-1.5" for="v4-cat-es">Name (Spanish)</label><input id="v4-cat-es" type="text" placeholder="e.g. Renta de Autos" class="w-full text-sm rounded-xl px-4 py-2.5"/></div>
+        <div><label class="block text-xs font-medium text-slate-400 mb-1.5" for="v4-cat-slug">Slug</label><input id="v4-cat-slug" type="text" placeholder="e.g. car-rental (auto-generated)" class="w-full text-sm rounded-xl px-4 py-2.5 font-mono"/><p class="text-[11px] text-slate-600 mt-1">Auto-generated from English name if left blank.</p></div>
+        <div><label class="block text-xs font-medium text-slate-400 mb-1.5" for="v4-cat-icon">Icon Name</label><input id="v4-cat-icon" type="text" placeholder="e.g. car, home, star" class="w-full text-sm rounded-xl px-4 py-2.5 font-mono"/></div>
+      </div>
+      <div class="flex items-center justify-end gap-3 mt-6 pt-4" style="border-top:1px solid rgba(255,255,255,.08)">
+        <button onclick="document.getElementById('modal').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-slate-400 rounded-xl hover:text-slate-200" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)">Cancel</button>
+        <button class="px-4 py-2 text-sm font-medium bg-brand-600 text-white rounded-xl hover:bg-brand-500">Create Category</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

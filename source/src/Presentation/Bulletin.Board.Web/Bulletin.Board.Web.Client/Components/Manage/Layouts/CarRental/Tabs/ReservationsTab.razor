@@ -1,0 +1,99 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ReservationsTab (CarRental) — Tab Reservations compartido Regular/VIP.
+     - Regular: card list (Pending / Confirmed) con WhatsApp deep-link + GM copy.
+     - VIP:     tabla densa (customer / vehicle / dates / status / total / WA)
+                + footer "Auto-confirm rules, calendar view, CSV export".
+
+   Reglas:
+     #8 — GmCopyNotice + WhatsAppCtaButton; toda comunicación pasa por WhatsApp
+          y el GM recibe copia por email.
+
+   TODO: API GET /api/v1/listings/{id}/reservations — ya en ReservationService.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-reservations"
+      role="tabpanel"
+      aria-labelledby="tab-reservations"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-3 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_CarRental_Reservations_Title"]
+                @if (IsVip)
+                {
+                    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+                }
+            </h2>
+            <p class="text-sm text-muted mt-0.5">
+                @(IsVip
+                    ? _localizer["Manage_CarRental_Reservations_Subtitle_Vip"]
+                    : _localizer["Manage_CarRental_Reservations_Subtitle_Regular"])
+            </p>
+        </div>
+    </div>
+
+    @if (IsVip)
+    {
+        @* VIP: densely-packed table — TODO: API GET /reservations?withTotals=true *@
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
+                        <tr>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_ReservationsTable_Col_Customer"]</th>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_ReservationsTable_Col_Vehicle"]</th>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_ReservationsTable_Col_Dates"]</th>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_Common_Status"]</th>
+                            <th class="px-4 py-3 text-right">@_localizer["Manage_CarRental_ReservationsTable_Col_Total"]</th>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_ReservationsTable_Col_Channel"]</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-muted text-xs">
+                                @_localizer["Manage_CarRental_Reservations_TableEmpty"]
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-muted mt-3">@_localizer["Manage_CarRental_Reservations_VipFootnote"]</p>
+
+        <div class="mt-4">
+            <GmCopyNotice />
+        </div>
+
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_CarRental_VipFooter_Reservations"]
+        </div>
+    }
+    else
+    {
+        @* Regular: card list placeholder. *@
+        <ManageEmptyState Title="@_localizer["Manage_CarRental_Reservations_Empty_Title"]"
+                          Description="@_localizer["Manage_CarRental_Reservations_Empty_Description"]" />
+
+        <div class="mt-4">
+            <GmCopyNotice />
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public bool IsVip { get; set; }
+}

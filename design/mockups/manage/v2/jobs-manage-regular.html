@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Jobs (Regular tier)
+  =====================================================
+  Mockup: jobs-manage-regular.html
+  Categoría: Jobs
+  Tier: Regular — 1 active posting maximum
+  Tabs: Postings | Applications | Inquiries
+  =====================================================
+  BINDING:
+    - JobPostingDto[]: Id, Title, Type (Full-time|Part-time|Seasonal),
+      Location, PayRange, Description, Status, ApplicationsCount
+    - Regular: only 1 active posting allowed
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Jobs — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'}, ink:'#0f172a', muted:'#64748b' },
+      fontFamily: { sans:['"DM Sans"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+    } } };
+  </script>
+  <style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">K</div>
+    </div>
+  </div>
+</nav>
+
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Kalahari Hiring Desk</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage</h1>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+          <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular tier</span>
+        </div>
+        <p class="text-sm text-muted mt-1">Kalahari Hiring Desk · Jobs</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections">
+      <button type="button" role="tab" aria-selected="true" class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Postings <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">1/1</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Applications <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">8</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Inquiries <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Job postings<!-- ES: Ofertas de trabajo --></h2>
+      <p class="text-sm text-muted mt-0.5">Regular tier supports 1 active posting at a time.</p>
+    </div>
+  </div>
+
+  <ul class="space-y-4" role="list" aria-label="Job postings">
+
+    <!-- Active posting -->
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">Housekeeper — Kalahari Resort</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+            <span class="text-[10px] uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Seasonal · J1 friendly</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">Full-time · $17–$19/hr · Wisconsin Dells · English or Spanish OK</p>
+          <p class="text-ink text-sm mt-2 leading-relaxed">
+            Daily room turnover at Kalahari. 8-hour shifts, weekends required. Lodging available for J1 students at discounted rate. Start ASAP through Labor Day.
+          </p>
+          <div class="flex items-center gap-3 mt-3 flex-wrap text-[11px] text-muted">
+            <span class="inline-flex items-center gap-1"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 8 applications</span>
+            <span>·</span>
+            <span>Posted May 5, 2026</span>
+            <span>·</span>
+            <span>Last updated May 11, 2026</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Edit</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Close posting</button>
+        </div>
+      </div>
+    </li>
+
+    <!-- TierGate: create another posting -->
+    <li class="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6">
+      <div class="flex items-start gap-4 flex-wrap">
+        <div class="flex-shrink-0 w-11 h-11 rounded-2xl bg-white border border-amber-200 flex items-center justify-center shadow-soft">
+          <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm font-semibold text-ink">Post multiple jobs at once — VIP only</h3>
+            <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+          </div>
+          <p class="text-sm text-amber-900 mt-1 leading-relaxed max-w-2xl">
+            Run multiple simultaneous postings, filter applicants by language &amp; J1 status, export to CSV, and unlock the funnel analytics (Applied → Reviewed → Hired).
+          </p>
+          <div class="flex items-center gap-2 mt-4 flex-wrap">
+            <a href="/verification" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-ink hover:bg-slate-800 text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline">
+              Get verified first
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+            <a href="/about/vip" class="text-xs text-amber-900 hover:text-ink font-medium underline-offset-2 hover:underline">Learn about VIP</a>
+          </div>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+</div>
+
+</body>
+</html>

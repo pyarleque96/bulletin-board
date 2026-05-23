@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Dots Wave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 09-dots-wave.html
+    SPEC:   6 puntos en línea horizontal. Cada uno hace bounce vertical
+            con un desfase senoidal escalonado (delay progresivo) creando
+            una ola fluida de izquierda a derecha. Los puntos varían en
+            color del naranja oscuro al naranja muy suave, reforzando
+            la ola con contraste de tono.
+    CUÁNDO: Carga ligera: fetch de listings, cambio de categoría,
+            paginación de resultados.
+    BLAZOR HOOK: Reemplazar <div class="stage"> con <DotsWaveLoader />.
+                 Controlar visibilidad con @if (isLoading).
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      pointer-events: none;
+    }
+
+    /* Fila de puntos */
+    .dots-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      animation: row-intro 0.5s ease-out 0.15s forwards;
+    }
+    @keyframes row-intro {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+
+    /* Bounce con desfase senoidal */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0);     opacity: 0.35; }
+      50%       { transform: translateY(-18px); opacity: 1; }
+    }
+
+    /* 6 puntos: colores naranja degradado + delays escalonados */
+    .dot:nth-child(1) { background: #c2540a; animation-delay: 0s; }
+    .dot:nth-child(2) { background: #ea6b0e; animation-delay: 0.12s; }
+    .dot:nth-child(3) { background: #fd8c1b; animation-delay: 0.24s; }
+    .dot:nth-child(4) { background: #fb923c; animation-delay: 0.36s; }
+    .dot:nth-child(5) { background: #fdba74; animation-delay: 0.48s; }
+    .dot:nth-child(6) { background: #fde8c8; border: 2px solid #fdba74; animation-delay: 0.60s; }
+
+    /* Texto */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: row-intro 0.5s ease-out 0.4s forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .dot { animation: none; opacity: 1; transform: none; }
+      .dots-row, .label { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="dots-row">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Loading listings</p>
+      <p class="text-xs text-slate-400 mt-0.5">Cargando directorio…</p>
+    </div>
+  </div>
+
+</body>
+</html>

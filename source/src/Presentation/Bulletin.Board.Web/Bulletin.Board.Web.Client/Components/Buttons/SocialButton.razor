@@ -1,0 +1,59 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    OAuth / social login button.
+    Used in auth-login and auth-register: "Continue with Google".
+    Designed for dark backgrounds (auth panel background #0B1628).
+*@
+
+<button
+    type="@Type"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@(Disabled || IsLoading)"
+    aria-disabled="@(Disabled || IsLoading)"
+    aria-busy="@IsLoading">
+    @if (IsLoading)
+    {
+        <svg class="w-4 h-4 animate-spin text-white/60" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    }
+    else if (Icon != null)
+    {
+        @Icon
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string ComputedClass =>
+        "w-full flex items-center justify-center gap-2.5 " +
+        "bg-white/5 border border-white/10 rounded-full text-white text-sm font-medium px-5 py-3 " +
+        "transition-[background-color,border-color,transform] duration-200 " +
+        "hover:bg-white/10 hover:border-white/20 hover:-translate-y-px " +
+        "active:translate-y-0 " +
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

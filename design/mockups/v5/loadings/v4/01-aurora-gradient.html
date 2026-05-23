@@ -1,0 +1,280 @@
+<!--
+  SCREEN: 01 — Aurora Gradient Loading
+  SPEC: Fullscreen splash, light theme, white bg #ffffff
+  CUANDO: Cold start / app initialization
+  CONCEPTO: Mesh gradient "aurora boreal" muy sutil en tones naranja/slate/white,
+            wordmark fade-in escalonado con peso display serif para el wordmark únicamente,
+            eyebrow "Curating local providers…" con letter-spacing wide.
+            Inspiración: Linear 2024 launch screen, Vercel splash.
+            HIGH-END: Soft Structuralism vibe — no es dark, no es neón.
+            El aurora es casi invisible (opacity 0.12-0.18), la tipografía manda.
+  BLAZOR HOOK: En App.razor, mostrar este componente hasta que el primer
+               NavigationManager.NavigateTo() resuelva (flag IsReady).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC: critical paint before Tailwind CDN ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    /* ── Stage: fullscreen centered — CSS fallback, not Tailwind ── */
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Aurora mesh — three radial gradients composited ── */
+    .aurora-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      animation: aurora-intro 1.8s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes aurora-intro { to { opacity: 1; } }
+
+    .aurora-blob-1 {
+      position: absolute;
+      width: 70vmax;
+      height: 70vmax;
+      top: -20vmax;
+      right: -15vmax;
+      background: radial-gradient(ellipse at center,
+        rgba(253,140,27,0.10) 0%,
+        rgba(254,243,226,0.08) 40%,
+        transparent 70%);
+      animation: aurora-drift-1 14s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
+      will-change: transform;
+    }
+    .aurora-blob-2 {
+      position: absolute;
+      width: 60vmax;
+      height: 60vmax;
+      bottom: -15vmax;
+      left: -10vmax;
+      background: radial-gradient(ellipse at center,
+        rgba(100,116,139,0.07) 0%,
+        rgba(241,245,249,0.06) 45%,
+        transparent 70%);
+      animation: aurora-drift-2 18s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
+      will-change: transform;
+    }
+    .aurora-blob-3 {
+      position: absolute;
+      width: 50vmax;
+      height: 50vmax;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center,
+        rgba(253,140,27,0.06) 0%,
+        transparent 65%);
+      animation: aurora-drift-3 22s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
+      will-change: transform;
+    }
+
+    @keyframes aurora-drift-1 {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(-4vw, 3vh) scale(1.08); }
+    }
+    @keyframes aurora-drift-2 {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(3vw, -4vh) scale(1.12); }
+    }
+    @keyframes aurora-drift-3 {
+      from { transform: translateX(-50%) scale(1) rotate(-3deg); }
+      to   { transform: translateX(-50%) scale(1.1) rotate(3deg); }
+    }
+
+    /* ── Wordmark ── */
+    .wordmark-wrap {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: wm-enter 0.9s cubic-bezier(0.32,0.72,0,1) 0.55s forwards;
+    }
+    @keyframes wm-enter {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Display serif for wordmark only */
+    .wm-bulletin {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      line-height: 1;
+      display: block;
+    }
+    .wm-dells {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: -0.02em;
+      color: #fd8c1b;
+      line-height: 1;
+      display: block;
+      margin-top: -0.05em;
+    }
+
+    /* Divider line */
+    .wm-line {
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #cbd5e1 30%, #fd8c1b 50%, #cbd5e1 70%, transparent);
+      margin: 1.5rem auto;
+      animation: line-expand 0.8s cubic-bezier(0.32,0.72,0,1) 1.05s forwards;
+    }
+    @keyframes line-expand {
+      to { width: 160px; }
+    }
+
+    /* Eyebrow */
+    .eyebrow {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      opacity: 0;
+      animation: eyebrow-in 0.7s cubic-bezier(0.32,0.72,0,1) 1.3s forwards;
+    }
+    @keyframes eyebrow-in {
+      to { opacity: 1; }
+    }
+
+    /* Dot-pulse after eyebrow text */
+    .dot-pulse {
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .dot-pulse span {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      animation: dp 1.4s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dp {
+      0%,80%,100% { opacity: 0.2; transform: scale(0.8); }
+      40%          { opacity: 1;   transform: scale(1.3); }
+    }
+
+    /* Language badge */
+    .lang-badge {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #64748b;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.2rem 0.65rem;
+      display: inline-block;
+      margin-top: 2.5rem;
+      opacity: 0;
+      animation: eyebrow-in 0.6s cubic-bezier(0.32,0.72,0,1) 1.6s forwards;
+    }
+
+    /* ── Thin bottom progress line ── */
+    .progress-track {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #f1f5f9;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fde8c8, #fd8c1b);
+      animation: progress-run 2.8s cubic-bezier(0.32,0.72,0,1) 0.4s forwards;
+      width: 0;
+    }
+    @keyframes progress-run {
+      0%   { width: 0; opacity: 1; }
+      85%  { width: 92%; opacity: 1; }
+      95%  { width: 100%; opacity: 1; }
+      100% { width: 100%; opacity: 0; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading Bulletin Dells · Cargando Bulletin Dells">
+
+    <!-- Aurora mesh background -->
+    <div class="aurora-layer" aria-hidden="true">
+      <div class="aurora-blob-1"></div>
+      <div class="aurora-blob-2"></div>
+      <div class="aurora-blob-3"></div>
+    </div>
+
+    <!-- Wordmark block -->
+    <div class="wordmark-wrap">
+      <span class="wm-bulletin">Bulletin</span>
+      <span class="wm-dells">Dells</span>
+      <div class="wm-line"></div>
+
+      <!-- Eyebrow — EN/ES bilingual -->
+      <p class="eyebrow">
+        Curating local providers
+        <span aria-hidden="true"> · </span>
+        Preparando proveedores
+        <span class="dot-pulse" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+      </p>
+
+      <!-- Language hint badge -->
+      <span class="lang-badge" aria-hidden="true">EN · ES · Wisconsin Dells</span>
+    </div>
+
+    <!-- Bottom progress line -->
+    <!-- BLAZOR HOOK: Replace with NavigationManager progress event -->
+    <div class="progress-track" aria-hidden="true">
+      <div class="progress-fill"></div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@*
+    SkeletonListingCard — placeholder con shimmer para una card del index
+    /manage. Reusable durante carga inicial y en infinity scroll.
+*@
+
+<li class="bg-white rounded-2xl border border-slate-100 p-5" aria-hidden="true">
+    <div class="flex gap-4 items-start">
+        <div class="w-20 h-20 rounded-xl manage-skeleton flex-shrink-0"></div>
+        <div class="flex-1 space-y-2 min-w-0">
+            <div class="h-3 manage-skeleton w-1/4"></div>
+            <div class="h-4 manage-skeleton w-1/2"></div>
+            <div class="h-3 manage-skeleton w-3/4"></div>
+        </div>
+    </div>
+</li>
+
+<style>
+    @@keyframes manage-skeleton-shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .manage-skeleton {
+        background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+        background-size: 200% 100%;
+        animation: manage-skeleton-shimmer 1.6s linear infinite;
+        border-radius: 6px;
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .manage-skeleton { animation: none; }
+    }
+</style>

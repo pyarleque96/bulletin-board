@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Housing · Inquiries (VIP)
+     Diferencias vs housing-inquiries-panel.html (v2 Regular):
+     - Auto-reply visible (VIP feature) con preview del mensaje
+     - Métricas (response rate, avg first-reply time, last 30d)
+     - Filtros adicionales: por property, por date range
+     - Templates de respuesta pre-aprobados por GM
+     Regla #8 igual. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Housing · Inquiries VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">M</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Northwoods Premier Stays</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Northwoods Premier Stays</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">Housing</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/availability" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Availability</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Inquiries <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span></span>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/analytics" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Analytics <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Open inquiries</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">7</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Response rate</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">96%</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Avg first reply</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">42m</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">→ Booking conv.</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">34%</p></div>
+  </section>
+
+  <!-- Auto-reply VIP card -->
+  <div class="mb-5 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
+      <div class="flex-1 min-w-[240px]">
+        <h3 class="text-sm font-semibold text-ink inline-flex items-center gap-2">Auto-reply <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></h3>
+        <p class="text-xs text-muted mt-0.5">Sends a WhatsApp message within seconds of a new inquiry. GM is still copied.</p>
+        <p class="text-[11px] text-ink mt-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100"><em>"Thanks for reaching out! I'll reply with full details within the hour. Meanwhile, you can see availability at: …"</em></p>
+      </div>
+      <label class="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" checked class="sr-only peer"/>
+        <span class="w-10 h-6 bg-slate-200 peer-checked:bg-brand-500 rounded-full relative transition-colors"><span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span></span>
+        <span class="text-xs font-medium text-ink">Enabled</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- GM copy banner -->
+  <div class="mb-5 flex items-start gap-3 px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200" role="note">
+    <svg class="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <p class="text-xs text-ink"><strong>GM is copied</strong> on every inquiry thread, including auto-replies.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group">
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white">All</button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">New <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 rounded-full">7</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Auto-replied</button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Replied</button>
+    <select class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-ink border-0"><option>All properties</option><option>Lakefront Lodge</option><option>Downtown Loft</option></select>
+  </div>
+
+  <!-- Inquiries -->
+  <ul class="space-y-3" role="list">
+    <li class="bg-white rounded-3xl border border-amber-200 shadow-soft p-5">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap"><h3 class="font-semibold text-ink">Ana Beatriz Rivera</h3><span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">New</span><span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Auto-replied · 12s</span></div>
+          <p class="text-[11px] text-muted mt-1">+1 (312) 847-1928</p>
+          <p class="text-sm text-ink mt-2"><strong>Lakefront Lodge · 4BR</strong> · Jun 12 → Jun 16 · 2 adults, 1 child</p>
+          <p class="text-muted text-sm mt-2 leading-relaxed">Hola, viajamos en familia con un niño de 4 años. ¿La cabaña tiene cuna o algún espacio seguro para él?</p>
+        </div>
+        <div class="flex flex-col items-end gap-1.5">
+          <a href="https://wa.me/13128471928" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#25D366] hover:bg-[#1da851] text-white text-xs font-semibold no-underline">Reply on WhatsApp</a>
+          <div class="flex items-center gap-1.5 mt-1">
+            <button class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-brand-100 hover:text-brand-700 border border-slate-200">Template · Family EN</button>
+            <button class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-brand-100 hover:text-brand-700 border border-slate-200">Template · Familia ES</button>
+          </div>
+        </div>
+      </div>
+      <p class="text-[11px] text-muted mt-3 pt-3 border-t border-slate-100">GM receives a copy of every conversation.</p>
+    </li>
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap"><h3 class="font-semibold text-ink">Tyler O. Hoffmann</h3><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Replied</span></div>
+          <p class="text-sm text-ink mt-2"><strong>Downtown Loft · 1BR</strong> · Jul 4 → Jul 8</p>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Auto-reply, reply templates, inquiry analytics
+  </div>
+</main>
+</body>
+</html>

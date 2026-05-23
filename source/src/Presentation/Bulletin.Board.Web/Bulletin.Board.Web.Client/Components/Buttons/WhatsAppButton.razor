@@ -1,0 +1,101 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Renders as <a> when WhatsAppNumber is provided (deep-link wa.me).
+    Renders as <button> when OnClick is bound (e.g. to open waiver modal first).
+    Both paths are mutually exclusive — prefer OnClick for waiver-gated flows.
+*@
+
+@if (!string.IsNullOrEmpty(WhatsAppNumber))
+{
+    <a href="@BuildWhatsAppHref()"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="@ComputedClass"
+       aria-label="@(string.IsNullOrEmpty(AriaLabel) ? "Contact via WhatsApp" : AriaLabel)">
+        @ButtonContent
+    </a>
+}
+else
+{
+    <button
+        type="@Type"
+        class="@ComputedClass"
+        @onclick="HandleClick"
+        disabled="@(Disabled || IsLoading)"
+        aria-disabled="@(Disabled || IsLoading)"
+        aria-busy="@IsLoading"
+        aria-label="@(string.IsNullOrEmpty(AriaLabel) ? "Contact via WhatsApp" : AriaLabel)">
+        @ButtonContent
+    </button>
+}
+
+@code {
+    [Parameter] public string Text { get; set; } = "WhatsApp";
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>When set, renders as anchor linking directly to wa.me deep link.</summary>
+    [Parameter] public string? WhatsAppNumber { get; set; }
+
+    /// <summary>Pre-filled message appended to the wa.me URL.</summary>
+    [Parameter] public string PrefilledMessage { get; set; } = "Hi, I found your listing on Bulletin Dells.";
+
+    /// <summary>
+    /// "full" — full width, py-3.5, rounded-2xl (detail page CTA).
+    /// "compact" — flex-1, py-2, rounded-xl (card row buttons).
+    /// "pill" — px-5 py-2.5, rounded-full (listing card action).
+    /// </summary>
+    [Parameter] public string Size { get; set; } = "pill";
+
+    private string SizeClass => Size switch
+    {
+        "full"    => "w-full py-3.5 rounded-2xl text-sm",
+        "compact" => "flex-1 py-2 rounded-xl text-xs",
+        _         => "px-5 py-2.5 rounded-full text-sm"
+    };
+
+    private string ComputedClass =>
+        $"flex items-center justify-center gap-2 bg-green-500 text-white font-medium {SizeClass} " +
+        "transition-[transform,box-shadow,background-color] duration-200 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] " +
+        "hover:bg-green-600 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-4px_rgba(34,197,94,0.35)] " +
+        "active:scale-[0.98] active:translate-y-0 " +
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private RenderFragment ButtonContent =>
+        @<text>
+            @if (IsLoading)
+            {
+                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+            }
+            else
+            {
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                </svg>
+            }
+            <span>@Text</span>
+        </text>;
+
+    private string BuildWhatsAppHref()
+    {
+        var number = WhatsAppNumber!.Replace("+", "").Replace(" ", "").Replace("-", "");
+        var msg = Uri.EscapeDataString(PrefilledMessage);
+        return $"https://wa.me/{number}?text={msg}";
+    }
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3B82F6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            'soft': '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift': '0 12px 40px -8px rgba(30,41,59,0.14)',
+            'float': '0 24px 64px -12px rgba(30,41,59,0.18)',
+          },
+          transitionTimingFunction: {
+            'spring': 'cubic-bezier(0.32,0.72,0,1)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    .auth-bg {
+      background: linear-gradient(145deg, #071526 0%, #0D1E33 45%, #132840 80%, #1A3350 100%);
+    }
+    .page-bg {
+      background: #0B1628;
+    }
+
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 70px 70px;
+      pointer-events: none;
+    }
+
+    .grain-overlay {
+      position: fixed; inset: 0; z-index: 50; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+
+    /* Form entrance animation */
+    @keyframes form-enter {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-enter {
+      animation: form-enter 0.55s cubic-bezier(0.32,0.72,0,1) both;
+    }
+    .form-enter-delay {
+      animation: form-enter 0.55s cubic-bezier(0.32,0.72,0,1) 0.1s both;
+    }
+    .form-enter-delay-2 {
+      animation: form-enter 0.55s cubic-bezier(0.32,0.72,0,1) 0.2s both;
+    }
+
+    /* Floating orbs on left panel */
+    @keyframes orb-float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-18px) scale(1.04); }
+    }
+    .orb-1 { animation: orb-float 7s ease-in-out infinite; }
+    .orb-2 { animation: orb-float 9s ease-in-out infinite 1.5s; }
+    .orb-3 { animation: orb-float 6s ease-in-out infinite 3s; }
+
+    /* Input states — matches register */
+    .auth-input {
+      background: rgba(255,255,255,0.03);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.875rem;
+      padding: 0.625rem 0.875rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+    .auth-input::placeholder { color: rgba(255,255,255,0.25); }
+    .auth-input:focus {
+      border-color: #3B82F6;
+      background: rgba(59,130,246,0.055);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.13);
+    }
+    .auth-input.error {
+      border-color: #f87171;
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.13);
+    }
+
+    /* Custom checkbox — matches register */
+    .auth-checkbox {
+      width: 15px; height: 15px;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      accent-color: #F97316;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Social button — matches register */
+    .social-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      border-radius: 50px;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.6rem 1.125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      font-family: inherit;
+    }
+    .social-btn:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+    .social-btn:active { transform: translateY(0); }
+
+    /* Primary button — matches register */
+    .btn-primary {
+      background: #F97316;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 0.75rem 1.5rem;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(249,115,22,0.32);
+      font-family: inherit;
+    }
+    .btn-primary:hover {
+      background: #ea6c0a;
+      box-shadow: 0 6px 24px rgba(249,115,22,0.42);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(249,115,22,0.28); }
+
+    /* Divider — matches register */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: rgba(255,255,255,0.22);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.09);
+    }
+
+    /* Testimonial card on left panel */
+    .testimonial-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    /* Field label — matches register */
+    .field-label {
+      display: block;
+      color: rgba(255,255,255,0.48);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.065em;
+      margin-bottom: 0.3rem;
+    }
+
+    /* Input icon */
+    .input-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.25);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="font-sans page-bg" style="min-height:100dvh; overflow:hidden;">
+  <div class="grain-overlay"></div>
+
+  <!-- Layout: split screen -->
+  <div style="display:flex; min-height:100dvh; height:100dvh; overflow:hidden;">
+
+    <!-- LEFT PANEL — branding (hidden on mobile) -->
+    <div class="auth-bg relative hidden lg:flex flex-col justify-between px-10 py-10 lg:px-14 lg:py-12 overflow-hidden flex-shrink-0" style="width: 44%;">
+      <div class="grid-lines"></div>
+
+      <!-- Decorative orbs -->
+      <div class="orb-1 absolute top-1/4 right-10 w-64 h-64 rounded-full pointer-events-none" style="background:radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);"></div>
+      <div class="orb-2 absolute bottom-1/3 left-0 w-80 h-80 rounded-full pointer-events-none" style="background:radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);"></div>
+      <div class="orb-3 absolute top-2/3 right-1/4 w-48 h-48 rounded-full pointer-events-none" style="background:radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);"></div>
+
+      <!-- Logo -->
+      <div class="relative z-10 form-enter" style="animation-delay:0.05s;">
+        <a href="landing.html" class="inline-flex items-center gap-2.5 group">
+          <div class="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center shadow-lift transition-transform group-hover:scale-105">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" fill="white" fill-opacity="0.9"/>
+              <path d="M9 21V12h6v9" fill="white" fill-opacity="0.6"/>
+            </svg>
+          </div>
+          <span class="text-white font-semibold text-lg tracking-tight">Bulletin Dells</span>
+        </a>
+      </div>
+
+      <!-- Center content -->
+      <div class="relative z-10 flex-1 flex flex-col justify-center py-6 form-enter" style="animation-delay:0.15s;">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);width:fit-content;align-self:flex-start;">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
+          <span class="text-white/70 text-xs font-medium uppercase tracking-widest">Wisconsin Dells, WI</span>
+        </div>
+        <h1 class="font-bold text-white leading-tight tracking-tight mb-4" style="font-size:3rem;">
+          Your local<br/>community,<br/><span style="color:#F97316;">one tap away.</span>
+        </h1>
+        <p class="text-white/55 text-base font-light leading-relaxed mb-2" style="max-width:30ch;">
+          Housing, rides, mechanics, beauty services and more.
+        </p>
+        <p class="text-white/30 text-sm mb-8">
+          Tu comunidad local, al alcance de un toque.
+        </p>
+
+        <!-- Stats row -->
+        <div class="flex gap-8">
+          <div>
+            <p class="text-white font-bold text-2xl">500+</p>
+            <p class="text-white/40 text-xs mt-0.5">Listings verified</p>
+          </div>
+          <div class="w-px bg-white/10"></div>
+          <div>
+            <p class="text-white font-bold text-2xl">9</p>
+            <p class="text-white/40 text-xs mt-0.5">Categories</p>
+          </div>
+          <div class="w-px bg-white/10"></div>
+          <div>
+            <p class="text-white font-bold text-2xl">EN/ES</p>
+            <p class="text-white/40 text-xs mt-0.5">Bilingual</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial card at bottom -->
+      <div class="relative z-10 hidden lg:block form-enter" style="animation-delay:0.28s;">
+        <div class="testimonial-card p-4 max-w-xs">
+          <div class="flex gap-1 mb-2">
+            <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="text-white/70 text-xs leading-relaxed">"Found my apartment through Bulletin Dells in one day. Super easy and trustworthy."</p>
+          <div class="flex items-center gap-2 mt-3">
+            <div class="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold">M</div>
+            <div>
+              <p class="text-white/80 text-xs font-medium">María G.</p>
+              <p class="text-white/30 text-xs">J1 Student · 2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL — form -->
+    <div class="flex-1 flex items-center justify-center px-5 py-4 overflow-y-auto" style="background:#0B1628;">
+      <div class="w-full max-w-[400px]">
+
+        <!-- Mobile logo (only visible < lg) -->
+        <div class="lg:hidden mb-4 flex items-center justify-center gap-2">
+          <div class="w-7 h-7 bg-brand-500 rounded-lg flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" fill="white" fill-opacity="0.9"/>
+              <path d="M9 21V12h6v9" fill="white" fill-opacity="0.6"/>
+            </svg>
+          </div>
+          <span class="text-white font-semibold text-sm tracking-tight">Bulletin Dells</span>
+        </div>
+
+        <!-- Header -->
+        <div class="form-enter mb-7">
+          <h1 class="text-white font-bold tracking-tight mb-1" style="font-size:3rem;">Welcome back</h1>
+          <p class="text-white/40 text-xs">
+            Bienvenido de vuelta &middot; Sign in to your account
+          </p>
+        </div>
+
+        <!-- Form -->
+        <form class="form-enter-delay space-y-4" onsubmit="handleLogin(event)">
+
+          <!-- Email / Phone -->
+          <div>
+            <label for="email" class="field-label">Email or Phone &middot; Correo o Teléfono</label>
+            <div class="relative">
+              <span class="input-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+              </span>
+              <input
+                id="email"
+                type="text"
+                placeholder="you@email.com or +1 608..."
+                class="auth-input pl-10"
+                autocomplete="username"
+              />
+            </div>
+            <p class="error-msg text-red-400 text-xs mt-1 hidden" id="email-error">Please enter a valid email or phone number.</p>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="flex justify-between items-center" style="margin-bottom:0.3rem;">
+              <label for="password" class="field-label" style="margin-bottom:0;">Password &middot; Contraseña</label>
+              <a href="#" class="text-xs text-brand-500 hover:text-brand-400 transition-colors font-medium">Forgot password?</a>
+            </div>
+            <div class="relative">
+              <span class="input-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              </span>
+              <input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                class="auth-input pl-10 pr-11"
+                autocomplete="current-password"
+              />
+              <button type="button" onclick="togglePassword('password', 'eye-icon')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/28 hover:text-white/60 transition-colors focus:outline-none cursor-pointer" aria-label="Toggle password visibility">
+                <svg id="eye-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <p class="error-msg text-red-400 text-xs mt-1 hidden" id="password-error">Password is required.</p>
+          </div>
+
+          <!-- Remember me -->
+          <div class="flex items-center gap-2 pt-0.5">
+            <input type="checkbox" id="remember" class="auth-checkbox" />
+            <label for="remember" class="text-white/40 text-xs cursor-pointer select-none">Remember me for 30 days</label>
+          </div>
+
+          <!-- Submit -->
+          <div class="pt-1">
+            <button type="submit" class="btn-primary">
+              Sign in &middot; Iniciar sesión
+            </button>
+          </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="form-enter-delay-2 mt-3 mb-2.5">
+          <div class="divider">or continue with</div>
+        </div>
+
+        <!-- Google -->
+        <div class="form-enter-delay-2">
+          <button class="social-btn" type="button">
+            <svg width="16" height="16" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
+
+        <!-- Footer links -->
+        <div class="flex items-center justify-between mt-3">
+          <a href="home-listings.html" class="text-white/20 text-xs hover:text-white/40 transition-colors">
+            &larr; Back to Bulletin Dells
+          </a>
+          <p class="text-white/32 text-xs">
+            No account?
+            <a href="auth-register.html" class="text-accent hover:text-orange-400 font-semibold transition-colors ml-0.5">
+              Create one &middot; Regístrate
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      icon.innerHTML = isHidden
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      let valid = true;
+
+      const email = document.getElementById('email');
+      const emailError = document.getElementById('email-error');
+      if (!email.value.trim()) {
+        email.classList.add('error');
+        emailError.classList.remove('hidden');
+        valid = false;
+      } else {
+        email.classList.remove('error');
+        emailError.classList.add('hidden');
+      }
+
+      const password = document.getElementById('password');
+      const passwordError = document.getElementById('password-error');
+      if (!password.value.trim()) {
+        password.classList.add('error');
+        passwordError.classList.remove('hidden');
+        valid = false;
+      } else {
+        password.classList.remove('error');
+        passwordError.classList.add('hidden');
+      }
+
+      if (valid) {
+        // Redirect on success (placeholder)
+        window.location.href = 'home-listings.html';
+      }
+    }
+  </script>
+</body>
+</html>

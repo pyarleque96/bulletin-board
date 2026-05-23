@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Spinner Fullscreen Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 02-spinner-fullscreen.html
+    SPEC:   Overlay fullscreen que bloquea interacción durante operaciones
+            async: envío de formulario, carga de datos tras navegación,
+            procesamiento de waiver, subida de fotos.
+    CUÁNDO: @bind-isLoading="true" en componentes Blazor que disparan
+            awaitable tasks. Mensaje configurable vía parámetro @Message.
+    NOTA:   El backdrop NO es completamente opaco para dar sensación de
+            continuidad (el contenido de fondo se ve desenfocado, no negro).
+    BLAZOR: <SpinnerOverlay IsVisible="@isLoading" Message="@loadingMsg" />
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;  /* simula página de fondo */
+      min-height: 100dvh;
+    }
+
+    /* ---- Spinner circular con track ---- */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .spinner-ring {
+      width: 52px;
+      height: 52px;
+      border: 4px solid #fde8c8;
+      border-top-color: #fd8c1b;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    /* ---- Versión compacta (inline, no fullscreen) ---- */
+    .spinner-sm {
+      width: 24px;
+      height: 24px;
+      border: 2.5px solid #fde8c8;
+      border-top-color: #fd8c1b;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    /* ---- Entrada del overlay ---- */
+    @keyframes overlay-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .overlay-enter {
+      animation: overlay-in 0.2s ease forwards;
+    }
+
+    /* ---- Panel central ---- */
+    @keyframes panel-in {
+      from { opacity: 0; transform: translateY(8px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .panel-enter {
+      animation: panel-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: 0.05s;
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .spinner-ring, .spinner-sm {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     CONTENIDO DE FONDO (simulado — en Blazor será la página real)
+     ================================================================ -->
+<div class="p-8 max-w-6xl mx-auto" aria-hidden="true">
+  <div style="background:#f1f5f9; border-radius:8px; height:60px; margin-bottom:24px;"></div>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+    <div style="background:#f1f5f9; border-radius:8px; height:200px;"></div>
+    <div style="background:#f1f5f9; border-radius:8px; height:200px;"></div>
+    <div style="background:#f1f5f9; border-radius:8px; height:200px;"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     OVERLAY FULLSCREEN
+     BLAZOR HOOK: @if (isLoading) { <div class="bd-overlay"> ... </div> }
+     El div con role="dialog" debe recibir focus al montarse:
+     @ref="overlayRef" y JS interop FocusAsync() en OnAfterRenderAsync.
+     ================================================================ -->
+<div
+  class="overlay-enter fixed inset-0 z-50 flex items-center justify-center"
+  style="background: rgba(255,255,255,0.88); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Procesando / Processing"
+  aria-live="assertive"
+>
+
+  <!-- Panel central -->
+  <div
+    class="panel-enter flex flex-col items-center gap-5 rounded-2xl bg-white px-10 py-8"
+    style="box-shadow: 0 8px 40px -8px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04); min-width: 240px;"
+  >
+
+    <!-- Spinner -->
+    <div class="spinner-ring" aria-hidden="true"></div>
+
+    <!-- Mensaje configurable -->
+    <!-- BLAZOR: @Message ?? "Procesando… / Processing…" -->
+    <div class="flex flex-col items-center gap-1 text-center">
+      <p class="text-sm font-semibold" style="color: #1e293b;">
+        Procesando…
+        <span class="font-normal" style="color: #94a3b8;"> / </span>
+        Processing…
+      </p>
+      <!-- Sub-mensaje opcional — ocultar si no aplica -->
+      <p class="text-xs" style="color: #94a3b8;">Esto puede tomar unos segundos · This may take a moment</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================
+     VARIANTE: Spinner sin panel (solo icono + texto, centro de pantalla)
+     BLAZOR: usa como alternativa para operaciones muy rápidas (<500ms)
+     ================================================================ -->
+<section class="mt-16 p-8">
+  <p class="text-xs font-medium uppercase tracking-widest mb-6" style="color:#94a3b8;">
+    Variante — Sin panel / Variant — No panel
+  </p>
+
+  <!-- Versión solo spinner + texto, sin tarjeta -->
+  <div
+    class="flex flex-col items-center gap-4"
+    role="status"
+    aria-label="Cargando / Loading"
+    aria-live="polite"
+  >
+    <div class="spinner-ring" aria-hidden="true"></div>
+    <p class="text-sm font-medium" style="color: #1e293b;">
+      Cargando
+      <span style="color:#94a3b8;"> / </span>
+      Loading
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================
+     VARIANTE: Spinner compacto (sm) para uso inline
+     ================================================================ -->
+<section class="p-8">
+  <p class="text-xs font-medium uppercase tracking-widest mb-6" style="color:#94a3b8;">
+    Variante — Spinner compacto / Compact Spinner
+  </p>
+  <div class="flex items-center gap-3">
+    <div class="spinner-sm" aria-hidden="true"></div>
+    <span class="text-sm font-medium" style="color:#1e293b;">
+      Verificando datos… / Verifying data…
+    </span>
+  </div>
+</section>
+
+</body>
+</html>

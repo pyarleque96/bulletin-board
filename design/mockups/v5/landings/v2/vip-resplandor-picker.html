@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VIP Resplandor — Animation Picker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { background:#050B14; font-family:'DM Sans',sans-serif; color:#E2E8F0; min-height:100vh; padding:48px 24px; }
+
+  /* Para Opción 5 (gradient angle) — requiere @property */
+  @property --vipAngle {
+    syntax: '<angle>';
+    initial-value: 135deg;
+    inherits: false;
+  }
+
+  /* Base del nodo grande para showcase (96x96 para que se vea bien) */
+  .node {
+    width: 96px; height: 96px; border-radius: 1.25rem;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 900; font-size: 1.75rem;
+    border: 1px solid rgba(249,115,22,0.45);
+    box-shadow:
+      0 0 0 1px rgba(249,115,22,0.50),
+      0 0 28px rgba(249,115,22,0.50),
+      0 0 40px -4px rgba(96,165,250,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Gradient base reutilizable */
+  .grad {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+  }
+
+  /* ═══ OPCIÓN 1 — Diagonal Flow (actual en v3) ═══ */
+  .o1 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 250% 250%;
+    background-position: 0% 0%;
+    animation: o1Flow 5s ease-in-out infinite;
+  }
+  @keyframes o1Flow {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 100% 100%; }
+  }
+
+  /* ═══ OPCIÓN 2 — Horizontal Flow (izq ↔ der) ═══ */
+  .o2 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 300% 100%;
+    background-position: 0% 50%;
+    animation: o2Horizontal 4s ease-in-out infinite;
+  }
+  @keyframes o2Horizontal {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+
+  /* ═══ OPCIÓN 3 — Vertical Flow (arriba ↔ abajo) ═══ */
+  .o3 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 100% 300%;
+    background-position: 50% 0%;
+    animation: o3Vertical 4s ease-in-out infinite;
+  }
+  @keyframes o3Vertical {
+    0%, 100% { background-position: 50% 0%; }
+    50%      { background-position: 50% 100%; }
+  }
+
+  /* ═══ OPCIÓN 4 — Conic Rotation (rotación circular completa) ═══ */
+  .o4 {
+    background: conic-gradient(from 0deg, #60a5fa, #c4b5fd, #fb923c, #F97316, #fb923c, #c4b5fd, #60a5fa);
+    animation: o4Conic 8s linear infinite;
+  }
+  @keyframes o4Conic {
+    from { background: conic-gradient(from 0deg, #60a5fa, #c4b5fd, #fb923c, #F97316, #fb923c, #c4b5fd, #60a5fa); }
+    to   { background: conic-gradient(from 360deg, #60a5fa, #c4b5fd, #fb923c, #F97316, #fb923c, #c4b5fd, #60a5fa); }
+  }
+
+  /* ═══ OPCIÓN 5 — Linear Angle Sweep (el ángulo del gradiente rota) ═══ */
+  .o5 {
+    background: linear-gradient(var(--vipAngle), #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    animation: o5Angle 5s linear infinite;
+  }
+  @keyframes o5Angle {
+    from { --vipAngle: 0deg; }
+    to   { --vipAngle: 360deg; }
+  }
+
+  /* ═══ OPCIÓN 6 — Diagonal Flow + Outer Halo Breath (combo suave) ═══ */
+  .o6 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 250% 250%;
+    animation:
+      o6Flow 5s ease-in-out infinite,
+      o6Breath 3.6s cubic-bezier(0.45,0,0.55,1) infinite;
+  }
+  @keyframes o6Flow {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 100% 100%; }
+  }
+  @keyframes o6Breath {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.50),
+        0 0 28px rgba(249,115,22,0.50),
+        0 0 40px -4px rgba(96,165,250,0.35);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.65),
+        0 0 48px rgba(249,115,22,0.80),
+        0 0 68px -4px rgba(96,165,250,0.60);
+    }
+  }
+
+  /* ═══ OPCIÓN 7 — Gradient + Moving Specular (foco se mueve por encima) ═══ */
+  .o7 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+  }
+  .o7::before {
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 25%, transparent 50%);
+    animation: o7Specular 4s ease-in-out infinite;
+    mix-blend-mode: soft-light;
+    pointer-events:none;
+  }
+  @keyframes o7Specular {
+    0%, 100% { background-position: 0% 0%; opacity: 0.8; }
+    50%      { background-position: 100% 100%; opacity: 1; }
+  }
+
+  /* ═══ OPCIÓN 8 — Hue Shift (los colores cambian de tonalidad sutil) ═══ */
+  .o8 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    animation: o8Hue 6s ease-in-out infinite;
+  }
+  @keyframes o8Hue {
+    0%, 100% { filter: hue-rotate(0deg) saturate(1); }
+    50%      { filter: hue-rotate(-15deg) saturate(1.25); }
+  }
+
+  /* ═══ OPCIÓN 9 — Brightness Pulse (el gradient brilla más/menos) ═══ */
+  .o9 {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    animation: o9Pulse 3.2s ease-in-out infinite;
+  }
+  @keyframes o9Pulse {
+    0%, 100% { filter: brightness(1) saturate(1); }
+    50%      { filter: brightness(1.18) saturate(1.20); }
+  }
+
+  /* ═══ OPCIÓN 10 — Doble capa contrarrotante (estilo aceite/holograma) ═══ */
+  .o10 {
+    background:
+      linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 250% 250%;
+    animation: o10Flow 6s ease-in-out infinite;
+  }
+  .o10::before {
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.30) 50%, transparent 70%);
+    background-size: 250% 250%;
+    background-position: 100% 0%;
+    animation: o10Sheen 6s ease-in-out infinite;
+    mix-blend-mode: overlay;
+    pointer-events:none;
+  }
+  @keyframes o10Flow {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 100% 100%; }
+  }
+  @keyframes o10Sheen {
+    0%, 100% { background-position: 100% 0%; }
+    50%      { background-position: 0% 100%; }
+  }
+
+  .card { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+  .num { font-family:'DM Sans'; font-weight:900; color: rgba(255,255,255,0.30); font-size: 0.625rem; letter-spacing: 0.18em; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.62rem; color: rgba(255,255,255,0.55); line-height: 1.55; word-break: break-word; display: block; }
+  .desc { font-size: 0.78rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-3xl font-black tracking-tight mb-2 text-white">VIP Resplandor — 10 Animation Options</h1>
+  <p class="text-white/55 text-sm mb-10">Todas usan el mismo gradient base. La diferencia es el tipo de movimiento. Dime el número (ej: "quiero la 4") y lo aplico al step 5 del timeline.</p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 01 · Diagonal Flow (actual)</div>
+      <div class="flex justify-center py-2"><div class="node o1"><span>5</span></div></div>
+      <p class="desc">El gradient se desliza de esquina superior-izquierda a inferior-derecha y vuelve. Suave y direccional.</p>
+      <code>background-size: 250%; background-position: 0%,0% → 100%,100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 02 · Horizontal Flow</div>
+      <div class="flex justify-center py-2"><div class="node o2"><span>5</span></div></div>
+      <p class="desc">El gradient corre solo de izquierda a derecha. Más rápido y lineal — sensación de "barra de carga".</p>
+      <code>background-size: 300% 100%; position: 0%,50% → 100%,50%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 03 · Vertical Flow</div>
+      <div class="flex justify-center py-2"><div class="node o3"><span>5</span></div></div>
+      <p class="desc">Movimiento solo vertical. Sensación de "líquido subiendo/bajando".</p>
+      <code>background-size: 100% 300%; position: 50%,0% → 50%,100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 04 · Conic Rotation</div>
+      <div class="flex justify-center py-2"><div class="node o4"><span>5</span></div></div>
+      <p class="desc">Gradient circular que rota 360° infinitamente. Sensación claramente "tornasolado / holograma 360°".</p>
+      <code>conic-gradient(from Xdeg, ...) — anima X de 0° a 360°</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 05 · Angle Sweep</div>
+      <div class="flex justify-center py-2"><div class="node o5"><span>5</span></div></div>
+      <p class="desc">El ángulo del linear-gradient rota 360°. La línea celeste→naranja gira como una manecilla de reloj.</p>
+      <code>linear-gradient(var(--vipAngle), ...) — anima --vipAngle 0° → 360°</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 06 · Diagonal Flow + Halo Breath</div>
+      <div class="flex justify-center py-2"><div class="node o6"><span>5</span></div></div>
+      <p class="desc">Mismo movimiento de la 01 pero con el halo exterior pulsando en otra frecuencia. Vivo y orgánico.</p>
+      <code>flow 5s + breath 3.6s (frecuencias distintas)</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 07 · Gradient + Moving Specular</div>
+      <div class="flex justify-center py-2"><div class="node o7"><span>5</span></div></div>
+      <p class="desc">Gradient fijo + un foco blanco soft-light que se mueve por encima. Simula reflejo de luz sobre superficie.</p>
+      <code>radial-gradient blanco con mix-blend-mode: soft-light</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 08 · Hue Shift</div>
+      <div class="flex justify-center py-2"><div class="node o8"><span>5</span></div></div>
+      <p class="desc">El gradient no se mueve, pero sus colores cambian sutilmente de tonalidad. Efecto "cambia de humor".</p>
+      <code>filter: hue-rotate(0° → −15°) + saturate</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 09 · Brightness Pulse</div>
+      <div class="flex justify-center py-2"><div class="node o9"><span>5</span></div></div>
+      <p class="desc">El gradient se ilumina y atenúa en ciclo. Sin movimiento direccional — solo brillo. El más sutil.</p>
+      <code>filter: brightness(1 → 1.18) + saturate(1 → 1.20)</code>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 10 · Doble Capa Aceite</div>
+      <div class="flex justify-center py-2"><div class="node o10"><span>5</span></div></div>
+      <p class="desc">Gradient base + banda blanca diagonal moviéndose en sentido contrario con blend overlay. Efecto "aceite holográfico".</p>
+      <code>flow 6s + sheen 6s contradireccional, mix-blend: overlay</code>
+    </div>
+
+  </div>
+
+  <div class="mt-12 card rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-white mb-3">Cómo aplicar la que prefieras</h2>
+    <p class="text-white/55 text-sm leading-relaxed">Dime el número (ej: "quiero la 4") y la aplico al <code style="color:#fbbf24">.timeline-step.vip .timeline-node</code> de <code style="color:#fbbf24">landing-05-dark-general-v3.html</code>.</p>
+    <p class="text-white/40 text-xs mt-3 italic">Nota: las opciones 4 y 5 requieren navegadores modernos con soporte para <code>@property</code> y <code>conic-gradient</code> (Chrome/Edge/Safari recientes). Las demás funcionan en cualquier navegador.</p>
+  </div>
+</div>
+
+</body>
+</html>

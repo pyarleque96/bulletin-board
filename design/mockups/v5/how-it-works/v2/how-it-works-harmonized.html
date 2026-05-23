@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>How It Works — Harmonized v2 (Dark OLED + VIP gradient)</title>
+<!--
+  HARMONY SCOPE (per user feedback 2026-05-23):
+  - Fonts / weights / sizes / spacing kept identical to original HowItWorks.razor.
+  - ONLY the color palette (dark OLED), gradients (esp. VIP orange on btn-primary
+    + multi-stop VIP gradient on .btn-vip), animations (shimmer sweep, btn-arrow
+    rotate, fade-up, hover-lift) and effects (glass, double bezel, glow auras)
+    are imported from Home's .dell-landing system.
+-->
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['DM Sans','system-ui','sans-serif'] },
+        colors: {
+          accent: { DEFAULT:'#F97316', 400:'#fb923c', 500:'#f97316', 600:'#ea580c' },
+        },
+        transitionTimingFunction: { spring: 'cubic-bezier(0.32,0.72,0,1)' },
+      },
+    },
+  };
+</script>
+<style>
+  /* ============================================================
+     Mirror of app.css `.dell-landing` tokens — kept inline so the
+     mockup is fully self-contained for design review.
+     In production these styles already live in /wwwroot/app.css and
+     the Blazor page only needs to declare <div class="dell-landing">.
+     ============================================================ */
+  :root { color-scheme: dark; }
+  body { margin:0; font-family:'DM Sans',system-ui,sans-serif; background:#050B14; color:#fff; }
+
+  .dell-landing { background:#050B14; color:#fff; position:relative; isolation:isolate; }
+
+  /* Ambient blobs */
+  .dell-landing .page-ambient { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .dell-landing .page-ambient::before, .dell-landing .page-ambient::after {
+    content:''; position:absolute; border-radius:50%; mix-blend-mode:screen; filter:blur(80px); opacity:.55;
+  }
+  .dell-landing .page-ambient::before {
+    width:560px; height:560px; left:-120px; top:-160px;
+    background: radial-gradient(circle, rgba(249,115,22,.35) 0%, transparent 70%);
+  }
+  .dell-landing .page-ambient::after {
+    width:680px; height:680px; right:-180px; top:18%;
+    background: radial-gradient(circle, rgba(56,189,248,.18) 0%, transparent 70%);
+  }
+  .dell-landing .grid-lines {
+    position:absolute; inset:0; pointer-events:none; opacity:.35; z-index:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 70px 70px;
+  }
+
+  /* Glass system */
+  .dell-landing .glass {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .dell-landing .glass-vip {
+    background: linear-gradient(135deg, rgba(249,115,22,.10), rgba(255,255,255,.04));
+    border: 1px solid rgba(249,115,22,.30);
+    box-shadow: 0 0 0 1px rgba(249,115,22,.10), 0 24px 64px -16px rgba(249,115,22,.30);
+  }
+  .dell-landing .bezel-outer {
+    padding: 6px; border-radius: 2rem;
+    background: rgba(255,255,255,.04);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .dell-landing .bezel-inner {
+    border-radius: calc(2rem - .375rem);
+    background: rgba(8,16,28,.85);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    overflow: hidden;
+  }
+
+  /* Eyebrow */
+  .dell-landing .eyebrow {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 6px 12px; border-radius: 9999px;
+    background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+    font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(255,255,255,.85);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     BUTTONS — Mirror /wwwroot/app.css `.dell-landing .btn-primary`,
+     `.btn-vip`, `.btn-ghost` 1:1. The amber→orange gradient on
+     btn-primary is THE signature element the user called out.
+     ───────────────────────────────────────────────────────────── */
+  .dell-landing .btn-primary,
+  .dell-landing .btn-vip,
+  .dell-landing .btn-ghost {
+    position: relative; overflow: hidden; isolation: isolate;
+    transition: transform 260ms cubic-bezier(0.32,0.72,0,1),
+                box-shadow 260ms ease,
+                filter    260ms ease;
+    will-change: transform;
+  }
+
+  /* Shimmer sweep — primary & vip */
+  .dell-landing .btn-primary::after,
+  .dell-landing .btn-vip::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 700ms cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+  }
+  .dell-landing .btn-primary:hover::after,
+  .dell-landing .btn-vip:hover::after { transform: translateX(120%); }
+
+  .dell-landing .btn-primary:hover,
+  .dell-landing .btn-vip:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08) saturate(1.10);
+  }
+  .dell-landing .btn-primary:active,
+  .dell-landing .btn-vip:active { transform: translateY(0) scale(0.98); }
+
+  /* CANONICAL HOME VIP-ORANGE GRADIENT (amber → orange) */
+  .dell-landing .btn-primary {
+    background: linear-gradient(135deg, #F59E0B, #F97316);
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.30),
+                0 10px 28px -8px rgba(249,115,22,0.45);
+    color: #fff;
+  }
+  .dell-landing .btn-primary:hover {
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.55),
+                0 2px 44px -10px rgba(249,115,22,0.70),
+                0 0 18px rgba(249,115,22,0.40);
+  }
+
+  /* CANONICAL HOME MULTI-STOP VIP GRADIENT (blue → lavender → orange) */
+  .dell-landing .btn-vip {
+    background: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    color: #fff;
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.40),
+                0 10px 28px -8px rgba(249,115,22,0.50),
+                0 0 22px -4px rgba(96,165,250,0.30);
+  }
+  .dell-landing .btn-vip:hover {
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.60),
+                1px 0px 17px 0px rgba(249,115,22,0.75),
+                0 0 14px rgba(249,115,22,0.45),
+                0 0 20px -8px rgba(96,165,250,0.45);
+  }
+
+  /* Arrow nudge — translates 3px on hover (mirror of app.css) */
+  .dell-landing .btn-arrow { transition: transform 260ms cubic-bezier(0.32,0.72,0,1); }
+  .dell-landing .btn-primary:hover .btn-arrow,
+  .dell-landing .btn-vip:hover .btn-arrow { transform: translateX(3px); }
+
+  .dell-landing .btn-ghost {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    transition: transform 260ms cubic-bezier(0.32,0.72,0,1),
+                background-color 260ms ease,
+                border-color 260ms ease,
+                box-shadow 260ms ease;
+  }
+  .dell-landing .btn-ghost:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.20);
+    box-shadow: 0 14px 32px -10px rgba(255,255,255,0.10);
+  }
+  .dell-landing .btn-ghost:active { transform: translateY(0) scale(0.98); }
+
+  /* Trust / cards */
+  .dell-landing .trust-card { transition: transform .35s cubic-bezier(.32,.72,0,1), border-color .25s; }
+  .dell-landing .trust-card:hover { transform: translateY(-3px); border-color: rgba(249,115,22,.40); }
+  .dell-landing .hover-lift { transition: transform .35s cubic-bezier(.32,.72,0,1); }
+  .dell-landing .hover-lift:hover { transform: translateY(-4px); }
+
+  .dell-landing .brand-text { color:#F97316; }
+
+  /* Fade-up (replicates global) */
+  .dell-landing .fade-up { opacity:0; transform: translateY(24px); filter: blur(6px);
+    transition: opacity .8s cubic-bezier(.32,.72,0,1), transform .8s cubic-bezier(.32,.72,0,1), filter .8s; }
+  .dell-landing .fade-up.visible { opacity:1; transform:none; filter:none; }
+  @media (prefers-reduced-motion: reduce) { .dell-landing .fade-up { opacity:1; transform:none; filter:none; transition:none; } }
+
+  /* ─── HowItWorks-specific (kept, scoped under .dell-landing) ─── */
+  .dell-landing .vstep { transition: opacity .6s spring, filter .6s spring, transform .6s spring;
+    opacity:.35; filter:blur(2.5px); transform:scale(.94); will-change: opacity, filter, transform; }
+  .dell-landing .vstep.is-active { opacity:1; filter:blur(0); transform:scale(1); }
+  .dell-landing .vstep.is-near { opacity:.55; filter:blur(1.5px); transform:scale(.97); }
+  .dell-landing .vstep-num {
+    font-size: clamp(3.5rem,6vw,5rem); font-weight:900; line-height:1; letter-spacing:-.04em;
+    color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.45);
+    transition: -webkit-text-stroke-color .6s ease, color .6s ease, text-shadow .6s ease;
+  }
+  .dell-landing .vstep.is-active .vstep-num {
+    color:#fff; -webkit-text-stroke-color:#fff;
+    text-shadow: 0 0 24px rgba(249,115,22,.55), 0 0 48px rgba(249,115,22,.25);
+  }
+  .dell-landing .vstep-connector {
+    position:absolute; left:1.75rem; top:5rem; width:1px; height:calc(100% - 3rem);
+    background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.04));
+    pointer-events:none;
+  }
+  .dell-landing .vstep-dot { transition: background-color .4s, transform .4s, box-shadow .4s; }
+  .dell-landing .vstep.is-active .vstep-dot {
+    background-color:#F97316; transform: scale(1.4);
+    box-shadow: 0 0 0 4px rgba(249,115,22,.18), 0 0 16px rgba(249,115,22,.45);
+  }
+
+  /* Step connector horizontal (now dark) */
+  .dell-landing .step-connector { position:relative; }
+  .dell-landing .step-connector::after {
+    content:''; position:absolute; top:28px; left:calc(50% + 32px);
+    width: calc(100% - 64px); height:1px;
+    background: linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,.04));
+  }
+  @media (max-width:767px) { .dell-landing .step-connector::after { display:none; } }
+
+  /* Accordion (scoped, dark) */
+  .dell-landing .accordion-body { max-height:0; overflow:hidden; transition: max-height .4s spring; }
+  .dell-landing .accordion-item.open .accordion-body { max-height: 240px; }
+  .dell-landing .accordion-item.open .accordion-chevron { transform: rotate(180deg); }
+  .dell-landing .accordion-chevron { transition: transform .3s spring; }
+</style>
+</head>
+<body>
+
+<!-- =============================================================
+     The entire page lives under .dell-landing -> inherits dark OLED,
+     glass, eyebrow, btn-primary, fade-up, trust-card, etc. from
+     /wwwroot/app.css. NO bg-white / bg-surface / hiw-* anywhere.
+     ============================================================= -->
+<div class="dell-landing">
+
+  <!-- ── 1 · HERO ───────────────────────────────────────────── -->
+  <section class="relative overflow-hidden min-h-[100dvh] flex items-center pt-28 pb-16 px-4"
+           aria-labelledby="hero-heading">
+    <div class="page-ambient" aria-hidden="true"></div>
+    <div class="grid-lines" aria-hidden="true"></div>
+
+    <div class="relative z-10 w-full max-w-6xl mx-auto">
+      <div class="grid md:grid-cols-12 gap-12 lg:gap-16 items-center">
+
+        <!-- LEFT -->
+        <div class="md:col-span-7">
+          <div class="fade-up visible mb-5">
+            <span class="eyebrow">
+              <span class="w-1.5 h-1.5 rounded-full" style="background:#F59E0B;"></span>
+              How Bulletin Dells works
+            </span>
+          </div>
+
+          <h1 id="hero-heading" class="text-5xl md:text-6xl font-black text-white leading-[1.02] tracking-tighter mb-5 fade-up visible" style="transition-delay:80ms;">
+            Find local
+            <span class="relative inline-block brand-text">
+              services
+              <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 120 10" preserveAspectRatio="none" aria-hidden="true" style="height:6px;">
+                <path d="M2,6 Q30,1 60,6 Q90,11 118,5" stroke="#F97316" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </span>
+            you can trust.
+          </h1>
+
+          <p class="text-lg text-white/65 leading-relaxed max-w-[46ch] mb-8 fade-up visible" style="transition-delay:160ms;">
+            A bilingual, moderated marketplace for Wisconsin Dells. Every listing approved by hand. Every provider verifiable.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3 fade-up visible" style="transition-delay:240ms;">
+            <a href="/browse"
+               class="btn-ghost glass inline-flex items-center justify-center gap-2.5 text-white font-bold text-sm px-6 py-3 rounded-full">
+              Browse services
+              <span class="btn-arrow w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </span>
+            </a>
+            <a href="/register"
+               class="btn-primary inline-flex items-center justify-center gap-2.5 text-white font-bold text-sm px-6 py-3 rounded-full">
+              Become a provider
+              <span class="btn-arrow w-6 h-6 rounded-full bg-black/15 flex items-center justify-center">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <!-- RIGHT — vstep vertical carousel (signature, conserved) -->
+        <div class="md:col-span-5 fade-up visible" style="transition-delay:320ms;">
+          <div class="relative" id="vstep-carousel" aria-label="Process timeline" role="region">
+            <div class="vstep-connector" aria-hidden="true"></div>
+            <ol class="relative flex flex-col gap-6">
+              <li class="vstep is-active flex items-start gap-5" data-vstep-index="0">
+                <span class="vstep-dot relative z-10 flex-shrink-0 mt-6 ml-[1.4375rem] -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                <a href="#customers" class="block flex-1 min-w-0">
+                  <span class="vstep-num block">01</span>
+                  <span class="block mt-1.5 text-sm font-bold text-white tracking-tight">For customers</span>
+                  <span class="block text-xs text-white/60 mt-1 leading-snug max-w-[28ch]">Search, contact via WhatsApp, leave a review.</span>
+                </a>
+              </li>
+              <li class="vstep flex items-start gap-5" data-vstep-index="1">
+                <span class="vstep-dot relative z-10 flex-shrink-0 mt-6 ml-[1.4375rem] -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                <a href="#providers" class="block flex-1 min-w-0">
+                  <span class="vstep-num block">02</span>
+                  <span class="block mt-1.5 text-sm font-bold text-white tracking-tight">For providers</span>
+                  <span class="block text-xs text-white/60 mt-1 leading-snug max-w-[28ch]">Submit, get GM-approved, climb to VIP.</span>
+                </a>
+              </li>
+              <li class="vstep flex items-start gap-5" data-vstep-index="2">
+                <span class="vstep-dot relative z-10 flex-shrink-0 mt-6 ml-[1.4375rem] -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                <a href="#trust" class="block flex-1 min-w-0">
+                  <span class="vstep-num block">03</span>
+                  <span class="block mt-1.5 text-sm font-bold text-white tracking-tight">Trust &amp; safety</span>
+                  <span class="block text-xs text-white/60 mt-1 leading-snug max-w-[28ch]">GM moderation, real verification, no fake reviews.</span>
+                </a>
+              </li>
+              <li class="vstep flex items-start gap-5" data-vstep-index="3">
+                <span class="vstep-dot relative z-10 flex-shrink-0 mt-6 ml-[1.4375rem] -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white/30"></span>
+                <a href="#faq" class="block flex-1 min-w-0">
+                  <span class="vstep-num block">04</span>
+                  <span class="block mt-1.5 text-sm font-bold text-white tracking-tight">FAQ</span>
+                  <span class="block text-xs text-white/60 mt-1 leading-snug max-w-[28ch]">Everything you need before you start.</span>
+                </a>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 2 · FOR CUSTOMERS ──────────────────────────────────── -->
+  <section id="customers" class="py-24 px-4 border-t border-white/5" aria-labelledby="customers-heading">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14 fade-up visible">
+        <span class="eyebrow">For customers</span>
+        <h2 id="customers-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter mt-4">Four steps. Zero friction.</h2>
+        <p class="text-white/55 italic text-base mt-3 max-w-[44ch] mx-auto">From discovery to first message in under a minute.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 fade-up visible">
+        <!-- Each step uses .glass card + step-connector::after gradient line -->
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center">
+            <span class="text-white font-black text-xl">1</span>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-2">Search by category</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Housing, mechanics, rides, jobs &mdash; predefined categories.</p>
+        </div>
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center">
+            <span class="text-white font-black text-xl">2</span>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-2">Review the listing</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Photos curated by the GM. Ratings from real contacts only.</p>
+        </div>
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center" style="background:rgba(249,115,22,.15); border:1px solid rgba(249,115,22,.25);">
+            <span style="color:#F97316;" class="font-black text-xl">3</span>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-2">Accept the waiver</h3>
+          <p class="text-white/55 text-xs leading-relaxed">A 10-second legal disclaimer before your first contact.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center" style="background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.25);">
+            <svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-2">Message on WhatsApp</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Deep-link to wa.me. GM is CC&rsquo;d via email automatically.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 3 · FOR PROVIDERS ─────────────────────────────────── -->
+  <section id="providers" class="py-24 px-4 relative border-t border-white/5" aria-labelledby="providers-heading">
+    <div class="page-ambient opacity-30" aria-hidden="true"></div>
+    <div class="max-w-6xl mx-auto relative z-10">
+      <div class="text-center mb-14 fade-up visible">
+        <span class="eyebrow">For providers</span>
+        <h2 id="providers-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter mt-4">From listing to <span class="brand-text">VIP</span>.</h2>
+        <p class="text-white/55 italic text-base mt-3 max-w-[48ch] mx-auto">Five honest steps. No shortcuts. No fake stars.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12 fade-up visible">
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center"><span class="text-white font-black text-xl">1</span></div>
+          <h3 class="text-white font-bold text-sm mb-2">Submit your listing</h3>
+          <p class="text-white/45 text-xs leading-relaxed">Fill in details + several photos. Pick from preset categories.</p>
+        </div>
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center"><span class="text-white font-black text-xl">2</span></div>
+          <h3 class="text-white font-bold text-sm mb-2">GM moderation</h3>
+          <p class="text-white/45 text-xs leading-relaxed">Approved, rejected, or sent back. Feedback always given.</p>
+        </div>
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center" style="background:rgba(74,222,128,.15); border:1px solid rgba(74,222,128,.30);">
+            <span class="text-green-300 font-black text-xl">3</span>
+          </div>
+          <h3 class="text-white font-bold text-sm mb-2">Get verified</h3>
+          <p class="text-white/45 text-xs leading-relaxed">Phone + ID/passport + social. Required for VIP.</p>
+        </div>
+        <div class="step-connector text-center">
+          <div class="w-14 h-14 rounded-2xl glass mx-auto mb-5 flex items-center justify-center"><span class="text-white font-black text-xl">4</span></div>
+          <h3 class="text-white font-bold text-sm mb-2">Receive contacts</h3>
+          <p class="text-white/45 text-xs leading-relaxed">Customers reach you on WhatsApp. GM is always notified.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center"
+               style="background:rgba(249,115,22,.18); border:1px solid rgba(249,115,22,.35); box-shadow: 0 0 24px -4px rgba(249,115,22,.35);">
+            <span style="color:#F97316;" class="font-black text-xl">5</span>
+          </div>
+          <h3 class="text-white font-bold text-sm mb-2">Reach VIP</h3>
+          <p class="text-white/45 text-xs leading-relaxed">Top of every result. Premium badge. Optional boost.</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 fade-up visible">
+        <a href="/register" class="btn-primary inline-flex items-center gap-3 text-white font-bold px-7 py-3.5 rounded-full text-sm">
+          Start as a provider
+          <span class="btn-arrow w-8 h-8 rounded-full bg-black/15 flex items-center justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </span>
+        </a>
+        <a href="/browse" class="inline-flex items-center gap-2 text-white/55 hover:text-white text-sm font-medium transition-colors">See what&rsquo;s on Bulletin</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 4 · TRUST & SAFETY (mirrors Home trust cards exactly) ── -->
+  <section id="trust" class="py-24 px-4 relative border-t border-white/5" aria-labelledby="trust-heading">
+    <div class="max-w-6xl mx-auto relative z-10">
+      <div class="text-center mb-14 fade-up visible">
+        <span class="eyebrow">Trust &amp; safety</span>
+        <h2 id="trust-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter mt-4">Four non-negotiable rules.</h2>
+        <p class="text-white/55 italic text-base mt-3 max-w-[46ch] mx-auto">The same promises you saw on the home page &mdash; here, in detail.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 fade-up visible">
+        <div class="glass rounded-2xl p-6 trust-card">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(56,189,248,.15); border:1px solid rgba(56,189,248,.30);">
+            <svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-1.5">Manual GM approval</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Every listing reviewed by hand. No automated publishing, ever.</p>
+        </div>
+        <div class="glass rounded-2xl p-6 trust-card">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(74,222,128,.15); border:1px solid rgba(74,222,128,.30);">
+            <svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-1.5">Real verification</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Phone, ID/passport and social. No VIP without all three.</p>
+        </div>
+        <div class="glass rounded-2xl p-6 trust-card">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.25);">
+            <svg class="w-5 h-5" style="color:#F59E0B;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-1.5">Honest ratings</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Only from customers who actually contacted you, and GM-reviewed.</p>
+        </div>
+        <div class="glass rounded-2xl p-6 trust-card">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(249,115,22,.15); border:1px solid rgba(249,115,22,.25);">
+            <svg class="w-5 h-5" style="color:#F97316;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <h3 class="font-bold text-white text-sm mb-1.5">Legal waiver upfront</h3>
+          <p class="text-white/55 text-xs leading-relaxed">Bulletin Dells connects you &mdash; never provides the service itself.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 5 · TIERS (mirrors Home tiers exactly) ───────────── -->
+  <section id="tiers" class="py-24 px-4 relative border-t border-white/5" aria-labelledby="tiers-heading">
+    <div class="page-ambient opacity-30" aria-hidden="true"></div>
+    <div class="max-w-6xl mx-auto relative z-10">
+      <div class="text-center mb-14 fade-up visible">
+        <span class="eyebrow">Provider tiers</span>
+        <h2 id="tiers-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter mt-4">Regular. Verified. <span class="brand-text">VIP</span>.</h2>
+        <p class="text-white/55 italic text-base mt-3 max-w-[54ch] mx-auto">Three honest tiers. No hidden levels. The GM can boost ranking with <code class="text-white/70 not-italic">hierarchy</code> &mdash; it&rsquo;s editorial, not pay-to-win.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up visible items-stretch">
+        <!-- Regular -->
+        <div class="glass rounded-[2rem] p-7 hover-lift flex flex-col h-full">
+          <span class="eyebrow self-start" style="background:rgba(255,255,255,.08); color:rgba(255,255,255,.65); border:1px solid rgba(255,255,255,.10);">Regular</span>
+          <h3 class="font-black text-white text-xl tracking-tight mt-4">Get started</h3>
+          <p class="text-white/45 text-sm mt-1 mb-6">Free &middot; Always</p>
+          <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Submit one listing</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Appear in search</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Receive WhatsApp contacts</li>
+            <li class="flex gap-2 text-white/25"><span>&#10005;</span> Verified badge</li>
+            <li class="flex gap-2 text-white/25"><span>&#10005;</span> VIP placement</li>
+          </ul>
+          <a href="/register" class="btn-ghost block text-center w-full text-sm font-bold py-3 rounded-full text-white mt-auto">Sign up free</a>
+        </div>
+
+        <!-- Verified -->
+        <div class="glass rounded-[2rem] p-7 hover-lift flex flex-col h-full" style="border:1px solid rgba(74,222,128,.30);">
+          <span class="eyebrow self-start inline-flex items-center gap-1.5" style="background:rgba(74,222,128,.15); color:#86efac; border:1px solid rgba(74,222,128,.30);">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Verified
+          </span>
+          <h3 class="font-black text-white text-xl tracking-tight mt-4">Build trust</h3>
+          <p class="text-white/45 text-sm mt-1 mb-6">After verification</p>
+          <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Everything in Regular</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Verified badge</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Higher ranking</li>
+            <li class="flex gap-2"><span class="text-emerald-400 font-bold">&#10003;</span> Multiple photos</li>
+            <li class="flex gap-2 text-white/25"><span>&#10005;</span> VIP gold treatment</li>
+          </ul>
+          <a href="/register" class="block text-center w-full text-sm font-bold py-3 rounded-full mt-auto"
+             style="background:rgba(16,185,129,.20); color:#6ee7b7; border:1px solid rgba(16,185,129,.30);">
+            Start verification
+          </a>
+        </div>
+
+        <!-- VIP — glow restored -->
+        <div class="glass glass-vip rounded-[2rem] p-7 hover-lift flex flex-col h-full">
+          <span class="eyebrow self-start" style="background:rgba(249,115,22,.15); color:#F97316; border:1px solid rgba(249,115,22,.25);">VIP</span>
+          <h3 class="font-black text-white text-xl tracking-tight mt-4">Be unmissable</h3>
+          <p class="text-white/45 text-sm mt-1 mb-6">Monthly subscription</p>
+          <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+            <li class="flex gap-2"><span style="color:#F97316;" class="font-bold">&#10003;</span> Everything in Verified</li>
+            <li class="flex gap-2"><span style="color:#F97316;" class="font-bold">&#10003;</span> Top of all results</li>
+            <li class="flex gap-2"><span style="color:#F97316;" class="font-bold">&#10003;</span> Premium VIP badge</li>
+            <li class="flex gap-2"><span style="color:#F97316;" class="font-bold">&#10003;</span> Carousel on homepage</li>
+            <li class="flex gap-2"><span style="color:#F97316;" class="font-bold">&#10003;</span> Priority GM support</li>
+          </ul>
+          <a href="/register" class="btn-vip block text-center w-full text-sm font-black py-3 rounded-full mt-auto">Apply for VIP</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 6 · FAQ (accordion, dark glass) ──────────────────── -->
+  <section id="faq" class="py-24 px-4 border-t border-white/5" aria-labelledby="faq-heading">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-14 fade-up visible">
+        <span class="eyebrow">FAQ</span>
+        <h2 id="faq-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter mt-4">Common questions.</h2>
+      </div>
+
+      <div class="space-y-3 fade-up visible">
+        <div class="accordion-item glass rounded-2xl">
+          <button class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+            <span class="font-semibold text-white text-sm">How long does GM approval take?</span>
+            <svg class="accordion-chevron w-4 h-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="accordion-body">
+            <p class="px-5 pb-5 text-white/55 text-xs leading-relaxed">Usually less than 24 business hours. You receive an email or WhatsApp when status changes.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item glass rounded-2xl">
+          <button class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+            <span class="font-semibold text-white text-sm">Why does editing send my listing back to Pending?</span>
+            <svg class="accordion-chevron w-4 h-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="accordion-body">
+            <p class="px-5 pb-5 text-white/55 text-xs leading-relaxed">Any change &mdash; price, photos, description &mdash; triggers re-moderation. It keeps the listing-quality contract honest.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item glass rounded-2xl">
+          <button class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+            <span class="font-semibold text-white text-sm">Do listings expire?</span>
+            <svg class="accordion-chevron w-4 h-4 text-white/55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="accordion-body">
+            <p class="px-5 pb-5 text-white/55 text-xs leading-relaxed">No. Listings stay live until you pause them or the GM removes them for policy violations.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 7 · FINAL CTA ────────────────────────────────────── -->
+  <section class="py-20 px-4 text-center border-t border-white/5 fade-up visible">
+    <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tighter">Ready when you are.</h2>
+    <p class="text-white/55 text-base mt-3 max-w-[44ch] mx-auto italic">Two minutes to start. Local, bilingual, trusted.</p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+      <a href="/browse" class="btn-primary inline-flex items-center gap-3 text-white font-bold px-7 py-3.5 rounded-full text-sm">
+        Browse services
+        <span class="btn-arrow w-8 h-8 rounded-full bg-black/15 flex items-center justify-center">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </span>
+      </a>
+      <a href="/register" class="btn-ghost glass inline-flex items-center gap-2 text-white text-sm font-bold px-6 py-3.5 rounded-full">Become a provider</a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // vstep auto-advance (signature kept)
+  (function () {
+    var steps = Array.from(document.querySelectorAll('#vstep-carousel .vstep'));
+    if (!steps.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var active = 0;
+    function setActive(idx) {
+      steps.forEach(function (el, i) {
+        el.classList.remove('is-active','is-near');
+        if (i === idx) el.classList.add('is-active');
+        else if (Math.abs(i - idx) === 1) el.classList.add('is-near');
+      });
+    }
+    setInterval(function () { active = (active + 1) % steps.length; setActive(active); }, 3200);
+  })();
+
+  // Accordion
+  document.querySelectorAll('.accordion-trigger').forEach(function (t) {
+    t.addEventListener('click', function () {
+      var item = t.closest('.accordion-item');
+      var open = item.classList.contains('open');
+      document.querySelectorAll('.accordion-item.open').forEach(function (o) { o.classList.remove('open'); });
+      if (!open) item.classList.add('open');
+    });
+  });
+</script>
+</body>
+</html>

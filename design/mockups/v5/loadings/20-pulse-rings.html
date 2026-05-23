@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Pulse Rings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 20-pulse-rings.html
+    SPEC:   3 anillos concéntricos que se expanden desde un núcleo naranja
+            hacia el exterior, desapareciendo al llegar a su tamaño máximo.
+            Efecto "ping" (como Apple AirPods conectándose / señal de radio).
+            Cada anillo tiene un delay escalonado (0s, 0.6s, 1.2s) para crear
+            la sensación de onda continua. El núcleo permanece fijo y sólido.
+            Color base: #fd8c1b con variante muy suave al expandirse.
+    CUÁNDO: Conectando al servidor / estableciendo sesión WebSocket o
+            SignalR / emitiendo notificación push al GM.
+    BLAZOR HOOK: Componente <PulseRingLoader /> — sin JS, puro CSS.
+                 Controlar con @if (isConnecting).
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      pointer-events: none;
+    }
+
+    /* Zona de pulsos */
+    .pulse-zone {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: zone-intro 0.55s ease-out 0.2s forwards;
+    }
+    @keyframes zone-intro {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Anillos de pulso */
+    .pulse-ring {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #fd8c1b;
+      animation: pulse-expand 2.1s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+      opacity: 0;
+    }
+    .pulse-ring:nth-child(1) { animation-delay: 0s; }
+    .pulse-ring:nth-child(2) { animation-delay: 0.65s; }
+    .pulse-ring:nth-child(3) { animation-delay: 1.3s; }
+
+    @keyframes pulse-expand {
+      0%   { transform: scale(1);   opacity: 0.7; border-color: #fd8c1b; }
+      50%  { opacity: 0.35; border-color: #fde8c8; }
+      100% { transform: scale(5.2); opacity: 0;   border-color: #fde8c8; }
+    }
+
+    /* Núcleo central fijo */
+    .pulse-core {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      box-shadow: 0 0 0 5px #fde8c8;
+      z-index: 2;
+    }
+
+    /* Texto */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.55s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .pulse-zone, .label { animation: none; opacity: 1; }
+      .pulse-ring { animation: none; opacity: 0.3; transform: scale(3); }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Connecting · Conectando"
+  >
+    <div class="pulse-zone">
+      <div class="pulse-ring" aria-hidden="true"></div>
+      <div class="pulse-ring" aria-hidden="true"></div>
+      <div class="pulse-ring" aria-hidden="true"></div>
+      <div class="pulse-core"  aria-hidden="true"></div>
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Connecting</p>
+      <p class="text-xs text-slate-400 mt-0.5">Conectando…</p>
+    </div>
+  </div>
+
+</body>
+</html>

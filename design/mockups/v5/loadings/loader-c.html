@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Dots Cascade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0F172A;
+      overflow: hidden;
+      min-height: 100dvh;
+    }
+
+    /* Subtle radial glow in center */
+    .bg-glow {
+      background: radial-gradient(ellipse 70% 50% at 50% 50%,
+        rgba(59,130,246,0.12) 0%,
+        rgba(96,165,250,0.05) 40%,
+        transparent 70%);
+    }
+
+    /* Logo shimmer text */
+    @keyframes text-shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .logo-shimmer {
+      background: linear-gradient(
+        90deg,
+        #94A3B8 0%,
+        #F1F5F9 20%,
+        #60A5FA 40%,
+        #F1F5F9 60%,
+        #94A3B8 80%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: text-shimmer 2.4s linear infinite;
+    }
+
+    /* Logo fade-in */
+    @keyframes logo-in {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo-in { animation: logo-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+
+    /* Dots — spring physics via cubic-bezier */
+    @keyframes dot-bounce {
+      0%   { transform: translateY(0) scale(1); opacity: 0.3; }
+      35%  { transform: translateY(-22px) scale(1.15); opacity: 1; }
+      60%  { transform: translateY(-16px) scale(1.05); opacity: 0.9; }
+      80%  { transform: translateY(-20px) scale(1.1); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: dot-bounce 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+    }
+
+    /* Stagger delays for cascade */
+    .dot:nth-child(1) { background: #3B82F6; animation-delay: 0s; }
+    .dot:nth-child(2) { background: #60A5FA; animation-delay: 0.14s; }
+    .dot:nth-child(3) { background: #F97316; animation-delay: 0.28s; }
+    .dot:nth-child(4) { background: #60A5FA; animation-delay: 0.42s; }
+    .dot:nth-child(5) { background: #3B82F6; animation-delay: 0.56s; }
+
+    /* Tagline */
+    @keyframes tag-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tag-in { animation: tag-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both; }
+
+    /* Dots row fade in */
+    @keyframes dots-row-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .dots-row-in { animation: dots-row-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both; }
+
+    /* Noise overlay for dark texture */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      z-index: 50;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+
+    /* Eyebrow pill */
+    .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: #60A5FA;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Noise texture overlay -->
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<div
+  class="bg-glow min-h-[100dvh] flex flex-col items-center justify-center gap-10"
+  role="status"
+  aria-label="Loading Bulletin Dells — Cargando Bulletin Dells"
+  aria-busy="true"
+>
+
+  <!-- Eyebrow tag -->
+  <div class="logo-in">
+    <span class="eyebrow-pill">
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true">
+        <circle cx="4" cy="4" r="4" fill="#3B82F6"/>
+      </svg>
+      Wisconsin Dells
+    </span>
+  </div>
+
+  <!-- Logo -->
+  <div class="logo-in" style="text-align:center; margin-top:-8px;">
+    <!-- Double-bezel logo -->
+    <div style="
+      display:inline-block;
+      padding: 10px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 2rem;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
+    ">
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding: 20px 32px;
+        background: rgba(255,255,255,0.05);
+        border-radius: calc(2rem - 6px);
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.06);
+      ">
+        <!-- Icon mark -->
+        <svg width="36" height="42" viewBox="0 0 36 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="18" cy="15" r="11" fill="#3B82F6" fill-opacity="0.9"/>
+          <circle cx="18" cy="15" r="5.5" fill="white" />
+          <line x1="18" y1="26" x2="18" y2="40" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <!-- Wordmark -->
+        <div>
+          <span class="logo-shimmer" style="font-size:28px; font-weight:900; letter-spacing:-1px; display:block;">
+            Bulletin Dells
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dots cascade -->
+  <div class="dots-row-in" style="display:flex; align-items:flex-end; gap:10px; height:50px;">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <!-- Tagline bilingue -->
+  <div class="tag-in" style="text-align:center; margin-top:-4px;">
+    <p style="font-size:13px; font-weight:400; color:#475569; letter-spacing:0.08em;">
+      Loading your local marketplace
+    </p>
+    <p style="font-size:12px; font-weight:400; color:#334155; letter-spacing:0.06em; margin-top:4px;">
+      Cargando tu directorio local
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

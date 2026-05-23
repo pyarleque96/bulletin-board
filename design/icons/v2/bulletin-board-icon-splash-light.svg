@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – PWA Splash (Light)</title>
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+  <g transform="translate(256 256)">
+    <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-6">
+      <text x="76" y="244" font-size="220" fill="#101A3D">B</text>
+      <text x="244" y="424" font-size="220" fill="#F39323">B</text>
+    </g>
+    <circle cx="200" cy="92" r="22" fill="#F39323"/>
+  </g>
+  <text x="512" y="820" font-family="'Nunito','Poppins',system-ui,sans-serif" font-size="36" font-weight="700" fill="#101A3D" text-anchor="middle" letter-spacing="2">BULLETIN BOARD</text>
+  <text x="512" y="868" font-family="'Nunito',system-ui,sans-serif" font-size="22" font-weight="500" fill="#64748B" text-anchor="middle">Wisconsin Dells Local Marketplace</text>
+</svg>

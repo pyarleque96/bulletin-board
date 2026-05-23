@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — v3 SHELL (NO ES UN MOCKUP, ES REFERENCIA)
+  =====================================================
+  Esta es la plantilla canónica que todos los mockups v3 deben usar.
+  El Frontend developer NO debe incluirla — su trabajo es replicar la estructura
+  con el componente <ManageDetailHeader> ya existente y los componentes Badges/*.
+
+  CONVENCIONES v3:
+    - Paleta y tipografía idénticas a v2 (brand orange #f97316, ink #0f172a, DM Sans).
+    - Tab activo subrayado con la línea naranja (no el water-drop animado de Blazor — eso lo
+      añade ManageDetailHeader.razor en producción).
+    - Cards: rounded-3xl, border border-slate-100, shadow-soft, p-5.
+    - VIP variants:
+        · banner analytics arriba (cards con tabular-nums y delta verde/rojo)
+        · badge dorado/naranja en métricas avanzadas
+        · footer "Powered by VIP"
+    - Regular variants:
+        · cards más simples
+        · upsell sutil ("Unlock with VIP") en zonas premium
+    - Regla #5 (CRÍTICA): cualquier botón "Save changes" lleva tooltip
+      data-tooltip="Editing this listing returns it to Pending review"
+      y un disclaimer text-[11px] al lado.
+    - Regla #4: fotos llevan badge de estado (Pending GM review / Public / Hidden by GM).
+    - Regla #7: reviews muestran filtro por estado (Pending GM moderation / Published).
+    - Regla #8: inquiries siempre dicen "GM is copied on every conversation".
+    - Comentarios HTML <!-- ES: ... --> para keys i18n.
+
+  BINDING comentado al inicio de cada mockup con los DTOs esperados.
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>v3 Shell — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: {
+        brand: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412' },
+        ink:'#0f172a', muted:'#64748b',
+      },
+      fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+    } } };
+  </script>
+  <style>
+    .badge-vip   { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .badge-sdvip { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+    .vip-glow    { box-shadow: 0 0 0 1px rgba(249,115,22,0.15), 0 8px 24px -8px rgba(249,115,22,0.25); }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .manage-tab:hover { color:#0f172a; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1); }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    [data-tooltip] { position:relative; }
+    [data-tooltip]::after {
+      content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px);
+      left:50%; transform:translateX(-50%); white-space:nowrap;
+      background:#1e293b; color:#fff; font-size:11px; padding:5px 9px;
+      border-radius:8px; pointer-events:none; opacity:0;
+      transition:opacity 0.15s ease; z-index:50;
+    }
+    [data-tooltip]:hover::after { opacity:1; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<!-- ===== NAVBAR (idéntica a v2) ===== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">U</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HEADER BAND (equivale a <ManageDetailHeader>) ===== -->
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-4">
+    <!-- breadcrumb · title row · tabs row — ver mockups individuales -->
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+  <!-- contenido del tab activo -->
+</main>
+
+</body>
+</html>

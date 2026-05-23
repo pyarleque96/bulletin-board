@@ -1,0 +1,134 @@
+@* PendingReviewWarningDialog — Regla #5 confirmation modal.
+   Shows before any mutation that returns the listing to Pending state.
+   Returns bool via EventCallback<bool>: true = Continue, false = Cancel.
+   Bilingüe EN/ES inline (no localizer dependency needed here). *@
+
+@using Bulletin.Board.Web.Client.Resources
+@using Microsoft.Extensions.Localization
+
+@if (_visible)
+{
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="pending-dialog-title"
+         @onclick="HandleOverlayClick">
+
+        <div class="bg-white rounded-2xl shadow-[0_24px_64px_-12px_rgba(30,41,59,0.22)] max-w-md w-full p-6"
+             @onclick:stopPropagation="true">
+
+            @* Icon + title *@
+            <div class="flex items-start gap-4 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         aria-hidden="true">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 id="pending-dialog-title" class="text-base font-bold text-slate-900 leading-snug">
+                        @EnTitle
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5 italic">
+                        @EsTitle
+                    </p>
+                </div>
+            </div>
+
+            @* Body *@
+            <div class="mb-6">
+                <p class="text-sm text-slate-700 leading-relaxed">
+                    @EnMessage
+                </p>
+                <p class="text-xs text-slate-500 mt-1 italic leading-relaxed">
+                    @EsMessage
+                </p>
+            </div>
+
+            @* Actions *@
+            <div class="flex items-center justify-end gap-2">
+                <button type="button"
+                        class="px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 active:scale-[0.98] text-sm font-medium text-slate-700 border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                        @onclick="Cancel"
+                        aria-label="Cancel / Cancelar">
+                    Cancel
+                    <span class="text-slate-400 ml-1 text-xs">/ Cancelar</span>
+                </button>
+                <button type="button"
+                        class="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-sm font-semibold text-white transition-colors duration-150 cursor-pointer"
+                        @onclick="Continue"
+                        aria-label="Continue / Continuar">
+                    Continue
+                    <span class="opacity-75 ml-1 text-xs">/ Continuar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ── Parameters ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Raised when the user makes a decision.
+    /// true  = user confirmed (Continue).
+    /// false = user cancelled.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnDecision { get; set; }
+
+    // ── Optional overrides for custom context ───────────────────────────────────
+
+    [Parameter] public string EnTitle   { get; set; } = "Listing will return to Pending review";
+    [Parameter] public string EsTitle   { get; set; } = "El anuncio volverá a revisión Pendiente";
+    [Parameter] public string EnMessage { get; set; } =
+        "Saving these changes will return your listing to Pending review until the GM approves it. Continue?";
+    [Parameter] public string EsMessage { get; set; } =
+        "Al guardar, tu listing volverá a estado Pendiente hasta que el GM lo apruebe. ¿Continuar?";
+
+    // ── Public API ──────────────────────────────────────────────────────────────
+
+    private bool _visible = false;
+
+    /// <summary>
+    /// Shows the dialog. Await the returned task; when it completes the user
+    /// has made a decision and <see cref="OnDecision"/> has already been invoked.
+    /// Pattern: <c>var confirmed = await dialog.ShowAsync();</c>
+    /// </summary>
+    public async Task<bool> ShowAsync()
+    {
+        _visible = true;
+        StateHasChanged();
+
+        var tcs = new TaskCompletionSource<bool>();
+        _pending = tcs;
+
+        return await tcs.Task;
+    }
+
+    // ── Internal ────────────────────────────────────────────────────────────────
+
+    private TaskCompletionSource<bool>? _pending;
+
+    private async Task Continue()
+    {
+        _visible = false;
+        var tcs  = _pending;
+        _pending = null;
+        tcs?.TrySetResult(true);
+        await OnDecision.InvokeAsync(true);
+    }
+
+    private async Task Cancel()
+    {
+        _visible = false;
+        var tcs  = _pending;
+        _pending = null;
+        tcs?.TrySetResult(false);
+        await OnDecision.InvokeAsync(false);
+    }
+
+    private void HandleOverlayClick() => _ = Cancel();
+}

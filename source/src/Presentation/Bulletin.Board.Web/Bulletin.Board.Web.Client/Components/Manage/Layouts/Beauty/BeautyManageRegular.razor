@@ -1,0 +1,152 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   BeautyManageRegular — Container Regular/Verified para beauty. Dispatcher
+   tabs vía DynamicComponent.
+
+   Tabs:
+     - portfolio (default — alias del tab "photos" en el header v2) — contenido
+       v2 conservado inline (max 5 photos, regla #4).
+     - photos      → (alias del default)
+     - appointments → Tabs/AppointmentsRegular
+     - inquiries    → Tabs/InquiriesRegular
+     - reviews      → Tabs/ReviewsRegular
+
+   Reglas embebidas (ver header de HousingManageRegular).
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Layouts.Beauty.Tabs
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@Listing.CategorySlug"
+                    ActiveTab="@ResolvedActiveTab"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@(_localizer["Manage_Beauty_CategoryLabel"])"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")"
+                    PhotoCount="@_approvedPhotos.Length" />
+
+@{
+    var (tabType, tabParams) = ResolveTab(ResolvedActiveTab);
+}
+@if (tabType is not null)
+{
+    <DynamicComponent Type="tabType" Parameters="tabParams" />
+}
+else
+{
+    @* Default: Portfolio (max 5 fotos públicas — regla #4). *@
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full"
+          id="panel-photos"
+          role="tabpanel"
+          aria-labelledby="tab-photos"
+          tabindex="0">
+
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div>
+                <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Beauty_Portfolio_Title"]</h2>
+                <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Beauty_Portfolio_Subtitle_Regular"]</p>
+            </div>
+            <PendingReviewTooltip>
+                <label class="px-3 py-2 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors duration-150">
+                    @_localizer["Manage_Beauty_UploadPhoto"]
+                    @* TODO: API POST /api/v1/manage/listings/{id}/photos (BACKEND_AUDIT §1.1). *@
+                    <input type="file" multiple accept="image/jpeg,image/png,image/webp" class="hidden" />
+                </label>
+            </PendingReviewTooltip>
+        </div>
+
+        @* Banner regla #4 *@
+        <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="note">
+            <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p class="text-xs text-ink leading-relaxed">@_localizer["Banner_GmDecidesPhotos"]</p>
+        </div>
+
+        <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
+            @foreach (var (photo, idx) in _approvedPhotos.Select((p, i) => (p, i)))
+            {
+                <li class="rounded-2xl overflow-hidden border border-slate-100 shadow-soft relative group bg-white">
+                    <div class="aspect-[4/5] bg-slate-100">
+                        <img src="@photo.Url" alt="@photo.AltText" class="w-full h-full object-cover" loading="lazy" />
+                    </div>
+                    <div class="absolute top-2 left-2 flex gap-1 flex-wrap">
+                        @if (idx == 0)
+                        {
+                            <span class="text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">@_localizer["Manage_Beauty_Photo_Primary"]</span>
+                        }
+                        <PhotoStatusBadge Status="Public" />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(photo.AltText))
+                    {
+                        <div class="p-2 text-[11px] text-muted truncate">@photo.AltText</div>
+                    }
+                </li>
+            }
+
+            @if (_approvedPhotos.Length == 0)
+            {
+                <li class="col-span-full">
+                    <ManageEmptyState Title="@_localizer["Manage_Beauty_Portfolio_Empty"]" />
+                </li>
+            }
+        </ul>
+
+        @* VIP upsell *@
+        <div class="mt-8">
+            <VipUpsellBanner Tier="@Listing.Tier"
+                             Title="@_localizer["Manage_Beauty_VipUpsell_Title"]">
+                @_localizer["Manage_Beauty_VipUpsell_Body"]
+            </VipUpsellBanner>
+        </div>
+    </main>
+}
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    /// <summary>
+    /// Default beauty Regular = "overview" (contrato canónico). El contenido inline
+    /// actúa como vista overview (Portfolio) hasta que el UI/UX entregue un
+    /// OverviewRegular dedicado para beauty.
+    /// </summary>
+    private string ResolvedActiveTab => string.IsNullOrEmpty(ActiveTab) ? "overview" : ActiveTab;
+
+    private ListingPhotoDto[] _approvedPhotos = Array.Empty<ListingPhotoDto>();
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+
+    protected override void OnParametersSet()
+    {
+        // Regla #4 — tier Regular: máximo 5 fotos públicas.
+        _approvedPhotos = Listing.Photos.Take(5).ToArray();
+    }
+
+    private (Type? Type, IDictionary<string, object>? Params) ResolveTab(string tab)
+    {
+        var p = new Dictionary<string, object> { ["Listing"] = Listing };
+
+        return tab switch
+        {
+            "appointments" => (typeof(AppointmentsRegular), p),
+            "inquiries"    => (typeof(InquiriesRegular),    p),
+            "reviews"      => (typeof(ReviewsRegular),      p),
+            "settings"     => (typeof(SettingsRegular),     p),
+            // "overview" / "photos" → null (renders Portfolio inline; the
+            // inline Portfolio doubles as overview content for beauty Regular).
+            _              => (null, null),
+        };
+    }
+}

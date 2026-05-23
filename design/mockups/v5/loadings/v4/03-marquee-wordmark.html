@@ -1,0 +1,321 @@
+<!--
+  SCREEN: 03 — Marquee Wordmark
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga inicial de la homepage o sección principal
+  CONCEPTO: Marquee horizontal infinito "BULLETIN DELLS · BULLETIN DELLS ·" en
+            outline stroke naranja — letra grande, sin relleno, solo borde.
+            Wordmark central sólido aparece sobre el marquee.
+            Sensación: fashion brand / premium agency / Stripe press releases.
+            El outline stroke da sensación cara sin peso visual.
+  HIGH-END: Kinetic Marquee (Creative Arsenal §Typography).
+            Outfit ExtraBold en mayúsculas para el marquee.
+            DM Serif para wordmark central.
+  BLAZOR HOOK: Montar en App.razor hasta que IsFullyLoaded = true.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    /* Stage */
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Marquee track ── */
+    .marquee-outer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0;
+      pointer-events: none;
+      opacity: 0;
+      animation: mq-intro 1s cubic-bezier(0.32,0.72,0,1) 0.2s forwards;
+    }
+    @keyframes mq-intro { to { opacity: 1; } }
+
+    /* Row 1 — leftward */
+    .marquee-row {
+      display: flex;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      animation: marquee-left 12s linear infinite;
+      will-change: transform;
+    }
+    .marquee-track.reverse {
+      animation: marquee-right 14s linear infinite;
+    }
+
+    @keyframes marquee-left {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @keyframes marquee-right {
+      from { transform: translateX(-50%); }
+      to   { transform: translateX(0); }
+    }
+
+    .marquee-word {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      line-height: 1;
+      padding: 0 0.5em;
+      /* Outline stroke — no fill, just border */
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(253,140,27,0.18);
+      text-stroke: 1.5px rgba(253,140,27,0.18);
+    }
+    .marquee-sep {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 300;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(253,140,27,0.1);
+      padding: 0 0.25em;
+      line-height: 1;
+      align-self: center;
+    }
+
+    /* Row 2 spacing */
+    .marquee-row-2 {
+      margin-top: -0.12em;
+    }
+    .marquee-row-2 .marquee-word {
+      -webkit-text-stroke: 1.5px rgba(30,41,59,0.07);
+      text-stroke: 1.5px rgba(30,41,59,0.07);
+    }
+    .marquee-row-2 .marquee-sep {
+      -webkit-text-stroke: 1px rgba(30,41,59,0.04);
+    }
+
+    /* ── Center wordmark — over the marquee ── */
+    .wordmark-center {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.94);
+      animation: wm-pop 0.8s cubic-bezier(0.32,0.72,0,1) 0.7s forwards;
+    }
+    @keyframes wm-pop {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Double-bezel logo pill */
+    .wm-shell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(30,41,59,0.07);
+      border-radius: 9999px;
+      padding: 0.75rem 1.75rem 0.75rem 0.85rem;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.04),
+        0 8px 32px -8px rgba(30,41,59,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    /* Orange mark square */
+    .wm-mark {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      background: #fd8c1b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    .wm-mark svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    .wm-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+    .wm-name {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .wm-sub {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 400;
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-top: 0.18rem;
+    }
+
+    /* Tagline beneath */
+    .tagline {
+      margin-top: 1.25rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      opacity: 0;
+      animation: tag-in 0.5s cubic-bezier(0.32,0.72,0,1) 1.1s forwards;
+    }
+    @keyframes tag-in { to { opacity: 1; } }
+
+    /* ── Thin progress bar at top ── */
+    .progress-top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: transparent;
+      z-index: 10;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #fd8c1b 40%, #fde8c8 100%);
+      width: 0;
+      animation: prog 2.6s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes prog {
+      0%  { width: 0; }
+      80% { width: 88%; }
+      100%{ width: 100%; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading Bulletin Dells · Cargando Bulletin Dells">
+
+    <!-- Marquee background -->
+    <div class="marquee-outer" aria-hidden="true">
+
+      <!-- Row 1: leftward marquee -->
+      <div class="marquee-row">
+        <div class="marquee-track">
+          <!-- Duplicate for seamless loop -->
+          <span class="marquee-word">BULLETIN</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">DELLS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">BULLETIN</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">DELLS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">BULLETIN</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">DELLS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">BULLETIN</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">DELLS</span>
+          <span class="marquee-sep">·</span>
+        </div>
+      </div>
+
+      <!-- Row 2: rightward marquee (Spanish) -->
+      <div class="marquee-row marquee-row-2">
+        <div class="marquee-track reverse">
+          <span class="marquee-word">SERVICIOS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">LOCALES</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">SERVICIOS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">LOCALES</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">SERVICIOS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">LOCALES</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">SERVICIOS</span>
+          <span class="marquee-sep">·</span>
+          <span class="marquee-word">LOCALES</span>
+          <span class="marquee-sep">·</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Center wordmark pill -->
+    <div class="wordmark-center">
+      <div class="wm-shell">
+        <!-- Orange BD mark -->
+        <div class="wm-mark">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="2" y="2" width="6" height="8" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="10" y="2" width="6" height="5" rx="1.5" fill="white" opacity="0.6"/>
+            <rect x="10" y="9" width="6" height="7" rx="1.5" fill="white" opacity="0.8"/>
+            <rect x="2" y="12" width="6" height="4" rx="1.5" fill="white" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="wm-text">
+          <span class="wm-name">Bulletin Dells</span>
+          <span class="wm-sub">Local Marketplace · Wisconsin</span>
+        </div>
+      </div>
+
+      <!-- Bilingual tagline -->
+      <p class="tagline">
+        Loading listings &nbsp;·&nbsp; Cargando anuncios
+      </p>
+    </div>
+
+    <!-- Top progress bar -->
+    <!-- BLAZOR HOOK: Bind to NavigationManager.LocationChanged progress -->
+    <div class="progress-top" aria-hidden="true">
+      <div class="progress-fill"></div>
+    </div>
+
+  </div>
+</body>
+</html>

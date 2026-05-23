@@ -1,0 +1,51 @@
+@*
+    TierBadge — dispatcher de tier para tablas /admin.
+    Reutiliza los badges canónicos de /manage (VipBadge / VerifiedBadge) para
+    mantener un único lenguaje visual. "Regular" cae a un pill neutro
+    (los mockups /manage no muestran badge visible para Regular, pero las
+    tablas admin sí lo requieren para que la columna nunca quede vacía).
+
+    Parámetros:
+      Tier     — "VIP" | "Verified" | cualquier otro → Regular.
+      IconOnly — true para versión circular sin texto.
+*@
+
+@using Bulletin.Board.Web.Client.Components.Badges
+
+@switch (Tier)
+{
+    case "VIP":
+        <VipBadge IconOnly="IconOnly" />
+        break;
+    case "Verified":
+        <VerifiedBadge IconOnly="IconOnly" />
+        break;
+    default:
+        if (IconOnly)
+        {
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-600 border border-slate-200" title="Regular">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </span>
+        }
+        else
+        {
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Regular</span>
+            </span>
+        }
+        break;
+}
+
+@code {
+    [Parameter] public string Tier { get; set; } = "Regular";
+    [Parameter] public bool IconOnly { get; set; } = false;
+}

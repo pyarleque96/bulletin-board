@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Splash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 01-splash-loading.html
+    SPEC:   Pantalla inicial al abrir la app (cold start / app boot).
+            Se muestra mientras Blazor inicializa Wasm y carga datos base
+            (categorías, config i18n). Reemplazar con Blazor loading overlay
+            en App.razor → <div id="app"> loading state.
+    CUÁNDO: Una sola vez por sesión, al montar la SPA por primera vez.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background-color: #ffffff; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      /* Evita FOUC: el body queda oculto hasta que CSS y Tailwind carguen */
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in {
+      to { opacity: 1; }
+    }
+
+    /* Posicionamiento de los orbs sin depender de Tailwind (evita salto) */
+    .orb-stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    /* ---- Orb ambiental detrás del logo ---- */
+    /* Empiezan invisibles y entran suavemente; luego respiran sin nunca llegar a 0 */
+    .orb-inner, .orb-outer { opacity: 0; will-change: transform, opacity; }
+
+    @keyframes orb-intro-outer {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 0.12; transform: scale(1); }
+    }
+    @keyframes orb-intro-inner {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 0.14; transform: scale(1); }
+    }
+    @keyframes orb-breathe {
+      0%, 100% { transform: scale(1);    opacity: 0.10; }
+      50%      { transform: scale(1.35); opacity: 0.20; }
+    }
+
+    .orb-outer {
+      animation:
+        orb-intro-outer 0.7s ease-out 0.1s forwards,
+        orb-breathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) 0.8s infinite;
+    }
+    .orb-inner {
+      animation:
+        orb-intro-inner 0.7s ease-out 0.25s forwards,
+        orb-breathe 2.8s cubic-bezier(0.45, 0, 0.55, 1) 0.95s infinite;
+    }
+
+    /* ---- Logo entrada ---- */
+    @keyframes logo-enter {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .logo-enter {
+      animation: logo-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* ---- Spinner circular naranja ---- */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #fde8c8;       /* naranja muy suave — track */
+      border-top-color: #fd8c1b;       /* naranja marca — thumb */
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    /* ---- Puntos de carga ---- */
+    @keyframes dot-fade {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40%            { opacity: 1;   transform: scale(1); }
+    }
+    .dot { animation: dot-fade 1.4s ease-in-out infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ---- Texto fade-in retrasado ---- */
+    @keyframes text-enter {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .text-enter {
+      animation: text-enter 0.5s ease forwards;
+      animation-delay: 0.5s;
+      opacity: 0;
+    }
+
+    /* ---- Barra de progreso indeterminada (decorativa) ---- */
+    @keyframes progress-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+    .progress-thumb {
+      animation: progress-slide 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .spinner, .dot, .orb-inner, .orb-outer, .progress-thumb {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     BLAZOR HOOK: Coloca este bloque como contenido inicial de <div id="app">
+     en App.razor. Blazor lo reemplaza automáticamente al montar.
+     ================================================================ -->
+
+<main
+  class="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-white relative"
+  role="status"
+  aria-label="Loading Bulletin Dells / Cargando Bulletin Dells"
+  aria-live="polite"
+>
+
+  <!-- Orb ambiental — decorativo, pointer-events: none.
+       Usa .orb-stage (CSS plano) para no depender de Tailwind y evitar FOUC. -->
+  <div class="orb-stage" aria-hidden="true">
+    <div
+      class="orb-outer rounded-full"
+      style="width: 340px; height: 340px; background: radial-gradient(circle, #fd8c1b 0%, transparent 70%); filter: blur(2px);"
+    ></div>
+  </div>
+  <div class="orb-stage" aria-hidden="true">
+    <div
+      class="orb-inner rounded-full"
+      style="width: 200px; height: 200px; background: radial-gradient(circle, #fd8c1b 0%, transparent 70%);"
+    ></div>
+  </div>
+
+  <!-- Contenido central -->
+  <div class="relative z-10 flex flex-col items-center gap-8 px-8 logo-enter">
+
+    <!-- Logo compuesto -->
+    <div class="flex flex-col items-center gap-1" aria-label="Bulletin Dells">
+      <!-- Wordmark SVG inline — sin imagen externa -->
+      <svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- "Bulletin" — slate-800 -->
+        <text
+          x="0" y="36"
+          font-family="Inter, system-ui, sans-serif"
+          font-size="32"
+          font-weight="700"
+          letter-spacing="-0.5"
+          fill="#1e293b"
+        >Bulletin</text>
+        <!-- "Dells" — naranja marca -->
+        <text
+          x="130" y="36"
+          font-family="Inter, system-ui, sans-serif"
+          font-size="32"
+          font-weight="700"
+          letter-spacing="-0.5"
+          fill="#fd8c1b"
+        >Dells</text>
+      </svg>
+
+      <!-- Subtítulo localización -->
+      <p class="text-xs font-medium tracking-widest uppercase" style="color: #94a3b8; letter-spacing: 0.18em;">
+        Wisconsin Dells, WI
+      </p>
+    </div>
+
+    <!-- Spinner naranja -->
+    <div class="spinner" aria-hidden="true"></div>
+
+    <!-- Texto bilingüe -->
+    <div class="text-enter flex flex-col items-center gap-1">
+      <p class="text-sm font-medium" style="color: #1e293b;">
+        Cargando
+        <!-- puntos animados -->
+        <span class="inline-flex gap-[3px] ml-1" aria-hidden="true">
+          <span class="dot inline-block w-[4px] h-[4px] rounded-full" style="background:#fd8c1b;"></span>
+          <span class="dot inline-block w-[4px] h-[4px] rounded-full" style="background:#fd8c1b;"></span>
+          <span class="dot inline-block w-[4px] h-[4px] rounded-full" style="background:#fd8c1b;"></span>
+        </span>
+        <span class="mx-2 font-light" style="color:#cbd5e1;">/</span>
+        Loading
+      </p>
+      <p class="text-xs" style="color: #94a3b8;">Tu marketplace local bilingüe · Your local bilingual marketplace</p>
+    </div>
+
+  </div>
+
+  <!-- Barra de progreso indeterminada en la parte inferior -->
+  <div
+    class="absolute bottom-0 left-0 right-0 h-[3px] overflow-hidden"
+    style="background: #f1f5f9;"
+    aria-hidden="true"
+  >
+    <div
+      class="progress-thumb h-full w-1/4 rounded-full"
+      style="background: #fd8c1b;"
+    ></div>
+  </div>
+
+</main>
+
+</body>
+</html>

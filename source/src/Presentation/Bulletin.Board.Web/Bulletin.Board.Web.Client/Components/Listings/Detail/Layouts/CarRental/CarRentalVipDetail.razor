@@ -1,0 +1,334 @@
+@* CarRentalVipDetail — VIP tier in car-rental category. Mockup reference: design/mockups/v5/detail-car-rental.html
+   Differences vs Basic:
+   - Photo carousel (main + thumbnails) instead of single image
+   - Super Duper VIP badge + GM-approved photo overlay
+   - "Vehicles" section (placeholder until PR 2.3 wires actual data)
+   - Verification status sidebar card *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Listings.Detail
+@using Microsoft.AspNetCore.Components.Authorization
+
+<article class="max-w-6xl mx-auto px-4 pt-24 pb-16">
+
+    @* ── Hero: gallery (left, span 2) + identity card (right) ── *@
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        @* Gallery *@
+        <div class="lg:col-span-2 space-y-3">
+            <div class="rounded-3xl overflow-hidden h-72 md:h-96 relative bg-slate-100"
+                 style="box-shadow: 0 0 0 2px rgba(234,179,8,0.4), 0 8px 32px -4px rgba(234,179,8,0.2);">
+                @if (Listing.Photos.Length > 0)
+                {
+                    <img src="@(_activePhoto?.Url ?? Listing.Photos[0].Url)"
+                         alt="@(_activePhoto?.AltText ?? Listing.Photos[0].AltText)"
+                         class="w-full h-full object-cover" />
+                }
+                <div class="absolute top-4 left-4">
+                    <span class="inline-flex items-center gap-1.5 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full"
+                          style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        VIP
+                    </span>
+                </div>
+                <div class="absolute bottom-4 right-4 bg-white/90 text-green-700 text-[10px] font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    Photos approved by GM
+                </div>
+            </div>
+
+            @* Thumbnails (only if 2+ photos) *@
+            @if (Listing.Photos.Length > 1)
+            {
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    @foreach (var p in Listing.Photos)
+                    {
+                        var isActive = (_activePhoto ?? Listing.Photos[0]).Id == p.Id;
+                        <button type="button" @onclick="() => Select(p)"
+                                class="@($"flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-opacity {(isActive ? "opacity-100 border-brand-500" : "opacity-70 border-transparent hover:opacity-100")}")"
+                                aria-label="@p.AltText">
+                            <img src="@p.Url" alt="" class="w-full h-full object-cover" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        @* Identity card *@
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 flex flex-col">
+            <div class="mb-4">
+                <h1 class="text-2xl font-bold text-ink tracking-tight leading-tight">@Listing.TitleEn</h1>
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                    <span class="font-bold text-ink">★ @Listing.Rating.ToString("0.0")</span>
+                    <a href="#reviews" class="text-xs text-brand-500 hover:text-brand-700">@Listing.ReviewCount reviews</a>
+                </div>
+            </div>
+
+            <div class="space-y-2.5 mb-5 text-sm text-muted">
+                @if (!string.IsNullOrWhiteSpace(Listing.Location))
+                {
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        @Listing.Location
+                    </div>
+                }
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="1" y="3" width="15" height="13" rx="1" />
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg>
+                    Car Rental
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-5">
+                @if (Listing.PhoneVerified)
+                {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">Phone Verified</span>
+                }
+                @if (Listing.IdVerified)
+                {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">ID Verified</span>
+                }
+                @if (Listing.SocialVerified)
+                {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Social Verified</span>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Listing.WhatsAppNumber))
+            {
+                <a href="@WaUrl()" target="_blank" rel="noopener noreferrer"
+                   class="mt-auto w-full flex items-center justify-center gap-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold py-3.5 rounded-2xl text-sm transition-colors">
+                    Contact via WhatsApp
+                </a>
+                <p class="text-center text-[10px] text-muted mt-2">You'll see a quick disclaimer before connecting.</p>
+            }
+        </div>
+    </div>
+
+    @* ── Main content + sidebar ── *@
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+
+            @* About *@
+            <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+                <h2 class="text-base font-semibold text-ink mb-3">About this provider</h2>
+                <p class="text-muted leading-relaxed text-sm whitespace-pre-line">@Listing.DescriptionEn</p>
+            </section>
+
+            @* Vehicles — real data from Listing.Vehicles. Section is hidden when fleet is empty. *@
+            @if (Listing.Vehicles.Length > 0)
+            {
+                <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+                    <h2 class="text-base font-semibold text-ink mb-5">Available vehicles</h2>
+                    <ul class="space-y-4">
+                        @foreach (var v in Listing.Vehicles)
+                        {
+                            <li class="rounded-2xl border border-slate-100 hover:border-brand-200 transition-colors overflow-hidden">
+                                <div class="flex items-center gap-4 p-4">
+                                    <div class="w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                                        @if (!string.IsNullOrWhiteSpace(v.PrimaryPhotoUrl))
+                                        {
+                                            <img src="@v.PrimaryPhotoUrl" alt="@v.Name" class="w-full h-full object-cover" />
+                                        }
+                                        else
+                                        {
+                                            <div class="w-full h-full flex items-center justify-center text-muted text-[10px] uppercase tracking-wider">
+                                                no photo
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-semibold text-ink text-sm truncate">@v.Name</h3>
+                                        <p class="text-muted text-xs mt-0.5">@FormatSpecs(v)</p>
+                                    </div>
+                                    <div class="text-right flex-shrink-0">
+                                        <p class="font-bold text-ink">@FormatRate(v.DailyRateCents)<span class="text-xs font-normal text-muted">/day</span></p>
+                                        @if (v.WeeklyRateCents.HasValue)
+                                        {
+                                            <p class="text-[11px] text-muted">@FormatRate(v.WeeklyRateCents.Value) /wk</p>
+                                        }
+                                    </div>
+                                    <div class="flex items-center gap-1 flex-shrink-0">
+                                        <button type="button" @onclick="() => ToggleCalendar(v.Id)"
+                                                class="text-xs text-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-slate-50">
+                                            @(_openCalendars.Contains(v.Id) ? "Hide" : "Check") availability
+                                        </button>
+                                        <button type="button" @onclick="() => OpenReservation(v)"
+                                                class="text-xs text-white bg-brand-500 hover:bg-brand-600 px-3 py-1.5 rounded-lg font-semibold">
+                                            Reserve
+                                        </button>
+                                    </div>
+                                </div>
+                                @if (_openCalendars.Contains(v.Id))
+                                {
+                                    <div class="border-t border-slate-100 p-4 bg-slate-50/50">
+                                        <VehicleCalendar VehicleId="v.Id" IsEditor="false" />
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            @* Reviews *@
+            <section id="reviews" class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+                <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+                    <div>
+                        <h2 class="text-base font-semibold text-ink">Reviews</h2>
+                        <p class="text-xs text-muted mt-0.5">Only from users who contacted via Bulletin Dells.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold text-ink leading-none">@Listing.Rating.ToString("0.0")</p>
+                        <p class="text-[10px] text-muted mt-1">@Listing.ReviewCount reviews</p>
+                    </div>
+                </div>
+
+                @if (Listing.Reviews.Length == 0)
+                {
+                    <p class="text-muted text-sm">No reviews yet.</p>
+                }
+                else
+                {
+                    <ul class="space-y-4">
+                        @foreach (var r in Listing.Reviews)
+                        {
+                            <li class="border border-slate-100 rounded-2xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-ink text-sm">@r.ReviewerName</span>
+                                    <span class="text-amber-500 text-sm font-medium">★ @r.Rating.ToString("0.0")</span>
+                                </div>
+                                <p class="text-[11px] text-muted mt-0.5">@r.CreatedAt.ToString("MMMM yyyy")</p>
+                                <p class="text-sm text-muted mt-2 leading-relaxed">@r.Text</p>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        </div>
+
+        @* Sidebar *@
+        <aside class="space-y-4">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                <h3 class="text-sm font-semibold text-ink mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Verified provider
+                </h3>
+                <div class="space-y-3 text-xs text-muted">
+                    @if (Listing.PhoneVerified)    { <p>✓ Phone number verified</p> }
+                    @if (Listing.IdVerified)       { <p>✓ Government ID verified</p> }
+                    @if (Listing.SocialVerified)   { <p>✓ Social media verified</p> }
+                    <p class="text-amber-700 font-medium">★ VIP status</p>
+                </div>
+                @if (Listing.ApprovedAt.HasValue)
+                {
+                    <div class="mt-4 pt-4 border-t border-slate-100 text-[11px] text-muted">
+                        Listing approved by GM on @Listing.ApprovedAt.Value.ToString("MMM d, yyyy")
+                    </div>
+                }
+            </div>
+
+            @if (Listing.SimilarListings.Length > 0)
+            {
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                    <h3 class="text-sm font-semibold text-ink mb-4">Similar providers</h3>
+                    <ul class="space-y-3">
+                        @foreach (var s in Listing.SimilarListings)
+                        {
+                            <li>
+                                <a href="/listing/detail/@s.Id" class="flex items-center gap-3 group">
+                                    <div class="w-12 h-9 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                                        @if (!string.IsNullOrWhiteSpace(s.CoverPhotoUrl))
+                                        {
+                                            <img src="@s.CoverPhotoUrl" alt="" class="w-full h-full object-cover" />
+                                        }
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-ink group-hover:text-brand-600 transition-colors truncate">@s.TitleEn</p>
+                                        <p class="text-xs text-muted">★ @s.Rating.ToString("0.0") (@s.ReviewCount)</p>
+                                    </div>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </aside>
+    </div>
+</article>
+
+<ReservationRequestModal IsOpen="_reservingVehicle is not null"
+                          VehicleId="_reservingVehicle?.Id ?? Guid.Empty"
+                          VehicleName="@(_reservingVehicle?.Name ?? string.Empty)"
+                          OnClose="CloseReservation"
+                          OnSubmitted="OnReservationSubmitted" />
+
+@if (!string.IsNullOrEmpty(_toast))
+{
+    <div class="fixed bottom-6 right-6 z-50 bg-ink text-white px-4 py-3 rounded-2xl shadow-lift max-w-sm flex items-start gap-3">
+        <span class="text-sm">@_toast</span>
+        <button type="button" @onclick="() => _toast = null" class="text-white/70 hover:text-white" aria-label="Dismiss">✕</button>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private ListingPhotoDto? _activePhoto;
+    private readonly HashSet<Guid> _openCalendars = new();
+    private VehicleDto? _reservingVehicle;
+    private string? _toast;
+
+    private void ToggleCalendar(Guid vehicleId)
+    {
+        if (!_openCalendars.Add(vehicleId))
+            _openCalendars.Remove(vehicleId);
+    }
+
+    private void OpenReservation(VehicleDto v) => _reservingVehicle = v;
+    private void CloseReservation() => _reservingVehicle = null;
+
+    private void OnReservationSubmitted(Guid _)
+    {
+        _toast = "Reservation request submitted. The provider will respond by email.";
+    }
+
+    protected override void OnParametersSet()
+    {
+        _activePhoto = Listing.Photos.Length > 0 ? Listing.Photos[0] : null;
+    }
+
+    private void Select(ListingPhotoDto photo) => _activePhoto = photo;
+
+    private string WaUrl()
+    {
+        var msg = Uri.EscapeDataString($"Hi, I found your listing '{Listing.TitleEn}' on Bulletin Dells.");
+        var phone = new string([..Listing.WhatsAppNumber.Where(char.IsDigit)]);
+        return $"https://wa.me/{phone}?text={msg}";
+    }
+
+    private static string FormatRate(int cents) => $"${cents / 100m:0.##}";
+
+    private static string FormatSpecs(VehicleDto v)
+    {
+        var ac = v.HasAirConditioning ? " · A/C" : string.Empty;
+        return $"Up to {v.PassengerMax} passengers · {v.Transmission}{ac}";
+    }
+}

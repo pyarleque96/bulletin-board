@@ -1,0 +1,68 @@
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    line-height: 8px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.category-badge__emoji {
+    font-size: 11px;
+    line-height: 1;
+}
+
+/* car-rental — violet */
+.category-badge--car-rental {
+    background: #ede9fe;
+    color: #6d28d9;
+    border-color: #7c3aed;
+}
+
+/* housing — emerald */
+.category-badge--housing {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #047857;
+}
+
+/* jobs — blue */
+.category-badge--jobs {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* beauty — pink */
+.category-badge--beauty {
+    background: #fce7f3;
+    color: #9d174d;
+    border-color: #be185d;
+}
+
+/* mechanic — amber */
+.category-badge--mechanic {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #b45309;
+}
+
+/* transport — sky */
+.category-badge--transport {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #0369a1;
+}
+
+/* other / sin color en BD — gris claro con borde gris más oscuro */
+.category-badge--other {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #64748b;
+}

@@ -1,0 +1,863 @@
+@page "/manage/{ListingId}"
+@* Sub-tab routes para housing/beauty (Fase B). Las rutas /vehicles, /reservations
+   son páginas separadas. /properties /inquiries /photos /reviews /appointments
+   las maneja esta misma página y delega al container resuelto + ActiveTab. *@
+@page "/manage/{ListingId}/properties"
+@page "/manage/{ListingId}/photos"
+@page "/manage/{ListingId}/reviews"
+@page "/manage/{ListingId}/inquiries"
+@page "/manage/{ListingId}/appointments"
+@page "/manage/{ListingId}/applications"
+@page "/manage/{ListingId}/services"
+@page "/manage/{ListingId}/routes"
+@page "/manage/{ListingId}/availability"
+@page "/manage/{ListingId}/overview"
+@page "/manage/{ListingId}/settings"
+@page "/manage/{ListingId}/analytics"
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Bulletin.Board.Web.Client.States
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Buttons
+@using Bulletin.Board.Web.Client.Services.Http
+@using Bulletin.Board.Web.Client.Services.State
+@using Bulletin.Board.Web.Client.Services.Common
+@using Bulletin.Board.Web.Client.Components.Manage
+
+@inject NavBarState NavBarState
+@inject NavigationManager Navigation
+@inject IManageLayoutResolver _manageResolver
+@inject FooterState FooterState
+@inject IListingService ListingService
+@inject IVehicleService VehicleService
+@inject IReservationService ReservationService
+@inject IReviewService ReviewService
+@inject IContactLogService ContactLog
+@inject ManageStateService StateService
+@inject IJSRuntime Js
+@inject IStringLocalizer<SharedResource> _localizer
+@implements IDisposable
+
+<PageTitle>@(_listing?.TitleEn ?? "Listing") — Overview | Bulletin Dells</PageTitle>
+
+<style>
+    .metric-card {
+        background:#fff; border:1px solid #e2e8f0;
+        border-radius:1rem; padding:1rem 1.25rem;
+        transition:box-shadow 0.25s ease;
+    }
+    .metric-card:hover { box-shadow:0 8px 32px -6px rgba(30,41,59,0.10); }
+
+    .delta-up   { color:#15803d; background:#dcfce7; }
+    .delta-down { color:#b91c1c; background:#fee2e2; }
+    .delta-flat { color:#64748b; background:#f1f5f9; }
+
+    .action-card {
+        border:1px solid #e2e8f0; border-radius:1rem; padding:1rem 1.25rem;
+        background:#fff; transition:box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .action-card:hover { border-color:#fdba74; box-shadow:0 6px 24px -4px rgba(30,41,59,0.09); }
+
+    @@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .pulse-dot { animation:pulse-dot 2s ease-in-out infinite; }
+
+    .fade-up { opacity:0; transform:translateY(12px);
+               transition:opacity 0.45s ease, transform 0.45s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    .bar-chart { display:flex; align-items:flex-end; gap:4px; height:60px; }
+    .bar { background:linear-gradient(to top,#fb923c,#f97316); border-radius:3px 3px 0 0;
+           flex:1; min-height:4px; transition:height 0.6s cubic-bezier(0.32,0.72,0,1); }
+
+    @@media (prefers-reduced-motion:reduce) {
+        *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+        .fade-up { opacity:1; transform:none; }
+    }
+</style>
+
+@* ── Category dispatch (Fase D) ──
+   Non-car-rental categories defer to a category-specific manage layout resolved
+   at runtime.
+
+   Car-rental:
+     - On the bare /manage/{id} route (no sub-path) we keep the original inline
+       detail UI below. That page is the data-rich overview (analytics + fleet
+       preview + recent reservations + reviews) that's already wired to real APIs
+       and we don't want to regress it.
+     - On any sub-tab path (/photos, /reviews, /settings, /overview) we DO delegate
+       to CarRentalManage{Regular,Vip} via the resolver, so the Fase D mockups
+       (photos, reviews, settings, etc.) reach the user.
+     - /manage/{id}/vehicles and /manage/{id}/reservations remain separate pages
+       with their own routes — they are not affected by this branch.
+
+   TODO (post-Fase D): migrate the inline overview to OverviewTab (Tabs/OverviewTab)
+   once the analytics endpoint is wired into the new tab. Until then, the inline
+   version is the source of truth for /manage/{id} on car-rental. *@
+@if (!_loading && _listing is not null && _resolvedLayoutType is not null
+     && (!IsCarRental || !string.IsNullOrEmpty(ActiveTabFromUrl)))
+{
+    <DynamicComponent Type="_resolvedLayoutType"
+                      Parameters="@(new Dictionary<string, object> { ["Listing"] = _listing, ["ActiveTab"] = ActiveTabFromUrl })" />
+}
+else
+{
+
+@* ── Sticky header + tabs (car-rental and fallback while loading) ── *@
+<ManageDetailHeader ListingId="@ListingId"
+                    ListingTitle="@(_listing?.TitleEn ?? "…")"
+                    CategorySlug="@(_listing?.CategorySlug ?? "")"
+                    ActiveTab="overview"
+                    Status="@(_listing?.Status ?? "")"
+                    TierBadge="@(_listing?.Tier ?? "")"
+                    CategoryLabel="@(_listing?.CategorySlug ?? "")"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{ListingId}")"
+                    VehicleCount="@_vehicles.Count"
+                    PendingReservations="@_reservations.Count(r => r.Status == "Pending")"
+                    PhotoCount="@(_listing?.Photos.Length ?? 0)" />
+
+@* ── PANEL: OVERVIEW ── *@
+<main class="max-w-6xl mx-auto px-4 py-8 w-full" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0">
+
+    @* Error state *@
+    @if (_errorKey is not null)
+    {
+        <ApiErrorBanner MessageKey="@_errorKey" RawDetail="@_errorDetail" />
+    }
+
+    @* Loading state — mirrors the empty overview layout exactly to avoid layout shift *@
+    @if (_loading)
+    {
+        @* KPI row *@
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="metric-card animate-pulse">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                        <div class="h-3 w-3 bg-slate-100 rounded-full"></div>
+                    </div>
+                    <div class="h-7 bg-slate-100 rounded w-1/3"></div>
+                    <div class="h-2 bg-slate-100 rounded w-1/4 mt-3"></div>
+                </div>
+            }
+        </div>
+
+        @* Fleet + Reservations row *@
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            @* Fleet placeholder — mirrors loaded layout: header + 3 list items + Add vehicle button *@
+            <div>
+                <div class="flex items-center justify-between mb-3 animate-pulse">
+                    <div class="h-3.5 bg-slate-100 rounded w-12"></div>
+                    <div class="h-3 bg-slate-100 rounded w-28"></div>
+                </div>
+                <div class="space-y-2">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 animate-pulse">
+                            <div class="w-10 h-10 rounded-lg bg-slate-100 flex-shrink-0"></div>
+                            <div class="flex-1 space-y-1.5">
+                                <div class="h-3 bg-slate-100 rounded w-2/3"></div>
+                                <div class="h-2 bg-slate-100 rounded w-1/2"></div>
+                            </div>
+                            <div class="h-4 w-16 bg-slate-100 rounded-full flex-shrink-0"></div>
+                        </div>
+                    }
+                </div>
+                <div class="mt-3 h-8 bg-slate-100 rounded-lg w-full animate-pulse"></div>
+            </div>
+
+            @* Reservations placeholder — mirrors loaded layout: header + 3 reservation items *@
+            <div class="lg:col-span-2">
+                <div class="flex items-center justify-between mb-3 animate-pulse">
+                    <div class="h-3.5 bg-slate-100 rounded w-56"></div>
+                    <div class="h-3 bg-slate-100 rounded w-14"></div>
+                </div>
+                <div class="space-y-2">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 animate-pulse">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0 mt-0.5"></div>
+                            <div class="flex-1 space-y-1.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="h-3 bg-slate-100 rounded w-2/5"></div>
+                                    <div class="h-4 w-16 bg-slate-100 rounded-full"></div>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded w-1/3"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Suggested Next Actions placeholder *@
+        <div class="mb-8">
+            <div class="h-3 bg-slate-100 rounded w-40 mb-3 animate-pulse"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                @for (int i = 0; i < 3; i++)
+                {
+                    <div class="action-card animate-pulse">
+                        <div class="h-4 bg-slate-100 rounded-full w-20 mb-2"></div>
+                        <div class="h-3 bg-slate-100 rounded w-3/4 mb-1"></div>
+                        <div class="h-2 bg-slate-100 rounded w-full mb-1"></div>
+                        <div class="h-2 bg-slate-100 rounded w-5/6 mb-3"></div>
+                        <div class="h-7 bg-slate-100 rounded w-24"></div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Latest Reviews placeholder — mirrors loaded layout: header + 3-card grid *@
+        <div>
+            <div class="flex items-center justify-between mb-3 animate-pulse">
+                <div class="h-3.5 bg-slate-100 rounded w-28"></div>
+                <div class="h-3 bg-slate-100 rounded w-64"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                @for (int i = 0; i < 3; i++)
+                {
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 animate-pulse">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-full bg-slate-100 flex-shrink-0"></div>
+                            <div class="h-3 bg-slate-100 rounded w-20"></div>
+                        </div>
+                        <div class="flex gap-0.5 mb-2">
+                            @for (int s = 0; s < 5; s++)
+                            {
+                                <div class="w-3.5 h-3.5 bg-slate-100 rounded-sm"></div>
+                            }
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="h-2 bg-slate-100 rounded w-full"></div>
+                            <div class="h-2 bg-slate-100 rounded w-5/6"></div>
+                            <div class="h-2 bg-slate-100 rounded w-2/3"></div>
+                        </div>
+                        <div class="h-2 bg-slate-100 rounded w-20 mt-3"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @* Success state *@
+    @if (!_loading && _listing is not null)
+    {
+        @* ── Row 1: KPI Metrics ── *@
+        @if (_analytics is not null)
+        {
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 fade-up">
+
+                @* Views this month *@
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-muted font-medium">Views (month)</span>
+                        @if (_analytics.ViewsMonthDeltaPercent.HasValue)
+                        {
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full @DeltaClass(_analytics.ViewsMonthDeltaPercent.Value)"
+                                  aria-label="@DeltaLabel(_analytics.ViewsMonthDeltaPercent.Value)">
+                                @DeltaText(_analytics.ViewsMonthDeltaPercent.Value)
+                            </span>
+                        }
+                        else
+                        {
+                            <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        }
+                    </div>
+                    <p class="text-2xl font-bold text-ink tracking-tight">@_analytics.ViewsThisMonth</p>
+                    @if (_analytics.DailyViews.Count > 0)
+                    {
+                        var maxView = _analytics.DailyViews.Max(d => d.Count);
+                        <div class="bar-chart mt-3" aria-hidden="true">
+                            @foreach (var day in _analytics.DailyViews.TakeLast(7))
+                            {
+                                var pct = maxView > 0 ? (int)(day.Count * 100.0 / maxView) : 4;
+                                <div class="bar" style="height:@(Math.Max(pct, 4))%"></div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @* Total views *@
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-muted font-medium">Total Views</span>
+                        <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink tracking-tight">@_analytics.ViewsTotal</p>
+                    <p class="text-xs text-muted mt-1">@SinceLabel</p>
+                </div>
+
+                @* WhatsApp contacts *@
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-muted font-medium">WhatsApp Contacts</span>
+                        @if (_analytics.WhatsAppContactsDeltaPercent.HasValue)
+                        {
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full @DeltaClass(_analytics.WhatsAppContactsDeltaPercent.Value)"
+                                  aria-label="@DeltaLabel(_analytics.WhatsAppContactsDeltaPercent.Value)">
+                                @DeltaText(_analytics.WhatsAppContactsDeltaPercent.Value)
+                            </span>
+                        }
+                        else
+                        {
+                            <svg class="w-4 h-4 text-emerald-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0 0 20.464 3.488"/>
+                            </svg>
+                        }
+                    </div>
+                    <p class="text-2xl font-bold text-ink tracking-tight">@_analytics.WhatsAppClicksTotal</p>
+                    <p class="text-xs text-muted mt-1">via platform</p>
+                </div>
+
+                @* Rating *@
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-muted font-medium">Avg. Rating</span>
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink tracking-tight">@_analytics.AvgRating.ToString("F1")</p>
+                    <p class="text-xs text-muted mt-1">from @_analytics.TotalRatings reviews</p>
+                </div>
+            </div>
+        }
+
+        @* ── Row 2: Fleet preview + Recent reservations ── *@
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            @* Fleet preview (1/3) *@
+            <div class="fade-up">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold text-ink">Fleet</h2>
+                    <ManageLinkButton Href="@($"/manage/{ListingId}/vehicles")"
+                                      Variant="Ghost"
+                                      Size="Small">
+                        Manage vehicles &rarr;
+                    </ManageLinkButton>
+                </div>
+
+                @if (_vehiclesLoading)
+                {
+                    <div class="space-y-2">
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 animate-pulse">
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 flex-shrink-0"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="h-3 bg-slate-100 rounded w-2/3"></div>
+                                    <div class="h-2 bg-slate-100 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <ul class="space-y-2" role="list" aria-label="Fleet preview / Vista previa de flota">
+                        @foreach (var v in _vehicles)
+                        {
+                            <li class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                    @if (v.Photos.FirstOrDefault(p => p.IsPrimary && p.IsPublic) is { } photo)
+                                    {
+                                        <img src="@photo.FilePath" alt="@v.Name" class="w-full h-full object-cover" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-slate-300" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                 stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+                                                <circle cx="7.5" cy="17.5" r="2.5"/>
+                                                <circle cx="17.5" cy="17.5" r="2.5"/>
+                                            </svg>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-ink truncate">@v.Name</p>
+                                    <p class="text-[10px] text-muted">@v.Transmission · @(v.HasAirConditioning ? "A/C" : "No A/C")</p>
+                                </div>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 @(v.IsActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-muted")">
+                                    @(v.IsActive ? "Available" : "Unavailable")
+                                </span>
+                            </li>
+                        }
+                    </ul>
+
+                    <ManageLinkButton Href="@($"/manage/{ListingId}/vehicles")"
+                                      Variant="Default"
+                                      Size="Small"
+                                      class="@($"{(_vehicles.Count > 0 ? "mt-3" : "")} w-full border-dashed hover:border-brand-400 hover:bg-brand-50 hover:text-brand-600")"
+                                      aria-label="Add a new vehicle / Agregar un nuevo vehículo">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add vehicle
+                    </ManageLinkButton>
+                }
+            </div>
+
+            @* Recent & Upcoming Reservations (2/3) *@
+            <div class="lg:col-span-2 fade-up">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold text-ink">Recent &amp; Upcoming Reservations</h2>
+                    <ManageLinkButton Href="@($"/manage/{ListingId}/reservations")"
+                                      Variant="Ghost"
+                                      Size="Small">
+                        See all &rarr;
+                    </ManageLinkButton>
+                </div>
+
+                @if (_reservationsLoading)
+                {
+                    <div class="space-y-2">
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 animate-pulse">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 flex-shrink-0"></div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                                    <div class="h-2 bg-slate-100 rounded w-1/3"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (_reservations.Count == 0)
+                {
+                    <div class="p-6 text-center bg-white rounded-xl border border-slate-200">
+                        <p class="text-xs text-muted">No reservations yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <ul class="space-y-2" role="list" aria-label="Recent reservations / Reservas recientes">
+                        @foreach (var r in _reservations)
+                        {
+                            <li class="flex items-start gap-3 p-3 bg-white rounded-xl border @(r.Status == "Pending" ? "border-amber-200" : "border-slate-200")">
+                                <div class="w-8 h-8 rounded-full @ReservationIconBg(r.Status) flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold text-slate-600" aria-hidden="true">
+                                    @Initials(r.RequesterName)
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                                        <p class="text-xs font-semibold text-ink">@r.RequesterName · @r.VehicleName</p>
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full @ReservationBadge(r.Status)">
+                                            @r.Status
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-muted mt-0.5">
+                                        @r.StartDate.ToString("MMM d") — @r.EndDate.ToString("MMM d")
+                                    </p>
+                                    @if (r.Status == "Pending" && !string.IsNullOrEmpty(_listing.WhatsAppNumber))
+                                    {
+                                        var waLink = $"https://wa.me/{_listing.WhatsAppNumber}";
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <WhatsAppButton Size="compact"
+                                                            Text="WhatsApp"
+                                                            AriaLabel="Contact via WhatsApp"
+                                                            OnClick="@(async () => { ContactLog.LogContact(r.Id); await Js.InvokeVoidAsync("open", waLink, "_blank"); })" />
+                                        </div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        @* ── Suggested Next Actions ── *@
+        <div class="mb-8 fade-up">
+            <h2 class="text-sm font-semibold text-ink mb-3">@_localizer["ManageOverview_NextActions_Title"]</h2>
+
+            @if (!HasAnyNextAction && (_listing.Tier == "VIP"))
+            {
+                <div class="p-4 bg-green-50 border border-green-100 rounded-xl text-sm text-green-700">
+                    @_localizer["ManageOverview_NextActions_AllSet"]
+                </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                    @* Card 1 — Respond to pending reservation *@
+                    @if (HasPendingReservation)
+                    {
+                        <div class="action-card">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                    @_localizer["ManageOverview_NextActions_ActionNeeded"]
+                                </span>
+                            </div>
+                            <p class="text-xs font-semibold text-ink mb-1">@_localizer["ManageOverview_NextActions_RespondReservation"]</p>
+                            <p class="text-[11px] text-muted leading-relaxed mb-3">@_localizer["ManageOverview_NextActions_RespondReservation_Desc"]</p>
+                            <ManageLinkButton Href="@($"/manage/{ListingId}/reservations")"
+                                              Variant="Primary"
+                                              Size="Small">
+                                @_localizer["ManageOverview_NextActions_GoToReservations"]
+                            </ManageLinkButton>
+                        </div>
+                    }
+
+                    @* Card 2 — Add more photos *@
+                    @if (NeedsMorePhotos)
+                    {
+                        <div class="action-card">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="16"/>
+                                        <line x1="8" y1="12" x2="16" y2="12"/>
+                                    </svg>
+                                    @_localizer["ManageOverview_NextActions_Tip"]
+                                </span>
+                            </div>
+                            <p class="text-xs font-semibold text-ink mb-1">@_localizer["ManageOverview_NextActions_AddPhotos"]</p>
+                            <p class="text-[11px] text-muted leading-relaxed mb-3">@_localizer["ManageOverview_NextActions_AddPhotos_Desc"]</p>
+                            <ManageLinkButton Href="@($"/manage/{ListingId}/photos")"
+                                              Variant="Secondary"
+                                              Size="Small">
+                                @_localizer["ManageOverview_NextActions_UploadPhotos"]
+                            </ManageLinkButton>
+                        </div>
+                    }
+
+                    @* Card 3 — VIP verification status (always visible) *@
+                    <div class="action-card">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                @_localizer["ManageOverview_NextActions_Info"]
+                            </span>
+                        </div>
+                        @if (_listing.Tier == "VIP")
+                        {
+                            <p class="text-xs font-semibold text-ink mb-1">@_localizer["ManageOverview_NextActions_VipStatus_Title_Vip"]</p>
+                            <p class="text-[11px] text-muted leading-relaxed">@_localizer["ManageOverview_NextActions_VipStatus_Vip"]</p>
+                        }
+                        else if (_listing.Tier == "Verified")
+                        {
+                            <p class="text-xs font-semibold text-ink mb-1">@_localizer["ManageOverview_NextActions_VipStatus_Title_Verified"]</p>
+                            <p class="text-[11px] text-muted leading-relaxed">@_localizer["ManageOverview_NextActions_VipStatus_Verified"]</p>
+                        }
+                        else
+                        {
+                            <p class="text-xs font-semibold text-ink mb-1">@_localizer["ManageOverview_NextActions_VipStatus_Title_Regular"]</p>
+                            <p class="text-[11px] text-muted leading-relaxed">@_localizer["ManageOverview_NextActions_VipStatus_Regular"]</p>
+                        }
+                    </div>
+
+                </div>
+            }
+        </div>
+
+        @* ── Row 3: Latest Reviews ── *@
+        <div class="fade-up">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-semibold text-ink">Latest Reviews</h2>
+                <span class="text-xs text-muted">Only GM-approved reviews are shown to the public</span>
+            </div>
+
+            @if (_reviewsLoading)
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="bg-white rounded-2xl border border-slate-200 p-4 animate-pulse">
+                            <div class="h-3 bg-slate-100 rounded w-1/2 mb-2"></div>
+                            <div class="h-3 bg-slate-100 rounded w-3/4 mb-2"></div>
+                            <div class="h-12 bg-slate-100 rounded"></div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (_reviews.Count == 0)
+            {
+                <div class="p-6 text-center bg-white rounded-xl border border-slate-200">
+                    <p class="text-sm text-muted">No reviews yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    @foreach (var rev in _reviews.Take(3))
+                    {
+                        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0 text-xs font-bold text-slate-500">
+                                    @Initials(rev.ReviewerName)
+                                </div>
+                                <span class="text-xs font-semibold text-ink">@rev.ReviewerName</span>
+                                @if (rev.IsVerified)
+                                {
+                                    <span class="ml-auto flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full font-medium">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Verified
+                                    </span>
+                                }
+                            </div>
+                            <div class="flex gap-0.5 mb-2" aria-label="@((int)rev.Rating) out of 5 stars" role="img">
+                                @for (int s = 1; s <= 5; s++)
+                                {
+                                    <svg class="w-3.5 h-3.5 @(s <= (int)rev.Rating ? "text-amber-400" : "text-slate-200")"
+                                         viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(rev.Comment))
+                            {
+                                <p class="text-xs text-muted leading-relaxed line-clamp-3">
+                                    "@rev.Comment"
+                                </p>
+                            }
+                            <p class="text-[10px] text-slate-300 mt-2">@rev.CreatedAt.ToString("MMM d, yyyy")</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+</main>
+
+} @* end else (car-rental / fallback branch) *@
+
+@code {
+    [Parameter] public string ListingId { get; set; } = "";
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    private ListingDetailDto?                       _listing;
+    private ListingAnalyticsDto?                    _analytics;
+    private List<OwnerVehicleDto>                   _vehicles            = new();
+    private List<ReservationDto>                    _reservations        = new();
+    private List<ListingReviewDto>                  _reviews             = new();
+
+    private bool    _loading              = true;
+    private bool    _vehiclesLoading      = true;
+    private bool    _reservationsLoading  = true;
+    private bool    _reviewsLoading       = true;
+    private string? _errorKey;
+    private string? _errorDetail;
+
+    // Resolved category-specific layout (non-car-rental categories). Null for car-rental:
+    // we keep the original inline UI of this page for that case.
+    private Type? _resolvedLayoutType;
+
+    private bool IsCarRental =>
+        _listing is not null
+        && string.Equals(_listing.CategorySlug, "car-rental", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Sub-tab actual derivado del path: /manage/{id} → "" (default por container),
+    /// /manage/{id}/properties → "properties", etc. El container resuelve el componente
+    /// a renderizar via su propio ResolveTab(ActiveTab) usando estas keys.
+    /// </summary>
+    private string ActiveTabFromUrl
+    {
+        get
+        {
+            var path = Navigation.ToBaseRelativePath(Navigation.Uri);
+            // Quitar query/fragment
+            var qi = path.IndexOfAny(new[] { '?', '#' });
+            if (qi >= 0) path = path[..qi];
+
+            // Esperado: "manage/{id}" o "manage/{id}/{tab}".
+            // Devolvemos "" en el path bare /manage/{id} para que cada container
+            // pueda aplicar su propio default (siempre "overview" según contrato del
+            // header). Esto también restaura el correcto branching en el dispatcher
+            // car-rental (rama inline vs resolver) — ver línea 96.
+            var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length >= 3 ? parts[2].ToLowerInvariant() : "";
+        }
+    }
+
+    // ── Computed ───────────────────────────────────────────────────────────────
+    private string SinceLabel => _listing?.ApprovedAt is DateTimeOffset dt
+        ? $"Since {dt:MMM yyyy}"
+        : "";
+
+    // Photos in ListingDetailDto are already filtered to public-only by the mapper (Regla #4).
+    private bool HasPendingReservation => _reservations.Any(r => r.Status == "Pending");
+    private bool NeedsMorePhotos => _listing is not null && _listing.Photos.Length < 5;
+    private bool HasAnyNextAction => HasPendingReservation || NeedsMorePhotos;
+
+    // ── Delta helpers ──────────────────────────────────────────────────────────
+    private static string DeltaClass(int delta) =>
+        delta > 0 ? "delta-up" : (delta < 0 ? "delta-down" : "delta-flat");
+
+    private static string DeltaLabel(int delta) =>
+        $"{(delta > 0 ? "+" : "")}{delta}% vs previous 30 days";
+
+    private static string DeltaText(int delta) =>
+        $"{(delta > 0 ? "+" : "")}{delta}%";
+
+    protected override void OnInitialized()
+    {
+        NavBarState.IsDark    = false;
+        FooterState.IsDark    = false;
+        FooterState.IsCompact = true;
+        StateService.OnStateChanged += OnStateChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Idempotente: el script usa un WeakSet para no re-observar nodos ya enganchados,
+        // pero DEBE re-correr en cada render porque los .fade-up sólo aparecen en el DOM
+        // cuando termina la carga async (no en firstRender).
+        await Js.InvokeVoidAsync("bulletinDells.initFadeUp");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Guid.TryParse(ListingId, out var id)) return;
+
+        _loading = true;
+        StateHasChanged();
+
+        // Load listing via state service (caches across sub-pages)
+        await StateService.LoadListingAsync(id);
+
+        switch (StateService.LastResult)
+        {
+            case ApiResult<ListingDetailDto>.Success s:
+                _listing  = s.Data;
+                _errorKey = null;
+                break;
+            case ApiResult<ListingDetailDto>.Error e:
+                _errorKey    = e.MessageKey;
+                _errorDetail = e.RawDetail;
+                _loading     = false;
+                return;
+        }
+
+        _loading = false;
+
+        // Resolve which manage layout to render.
+        //   - Non-car-rental: always defer to the category-specific component.
+        //   - Car-rental + sub-tab path: defer (so /photos /reviews /settings etc.
+        //     reach the new CarRentalManage{Regular,Vip} container).
+        //   - Car-rental + bare /manage/{id}: skip resolver and render the legacy
+        //     inline overview UI below (data-rich, already wired to real APIs).
+        if (_listing is not null)
+        {
+            _resolvedLayoutType = _manageResolver.Resolve(_listing.CategorySlug, _listing.Tier);
+            if (!IsCarRental || !string.IsNullOrEmpty(ActiveTabFromUrl))
+            {
+                StateHasChanged();
+                return;
+            }
+        }
+
+        // Parallel fetch of secondary data (analytics, vehicles, reservations, reviews)
+        await Task.WhenAll(
+            LoadAnalyticsAsync(id),
+            LoadVehiclesAsync(id),
+            LoadReservationsAsync(id),
+            LoadReviewsAsync(id));
+    }
+
+    private async Task LoadAnalyticsAsync(Guid id)
+    {
+        var result = await ListingService.GetAnalyticsAsync(id);
+        if (result is ApiResult<ListingAnalyticsDto>.Success s)
+            _analytics = s.Data;
+        StateHasChanged();
+    }
+
+    private async Task LoadVehiclesAsync(Guid id)
+    {
+        _vehiclesLoading = true;
+        var result = await VehicleService.GetByListingAsync(id, page: 1, pageSize: 3);
+        if (result is ApiResult<PagedResultDto<OwnerVehicleDto>>.Success s)
+            _vehicles = s.Data.Items.ToList();
+        _vehiclesLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadReservationsAsync(Guid id)
+    {
+        _reservationsLoading = true;
+        var result = await ReservationService.GetByListingAsync(id, page: 1, pageSize: 3);
+        if (result is ApiResult<PagedResultDto<ReservationDto>>.Success s)
+            _reservations = s.Data.Items.ToList();
+        _reservationsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadReviewsAsync(Guid id)
+    {
+        _reviewsLoading = true;
+        var result = await ReviewService.GetByListingAsync(id, page: 1, pageSize: 3);
+        if (result is ApiResult<PagedResultDto<ListingReviewDto>>.Success s)
+            _reviews = s.Data.Items.ToList();
+        _reviewsLoading = false;
+        StateHasChanged();
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private static string Initials(string name)
+    {
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[^1][0]}".ToUpper()
+            : (parts.Length == 1 ? parts[0][..Math.Min(2, parts[0].Length)].ToUpper() : "?");
+    }
+
+    private static string ReservationIconBg(string status) => status switch
+    {
+        "Pending"   => "bg-amber-100",
+        "Confirmed" => "bg-green-100",
+        "Completed" => "bg-slate-100",
+        _           => "bg-slate-100",
+    };
+
+    private static string ReservationBadge(string status) => status switch
+    {
+        "Pending"   => "bg-amber-100 text-amber-800",
+        "Confirmed" => "bg-green-100 text-green-700",
+        "Completed" => "bg-slate-100 text-muted",
+        "Cancelled" => "bg-red-100 text-red-700",
+        _           => "bg-slate-100 text-muted",
+    };
+
+    public void Dispose()
+    {
+        StateService.OnStateChanged -= OnStateChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

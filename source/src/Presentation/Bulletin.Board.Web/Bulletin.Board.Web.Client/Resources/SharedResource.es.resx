@@ -1,0 +1,2219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- NavBar -->
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="Nav_Browse" xml:space="preserve">
+    <value>Explorar</value>
+  </data>
+  <data name="Nav_HowItWorks" xml:space="preserve">
+    <value>Cómo funciona</value>
+  </data>
+  <data name="Nav_Manage" xml:space="preserve">
+    <value>Gestionar</value>
+  </data>
+  <data name="Nav_ListYours" xml:space="preserve">
+    <value>Publica el tuyo</value>
+  </data>
+  <data name="Nav_Login" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="Nav_Logout" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Nav_Register" xml:space="preserve">
+    <value>Registrarse</value>
+  </data>
+  <data name="Nav_LangToggle" xml:space="preserve">
+    <value>Cambiar a inglés</value>
+  </data>
+
+  <!-- Footer -->
+  <data name="Footer_Tagline" xml:space="preserve">
+    <value>Tu mercado local de confianza</value>
+  </data>
+  <data name="Footer_QuickLinks" xml:space="preserve">
+    <value>Enlaces rápidos</value>
+  </data>
+  <data name="Footer_Categories" xml:space="preserve">
+    <value>Categorías</value>
+  </data>
+  <data name="Footer_Contact" xml:space="preserve">
+    <value>Contacto</value>
+  </data>
+  <data name="Footer_Copyright" xml:space="preserve">
+    <value>© 2025 Bulletin Dells. Todos los derechos reservados.</value>
+  </data>
+  <data name="Footer_Privacy" xml:space="preserve">
+    <value>Política de privacidad</value>
+  </data>
+  <data name="Footer_Terms" xml:space="preserve">
+    <value>Términos de servicio</value>
+  </data>
+  <data name="Footer_About" xml:space="preserve">
+    <value>Nosotros</value>
+  </data>
+  <data name="Footer_ListYourBusiness" xml:space="preserve">
+    <value>Publica tu negocio</value>
+  </data>
+
+  <!-- Badges -->
+  <data name="Badge_VIP" xml:space="preserve">
+    <value>VIP</value>
+  </data>
+  <data name="Badge_Verified" xml:space="preserve">
+    <value>Verificado</value>
+  </data>
+  <data name="Badge_Regular" xml:space="preserve">
+    <value>Regular</value>
+  </data>
+  <data name="Badge_Pending" xml:space="preserve">
+    <value>Pendiente de revisión</value>
+  </data>
+  <data name="Badge_NeedsChanges" xml:space="preserve">
+    <value>Requiere cambios</value>
+  </data>
+  <data name="Badge_Rejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="Badge_Approved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+
+  <!-- Loading / Empty states -->
+  <data name="Loading_Default" xml:space="preserve">
+    <value>Cargando...</value>
+  </data>
+  <data name="Empty_NoResults" xml:space="preserve">
+    <value>No se encontraron resultados</value>
+  </data>
+  <data name="Empty_NoResultsSubtitle" xml:space="preserve">
+    <value>Intenta ajustar tus filtros o términos de búsqueda</value>
+  </data>
+  <data name="Empty_NoListings" xml:space="preserve">
+    <value>Aún no hay listados en esta categoría</value>
+  </data>
+  <data name="Empty_NoReviews" xml:space="preserve">
+    <value>Aún no hay reseñas</value>
+  </data>
+
+  <!-- Categories -->
+  <data name="Cat_CarRental" xml:space="preserve">
+    <value>Renta de Autos</value>
+  </data>
+  <data name="Cat_Housing" xml:space="preserve">
+    <value>Vivienda</value>
+  </data>
+  <data name="Cat_AirportRides" xml:space="preserve">
+    <value>Transporte al Aeropuerto</value>
+  </data>
+  <data name="Cat_Mechanics" xml:space="preserve">
+    <value>Mecánicos</value>
+  </data>
+  <data name="Cat_BeautyWellness" xml:space="preserve">
+    <value>Belleza y Bienestar</value>
+  </data>
+
+  <!-- Common actions -->
+  <data name="Action_ContactWhatsApp" xml:space="preserve">
+    <value>Contactar por WhatsApp</value>
+  </data>
+  <data name="Action_ViewDetails" xml:space="preserve">
+    <value>Ver detalles</value>
+  </data>
+  <data name="Action_SeeAll" xml:space="preserve">
+    <value>Ver todos</value>
+  </data>
+  <data name="Action_Details" xml:space="preserve">
+    <value>Detalles</value>
+  </data>
+  <data name="Action_TryAgain" xml:space="preserve">
+    <value>Intentar de nuevo</value>
+  </data>
+  <data name="Action_ViewAllVip" xml:space="preserve">
+    <value>Ver todos los VIP</value>
+  </data>
+
+  <!-- Page titles -->
+  <data name="PageTitle_Home" xml:space="preserve">
+    <value>Bulletin Dells — Marketplace Local</value>
+  </data>
+
+  <!-- Home page sections -->
+  <data name="Home_LoadingCategories" xml:space="preserve">
+    <value>Cargando categorías</value>
+  </data>
+  <data name="Home_ErrorTitle" xml:space="preserve">
+    <value>No se pudieron cargar los listings</value>
+  </data>
+  <data name="Home_ErrorSubtitle" xml:space="preserve">
+    <value>Tuvimos problemas para conectar con el servidor. Por favor, intenta de nuevo en un momento.</value>
+  </data>
+  <data name="Home_VipGridLabel" xml:space="preserve">
+    <value>Grid de listings VIP</value>
+  </data>
+  <data name="Home_BrowseByCategory" xml:space="preserve">
+    <value>Explorar por categoría</value>
+  </data>
+  <data name="Home_WhatLooking" xml:space="preserve">
+    <value>¿Qué estás buscando?</value>
+  </data>
+  <data name="Home_ServiceCategories" xml:space="preserve">
+    <value>Categorías de servicios</value>
+  </data>
+  <data name="Home_EmptyCategoriesTitle" xml:space="preserve">
+    <value>No hay categorías disponibles</value>
+  </data>
+  <data name="Home_EmptyCategoriesSubtitle" xml:space="preserve">
+    <value>Las categorías aparecerán aquí cuando estén configuradas.</value>
+  </data>
+
+  <!-- Listing card -->
+  <data name="Listing_IdVerified" xml:space="preserve">
+    <value>ID Verificado</value>
+  </data>
+  <data name="Listing_PhoneVerified" xml:space="preserve">
+    <value>Tel. Verificado</value>
+  </data>
+  <data name="Listing_From" xml:space="preserve">
+    <value>desde</value>
+  </data>
+  <data name="Listing_Day" xml:space="preserve">
+    <value>día</value>
+  </data>
+  <data name="Listing_VerifiedListing" xml:space="preserve">
+    <value>Listing verificado</value>
+  </data>
+
+  <!-- Auth layout — branding panel -->
+  <data name="Auth_Login_HeadlineHtml" xml:space="preserve">
+    <value>Tu comunidad&lt;br/&gt;local,&lt;br/&gt;&lt;span style="color:#F97316;"&gt;al alcance de un toque.&lt;/span&gt;</value>
+  </data>
+  <data name="Auth_Register_HeadlineHtml" xml:space="preserve">
+    <value>Únete a la&lt;br/&gt;comunidad.&lt;br/&gt;&lt;span style="color:#F97316;"&gt;Empieza a conectar.&lt;/span&gt;</value>
+  </data>
+  <data name="Auth_Register_Subtitle" xml:space="preserve">
+    <value>Únete a la comunidad local de Wisconsin Dells. Crea una cuenta en minutos y empieza a encontrar servicios de confianza.</value>
+  </data>
+  <data name="Auth_Feature_VerifiedProviders" xml:space="preserve">
+    <value>Solo proveedores verificados</value>
+  </data>
+  <data name="Auth_Feature_VerifiedProvidersDesc" xml:space="preserve">
+    <value>Listados aprobados por el GM en los que puedes confiar</value>
+  </data>
+  <data name="Auth_Feature_WhatsApp" xml:space="preserve">
+    <value>Contacto directo por WhatsApp</value>
+  </data>
+  <data name="Auth_Feature_WhatsAppDesc" xml:space="preserve">
+    <value>Conéctate al instante, sin intermediarios</value>
+  </data>
+  <data name="Auth_Feature_Bilingual" xml:space="preserve">
+    <value>Plataforma bilingüe EN/ES</value>
+  </data>
+  <data name="Auth_Feature_BilingualDesc" xml:space="preserve">
+    <value>Hecha para la comunidad de Dells</value>
+  </data>
+  <data name="Auth_Register_LegalFooter" xml:space="preserve">
+    <value>Al crear una cuenta aceptas nuestros Términos de Servicio y Política de Privacidad.</value>
+  </data>
+  <data name="Auth_Location" xml:space="preserve">
+    <value>Wisconsin Dells, WI</value>
+  </data>
+  <data name="Auth_Login_Subtitle" xml:space="preserve">
+    <value>Vivienda, rides, mecánicos, servicios de belleza y más — todo verificado y moderado para tu confianza.</value>
+  </data>
+  <data name="Auth_Login_SubtitleEs" xml:space="preserve">
+    <value>Tu comunidad local, al alcance de un toque.</value>
+  </data>
+  <data name="Auth_Stat_Listings" xml:space="preserve">
+    <value>Listados verificados</value>
+  </data>
+  <data name="Auth_Stat_Categories" xml:space="preserve">
+    <value>Categorías</value>
+  </data>
+  <data name="Auth_Stat_Bilingual" xml:space="preserve">
+    <value>Bilingüe</value>
+  </data>
+  <data name="Auth_Testimonial_Quote" xml:space="preserve">
+    <value>Encontré mi apartamento a través de Bulletin Dells en un día. Súper fácil y confiable.</value>
+  </data>
+  <data name="Auth_Testimonial_Role" xml:space="preserve">
+    <value>Estudiante J1 · 2024</value>
+  </data>
+  <data name="Auth_OrContinueWith" xml:space="preserve">
+    <value>o continúa con</value>
+  </data>
+  <data name="Auth_ContinueGoogle" xml:space="preserve">
+    <value>Continuar con Google</value>
+  </data>
+  <data name="Auth_BackToSite" xml:space="preserve">
+    <value>Volver a Bulletin Dells</value>
+  </data>
+  <data name="Auth_OrSignUpWith" xml:space="preserve">
+    <value>o regístrate con</value>
+  </data>
+  <data name="Auth_ContinueGoogleSoon" xml:space="preserve">
+    <value>Continuar con Google (próximamente)</value>
+  </data>
+
+  <!-- Login page -->
+  <data name="Login_WelcomeTitle" xml:space="preserve">
+    <value>Bienvenido de vuelta</value>
+  </data>
+  <data name="Login_WelcomeSubtitle" xml:space="preserve">
+    <value>Inicia sesión en tu cuenta</value>
+  </data>
+  <data name="Login_AccountCreated" xml:space="preserve">
+    <value>¡Cuenta creada! Ingresa para continuar.</value>
+  </data>
+  <data name="Login_EmailOrPhone" xml:space="preserve">
+    <value>Email o Teléfono</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="Login_ForgotPassword" xml:space="preserve">
+    <value>¿Olvidaste tu contraseña?</value>
+  </data>
+  <data name="Login_RememberMe" xml:space="preserve">
+    <value>Recuérdame por 30 días</value>
+  </data>
+  <data name="Login_SubmitBtn" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="Login_NoAccount" xml:space="preserve">
+    <value>¿No tienes una cuenta?</value>
+  </data>
+  <data name="Login_CreateAccount" xml:space="preserve">
+    <value>Regístrate</value>
+  </data>
+  <data name="Login_InvalidCredentials" xml:space="preserve">
+    <value>Email o contraseña incorrectos.</value>
+  </data>
+  <data name="Login_EmailRequired" xml:space="preserve">
+    <value>Por favor ingresa tu email o teléfono.</value>
+  </data>
+  <data name="Login_PasswordRequired" xml:space="preserve">
+    <value>La contraseña es requerida.</value>
+  </data>
+  <data name="Login_ShowPassword" xml:space="preserve">
+    <value>Mostrar contraseña</value>
+  </data>
+  <data name="Login_HidePassword" xml:space="preserve">
+    <value>Ocultar contraseña</value>
+  </data>
+  <data name="Login_SessionExpired" xml:space="preserve">
+    <value>Tu sesión expiró. Vuelve a iniciar sesión.</value>
+  </data>
+
+  <!-- Register page -->
+  <data name="Register_Title" xml:space="preserve">
+    <value>Crea tu cuenta</value>
+  </data>
+  <data name="Register_Subtitle" xml:space="preserve">
+    <value>Gratis, toma 2 minutos</value>
+  </data>
+  <data name="Register_RoleLabel" xml:space="preserve">
+    <value>Soy</value>
+  </data>
+  <data name="Register_RoleCustomer" xml:space="preserve">
+    <value>Cliente</value>
+  </data>
+  <data name="Register_RoleCustomerDesc" xml:space="preserve">
+    <value>Buscando servicios</value>
+  </data>
+  <data name="Register_RoleProvider" xml:space="preserve">
+    <value>Proveedor</value>
+  </data>
+  <data name="Register_RoleProviderDesc" xml:space="preserve">
+    <value>Ofrece tus servicios</value>
+  </data>
+  <data name="Register_FullName" xml:space="preserve">
+    <value>Nombre completo</value>
+  </data>
+  <data name="Register_FullNameRequired" xml:space="preserve">
+    <value>El nombre completo es requerido.</value>
+  </data>
+  <data name="Register_EmailInvalid" xml:space="preserve">
+    <value>Por favor ingresa un email válido.</value>
+  </data>
+  <data name="Register_Phone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="Register_Password" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="Register_PasswordMinLength" xml:space="preserve">
+    <value>La contraseña debe tener al menos 8 caracteres.</value>
+  </data>
+  <data name="Register_ConfirmPassword" xml:space="preserve">
+    <value>Confirmar contraseña</value>
+  </data>
+  <data name="Register_PasswordsMismatch" xml:space="preserve">
+    <value>Las contraseñas no coinciden.</value>
+  </data>
+  <data name="Register_TermsLabel" xml:space="preserve">
+    <value>Acepto los Términos de Servicio y la Política de Privacidad. Entiendo que esta plataforma me conecta con proveedores locales y no presta servicios directamente.</value>
+  </data>
+  <data name="Register_TermsRequired" xml:space="preserve">
+    <value>Debes aceptar los términos para continuar.</value>
+  </data>
+  <data name="Register_SubmitBtn" xml:space="preserve">
+    <value>Crear cuenta</value>
+  </data>
+  <data name="Register_HaveAccount" xml:space="preserve">
+    <value>¿Ya tienes una cuenta?</value>
+  </data>
+  <data name="Register_RegistrationFailed" xml:space="preserve">
+    <value>El registro falló. El email puede estar ya en uso.</value>
+  </data>
+
+  <!-- Password strength -->
+  <data name="Pwd_Weak" xml:space="preserve">
+    <value>Débil</value>
+  </data>
+  <data name="Pwd_Fair" xml:space="preserve">
+    <value>Regular</value>
+  </data>
+  <data name="Pwd_Good" xml:space="preserve">
+    <value>Buena</value>
+  </data>
+  <data name="Pwd_Strong" xml:space="preserve">
+    <value>Fuerte</value>
+  </data>
+  <data name="Pwd_Hint" xml:space="preserve">
+    <value>Usa 8+ caracteres, números y símbolos para una contraseña segura.</value>
+  </data>
+
+  <!-- Hero section -->
+  <data name="Hero_Location" xml:space="preserve">
+    <value>Wisconsin Dells, WI</value>
+  </data>
+  <data name="Hero_Headline" xml:space="preserve">
+    <value>Descubre lo que Dells tiene para ofrecer.</value>
+  </data>
+  <data name="Hero_HeadlinePart1" xml:space="preserve">
+    <value>Descubre lo que</value>
+  </data>
+  <data name="Hero_HeadlinePart2Suffix" xml:space="preserve">
+    <value>tiene para ofrecer.</value>
+  </data>
+  <data name="Hero_Subtitle" xml:space="preserve">
+    <value>Vivienda, rides, mecánicos, belleza, trabajos y más — todo local, todo verificado.</value>
+  </data>
+  <data name="Hero_SearchLabel" xml:space="preserve">
+    <value>Buscar servicios en Wisconsin Dells</value>
+  </data>
+  <data name="Hero_SearchPlaceholder" xml:space="preserve">
+    <value>Busca vivienda, mecánicos, transporte…</value>
+  </data>
+  <data name="Hero_SearchSubmit" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="Hero_QuickLabel" xml:space="preserve">
+    <value>Rápido:</value>
+  </data>
+  <data name="Hero_TrustGmVerified" xml:space="preserve">
+    <value>Listings verificados por GM</value>
+  </data>
+  <data name="Hero_TrustProviders" xml:space="preserve">
+    <value>340+ proveedores verificados</value>
+  </data>
+  <data name="Hero_TrustWhatsApp" xml:space="preserve">
+    <value>Contacto por WhatsApp</value>
+  </data>
+  <data name="Hero_Scroll" xml:space="preserve">
+    <value>Desplazar</value>
+  </data>
+
+  <!-- Form components -->
+  <data name="File_ClickToChange" xml:space="preserve">
+    <value>Clic para cambiar</value>
+  </data>
+  <data name="File_ClickOrDrag" xml:space="preserve">
+    <value>Clic o arrastre aquí</value>
+  </data>
+  <data name="Phone_CountryCode" xml:space="preserve">
+    <value>Código de país</value>
+  </data>
+  <data name="Phone_Number" xml:space="preserve">
+    <value>Número de teléfono</value>
+  </data>
+
+  <!-- Página Browse / Listings -->
+  <data name="Browse_FiltersLabel" xml:space="preserve">
+    <value>Filtros de búsqueda</value>
+  </data>
+  <data name="Browse_Filters" xml:space="preserve">
+    <value>Filtros</value>
+  </data>
+  <data name="Browse_ResetAll" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
+  <data name="Browse_FilterRating" xml:space="preserve">
+    <value>Calificación</value>
+  </data>
+  <data name="Browse_RatingAny" xml:space="preserve">
+    <value>Cualquier calificación</value>
+  </data>
+  <data name="Browse_FilterLanguage" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+  <data name="Browse_FilterTier" xml:space="preserve">
+    <value>Nivel de proveedor</value>
+  </data>
+  <data name="Browse_VerifiedOnly" xml:space="preserve">
+    <value>Solo verificados</value>
+  </data>
+  <data name="Browse_TierSdVip" xml:space="preserve">
+    <value>Super Duper VIP</value>
+  </data>
+  <data name="Browse_TierVip" xml:space="preserve">
+    <value>Proveedores VIP</value>
+  </data>
+  <data name="Browse_TierVerified" xml:space="preserve">
+    <value>Proveedores Verificados</value>
+  </data>
+  <data name="Browse_TierSdVipNote" xml:space="preserve">
+    <value>Destacado primero por la plataforma</value>
+  </data>
+  <data name="Browse_Breadcrumb" xml:space="preserve">
+    <value>Navegación de ruta</value>
+  </data>
+  <data name="Browse_AllCategories" xml:space="preserve">
+    <value>Todas las categorías</value>
+  </data>
+  <data name="Browse_VerifiedListings" xml:space="preserve">
+    <value>listings verificados</value>
+  </data>
+  <data name="Browse_SortBy" xml:space="preserve">
+    <value>Ordenar por:</value>
+  </data>
+  <data name="Browse_SortRecommended" xml:space="preserve">
+    <value>Recomendados</value>
+  </data>
+  <data name="Browse_SortRating" xml:space="preserve">
+    <value>Mejor calificados</value>
+  </data>
+  <data name="Browse_SortNewest" xml:space="preserve">
+    <value>Más recientes</value>
+  </data>
+  <data name="Browse_CategoryTabsLabel" xml:space="preserve">
+    <value>Explorar categorías</value>
+  </data>
+  <data name="Browse_SearchResults" xml:space="preserve">
+    <value>Resultados de búsqueda</value>
+  </data>
+  <data name="Browse_VerifiedListingsLabel" xml:space="preserve">
+    <value>Listings verificados</value>
+  </data>
+  <data name="Browse_Contact" xml:space="preserve">
+    <value>Contactar</value>
+  </data>
+  <data name="Browse_ViewFullProfile" xml:space="preserve">
+    <value>Ver perfil completo</value>
+  </data>
+  <data name="Browse_Loading" xml:space="preserve">
+    <value>Cargando…</value>
+  </data>
+  <data name="Browse_PaginationLabel" xml:space="preserve">
+    <value>Paginación</value>
+  </data>
+
+  <!-- NavBar — enlace Admin -->
+  <data name="Nav_Admin" xml:space="preserve">
+    <value>Admin</value>
+  </data>
+
+  <!-- Admin — comunes -->
+  <data name="Admin_Optional" xml:space="preserve">
+    <value>opcional</value>
+  </data>
+  <data name="Admin_Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Admin_Saving" xml:space="preserve">
+    <value>Guardando…</value>
+  </data>
+  <data name="Admin_SaveChanges" xml:space="preserve">
+    <value>Guardar cambios</value>
+  </data>
+  <data name="Admin_CreateCategory" xml:space="preserve">
+    <value>Crear categoría</value>
+  </data>
+  <data name="Admin_NewCategory" xml:space="preserve">
+    <value>Nueva Categoría</value>
+  </data>
+  <data name="Admin_EditCategory" xml:space="preserve">
+    <value>Editar Categoría</value>
+  </data>
+  <data name="Admin_CloseModal" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Admin_Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Admin_Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Admin_Activate" xml:space="preserve">
+    <value>Activar</value>
+  </data>
+  <data name="Admin_Deactivate" xml:space="preserve">
+    <value>Desactivar</value>
+  </data>
+  <data name="Admin_Active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="Admin_Inactive" xml:space="preserve">
+    <value>Inactivo</value>
+  </data>
+  <data name="Admin_MoveUp" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="Admin_MoveDown" xml:space="preserve">
+    <value>Bajar</value>
+  </data>
+  <data name="Admin_LoadError" xml:space="preserve">
+    <value>No se pudieron cargar las categorías</value>
+  </data>
+
+  <!-- Admin — página de categorías -->
+  <data name="Admin_Categories_PageTitle" xml:space="preserve">
+    <value>Categorías — Admin · Bulletin Dells</value>
+  </data>
+  <data name="Admin_Categories_Heading" xml:space="preserve">
+    <value>Categorías</value>
+  </data>
+  <data name="Admin_Categories_Subtitle" xml:space="preserve">
+    <value>Gestiona las categorías de servicios visibles en el marketplace.</value>
+  </data>
+  <data name="Admin_Categories_Count" xml:space="preserve">
+    <value>categorías</value>
+  </data>
+  <data name="Admin_NoCategoriesTitle" xml:space="preserve">
+    <value>Aún no hay categorías</value>
+  </data>
+  <data name="Admin_NoCategoriesSubtitle" xml:space="preserve">
+    <value>Crea tu primera categoría para comenzar.</value>
+  </data>
+
+  <!-- Admin — columnas de la tabla -->
+  <data name="Admin_Cat_IconCol" xml:space="preserve">
+    <value>Ícono</value>
+  </data>
+  <data name="Admin_Cat_OrderCol" xml:space="preserve">
+    <value>Orden</value>
+  </data>
+  <data name="Admin_Cat_StatusCol" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Admin_Cat_ActionsCol" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+
+  <!-- Admin — campos del formulario -->
+  <data name="Admin_Cat_NameEn" xml:space="preserve">
+    <value>Nombre (inglés)</value>
+  </data>
+  <data name="Admin_Cat_NameEs" xml:space="preserve">
+    <value>Nombre (español)</value>
+  </data>
+  <data name="Admin_Cat_Slug" xml:space="preserve">
+    <value>Slug</value>
+  </data>
+  <data name="Admin_Cat_SlugHint" xml:space="preserve">
+    <value>Se genera automáticamente desde el nombre en inglés. Usa letras minúsculas y guiones.</value>
+  </data>
+  <data name="Admin_Cat_DisplayOrder" xml:space="preserve">
+    <value>Orden de visualización</value>
+  </data>
+  <data name="Admin_Cat_IsActive" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="Admin_Cat_IconUrl" xml:space="preserve">
+    <value>URL del ícono</value>
+  </data>
+  <data name="Admin_Cat_IconPreview" xml:space="preserve">
+    <value>Vista previa del ícono</value>
+  </data>
+
+  <!-- Admin — confirmación de eliminación -->
+  <data name="Admin_DeleteConfirmTitle" xml:space="preserve">
+    <value>¿Eliminar categoría?</value>
+  </data>
+  <data name="Admin_DeleteConfirmBody" xml:space="preserve">
+    <value>¿Estás seguro de que deseas eliminar "{0}"? Esta acción no se puede deshacer.</value>
+  </data>
+
+  <!-- Admin — mensajes toast -->
+  <data name="Admin_Toast_Created" xml:space="preserve">
+    <value>Categoría creada exitosamente.</value>
+  </data>
+  <data name="Admin_Toast_Updated" xml:space="preserve">
+    <value>Categoría actualizada exitosamente.</value>
+  </data>
+  <data name="Admin_Toast_Deleted" xml:space="preserve">
+    <value>Categoría eliminada.</value>
+  </data>
+  <data name="Admin_Toast_Activated" xml:space="preserve">
+    <value>Categoría activada.</value>
+  </data>
+  <data name="Admin_Toast_Deactivated" xml:space="preserve">
+    <value>Categoría desactivada.</value>
+  </data>
+  <data name="Admin_Toast_SlugConflict" xml:space="preserve">
+    <value>Ese slug ya está en uso. Por favor elige uno diferente.</value>
+  </data>
+  <data name="Admin_Toast_Error" xml:space="preserve">
+    <value>Algo salió mal. Por favor intenta de nuevo.</value>
+  </data>
+
+  <!-- NotFound page -->
+  <data name="NotFound_Title" xml:space="preserve">
+    <value>Página no encontrada</value>
+  </data>
+  <data name="NotFound_Message" xml:space="preserve">
+    <value>Lo sentimos, el contenido que buscas no existe.</value>
+  </data>
+  <data name="NotFound_GoHome" xml:space="preserve">
+    <value>Ir al inicio</value>
+  </data>
+
+  <!-- Home page — categories section (new) -->
+  <data name="Home_MobileDiscover" xml:space="preserve">
+    <value>Desliza para descubrir lo que ofrece Dells.</value>
+  </data>
+  <data name="Home_CategoryStats" xml:space="preserve">
+    <value>8 categorías. Solo proveedores verificados. Moderado por el GM.</value>
+  </data>
+
+  <!-- Category names (new) -->
+  <data name="Cat_Jobs" xml:space="preserve">
+    <value>Empleos</value>
+  </data>
+  <data name="Cat_Restaurants" xml:space="preserve">
+    <value>Restaurantes</value>
+  </data>
+  <data name="Cat_Entertainment" xml:space="preserve">
+    <value>Entretenimiento</value>
+  </data>
+
+  <!-- Category descriptions -->
+  <data name="Cat_Housing_Desc" xml:space="preserve">
+    <value>Cuartos, apartamentos, temporada</value>
+  </data>
+  <data name="Cat_CarRental_Desc" xml:space="preserve">
+    <value>Tarifas diarias, semanales y de temporada</value>
+  </data>
+  <data name="Cat_AirportRides_Desc" xml:space="preserve">
+    <value>Traslados confiables al aeropuerto</value>
+  </data>
+  <data name="Cat_Mechanics_Desc" xml:space="preserve">
+    <value>Reparación, llantas, cambio de aceite</value>
+  </data>
+  <data name="Cat_Beauty_Desc" xml:space="preserve">
+    <value>Cabello, uñas, spa, barbería</value>
+  </data>
+  <data name="Cat_Jobs_Desc" xml:space="preserve">
+    <value>Temporal, hospitalidad, general</value>
+  </data>
+  <data name="Cat_Restaurants_Desc" xml:space="preserve">
+    <value>Comida, entrega, catering</value>
+  </data>
+  <data name="Cat_Entertainment_Desc" xml:space="preserve">
+    <value>Eventos, tours, actividades</value>
+  </data>
+
+  <!-- Login placeholders -->
+  <data name="Login_EmailPlaceholder" xml:space="preserve">
+    <value>tu@correo.com o +1 608...</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Tu contraseña</value>
+  </data>
+
+  <!-- Home — Provider CTA section -->
+  <data name="Home_ProviderCta_Eyebrow" xml:space="preserve">
+    <value>Para Proveedores</value>
+  </data>
+  <data name="Home_ProviderCta_Heading" xml:space="preserve">
+    <value>¿Eres un proveedor local?</value>
+  </data>
+  <data name="Home_ProviderCta_Subtitle" xml:space="preserve">
+    <value>Publica tu negocio en Bulletin Dells y conéctate directamente con clientes por WhatsApp — sin comisiones, sin intermediarios.</value>
+  </data>
+  <data name="Home_ProviderCta_Step1_Title" xml:space="preserve">
+    <value>Regístrate y Verifica</value>
+  </data>
+  <data name="Home_ProviderCta_Step1_Desc" xml:space="preserve">
+    <value>Verificación de teléfono + ID</value>
+  </data>
+  <data name="Home_ProviderCta_Step2_Title" xml:space="preserve">
+    <value>Crea tu Anuncio</value>
+  </data>
+  <data name="Home_ProviderCta_Step2_Desc" xml:space="preserve">
+    <value>Fotos, descripción, precios</value>
+  </data>
+  <data name="Home_ProviderCta_Step3_Title" xml:space="preserve">
+    <value>Publica Tras la Aprobación</value>
+  </data>
+  <data name="Home_ProviderCta_Step3_Desc" xml:space="preserve">
+    <value>El GM revisa y aprueba</value>
+  </data>
+  <data name="Home_ProviderCta_PrimaryBtn" xml:space="preserve">
+    <value>Comenzar — Es Gratis</value>
+  </data>
+  <data name="Home_ProviderCta_SecondaryBtn" xml:space="preserve">
+    <value>Explorar como cliente</value>
+  </data>
+
+  <!-- HowItWorks — Hero -->
+  <data name="HowItWorks_Hero_Eyebrow" xml:space="preserve">
+    <value>Guía de la plataforma</value>
+  </data>
+  <data name="HowItWorks_Hero_Title" xml:space="preserve">
+    <value>Cómo Funciona Bulletin Dells</value>
+  </data>
+  <data name="HowItWorks_Hero_Subtitle" xml:space="preserve">
+    <value>Un marketplace bilingüe y moderado que conecta clientes con proveedores locales de confianza en Wisconsin Dells — sin intermediarios, sin comisiones.</value>
+  </data>
+  <data name="HowItWorks_Hero_CtaBrowse" xml:space="preserve">
+    <value>Explorar anuncios</value>
+  </data>
+  <data name="HowItWorks_Hero_CtaProvider" xml:space="preserve">
+    <value>Conviértete en proveedor</value>
+  </data>
+
+  <!-- HowItWorks — Hero Carousel -->
+  <data name="HowItWorks_HeroCarousel_Step1_Label" xml:space="preserve">
+    <value>Descubre</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step1_Hint" xml:space="preserve">
+    <value>Explora anuncios locales verificados</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step2_Label" xml:space="preserve">
+    <value>Verifica</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step2_Hint" xml:space="preserve">
+    <value>Teléfono + ID + redes confirmadas</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step3_Label" xml:space="preserve">
+    <value>Aprueba</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step3_Hint" xml:space="preserve">
+    <value>El GM revisa cada anuncio</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step4_Label" xml:space="preserve">
+    <value>Conecta</value>
+  </data>
+  <data name="HowItWorks_HeroCarousel_Step4_Hint" xml:space="preserve">
+    <value>Primer contacto por WhatsApp</value>
+  </data>
+
+  <!-- HowItWorks — For Customers -->
+  <data name="HowItWorks_Customers_Eyebrow" xml:space="preserve">
+    <value>Para Clientes</value>
+  </data>
+  <data name="HowItWorks_Customers_Title" xml:space="preserve">
+    <value>Encuentra lo que necesitas en 4 pasos</value>
+  </data>
+  <data name="HowItWorks_Customers_Subtitle" xml:space="preserve">
+    <value>Explora servicios locales verificados, conecta al instante por WhatsApp y deja una calificación verificada tras tu experiencia.</value>
+  </data>
+  <data name="HowItWorks_Customers_Step1_Title" xml:space="preserve">
+    <value>Descubre</value>
+  </data>
+  <data name="HowItWorks_Customers_Step1_Body" xml:space="preserve">
+    <value>Explora anuncios aprobados por el GM por categoría — vivienda, rides, mecánicos, belleza, empleos y más.</value>
+  </data>
+  <data name="HowItWorks_Customers_Step2_Title" xml:space="preserve">
+    <value>Contacta por WhatsApp</value>
+  </data>
+  <data name="HowItWorks_Customers_Step2_Body" xml:space="preserve">
+    <value>Toca el botón de WhatsApp para abrir una conversación directa con el proveedor. No necesitas iniciar sesión para explorar.</value>
+  </data>
+  <data name="HowItWorks_Customers_Step3_Title" xml:space="preserve">
+    <value>Conoce al proveedor</value>
+  </data>
+  <data name="HowItWorks_Customers_Step3_Body" xml:space="preserve">
+    <value>Un breve aviso legal aclara que la plataforma solo te conecta — el servicio es entre tú y el proveedor.</value>
+  </data>
+  <data name="HowItWorks_Customers_Step4_Title" xml:space="preserve">
+    <value>Deja una calificación verificada</value>
+  </data>
+  <data name="HowItWorks_Customers_Step4_Body" xml:space="preserve">
+    <value>Solo los clientes que contactaron al proveedor a través de la plataforma pueden calificarlo. Todas las calificaciones se revisan antes de publicarse.</value>
+  </data>
+
+  <!-- HowItWorks — For Providers -->
+  <data name="HowItWorks_Providers_Eyebrow" xml:space="preserve">
+    <value>Para Proveedores</value>
+  </data>
+  <data name="HowItWorks_Providers_Title" xml:space="preserve">
+    <value>Publica tu anuncio en 5 pasos</value>
+  </data>
+  <data name="HowItWorks_Providers_Subtitle" xml:space="preserve">
+    <value>Desde el registro hasta publicarte — y actualizarte a VIP cuando estés listo.</value>
+  </data>
+  <data name="HowItWorks_Providers_Step1_Title" xml:space="preserve">
+    <value>Regístrate</value>
+  </data>
+  <data name="HowItWorks_Providers_Step1_Body" xml:space="preserve">
+    <value>Crea tu cuenta con correo electrónico y una contraseña segura. Gratis para comenzar.</value>
+  </data>
+  <data name="HowItWorks_Providers_Step2_Title" xml:space="preserve">
+    <value>Verifica</value>
+  </data>
+  <data name="HowItWorks_Providers_Step2_Body" xml:space="preserve">
+    <value>Confirma tu número de teléfono, sube un ID o pasaporte y vincula tus perfiles de redes sociales.</value>
+  </data>
+  <data name="HowItWorks_Providers_Step3_Title" xml:space="preserve">
+    <value>Crea tu anuncio</value>
+  </data>
+  <data name="HowItWorks_Providers_Step3_Body" xml:space="preserve">
+    <value>Elige una categoría, escribe tu descripción, establece precios y sube fotos. Las ediciones siempre vuelven el estado a Pendiente.</value>
+  </data>
+  <data name="HowItWorks_Providers_Step4_Title" xml:space="preserve">
+    <value>Aprobación del GM</value>
+  </data>
+  <data name="HowItWorks_Providers_Step4_Body" xml:space="preserve">
+    <value>El Gerente General revisa tu anuncio y fotos, luego aprueba, solicita cambios o rechaza con comentarios.</value>
+  </data>
+  <data name="HowItWorks_Providers_Step5_Title" xml:space="preserve">
+    <value>Publícate</value>
+  </data>
+  <data name="HowItWorks_Providers_Step5_Body" xml:space="preserve">
+    <value>Tu anuncio es ahora público. Actualiza a VIP para mayor visibilidad y una insignia verificada que genera confianza.</value>
+  </data>
+  <data name="HowItWorks_Providers_CtaPrimary" xml:space="preserve">
+    <value>Comenzar — Es Gratis</value>
+  </data>
+  <data name="HowItWorks_Providers_CtaSecondary" xml:space="preserve">
+    <value>Explorar como cliente</value>
+  </data>
+
+  <!-- HowItWorks — Trust & Safety -->
+  <data name="HowItWorks_Trust_Eyebrow" xml:space="preserve">
+    <value>Confianza y Seguridad</value>
+  </data>
+  <data name="HowItWorks_Trust_Title" xml:space="preserve">
+    <value>Construido para la confianza, no solo la conveniencia</value>
+  </data>
+  <data name="HowItWorks_Trust_Subtitle" xml:space="preserve">
+    <value>Cuatro reglas innegociables que protegen cada interacción en la plataforma.</value>
+  </data>
+  <data name="HowItWorks_Trust_Card1_Title" xml:space="preserve">
+    <value>Anuncios aprobados por el GM</value>
+  </data>
+  <data name="HowItWorks_Trust_Card1_Body" xml:space="preserve">
+    <value>Ningún anuncio se publica sin revisión manual y aprobación del Gerente General. Sin excepciones.</value>
+  </data>
+  <data name="HowItWorks_Trust_Card2_Title" xml:space="preserve">
+    <value>Proveedores verificados</value>
+  </data>
+  <data name="HowItWorks_Trust_Card2_Body" xml:space="preserve">
+    <value>Cada proveedor confirma su número de teléfono, ID gubernamental o pasaporte y presencia en redes sociales antes de ser VIP.</value>
+  </data>
+  <data name="HowItWorks_Trust_Card3_Title" xml:space="preserve">
+    <value>Solo calificaciones verificadas</value>
+  </data>
+  <data name="HowItWorks_Trust_Card3_Body" xml:space="preserve">
+    <value>Solo los clientes que contactaron al proveedor a través de la plataforma pueden calificarlo. Todas las calificaciones pasan revisión del GM antes de publicarse.</value>
+  </data>
+  <data name="HowItWorks_Trust_Card4_Title" xml:space="preserve">
+    <value>Aviso legal en el primer contacto</value>
+  </data>
+  <data name="HowItWorks_Trust_Card4_Body" xml:space="preserve">
+    <value>Antes de tu primera interacción significativa, un aviso claro confirma que Bulletin Dells conecta — no presta el servicio.</value>
+  </data>
+
+  <!-- HowItWorks — Provider Tiers -->
+  <data name="HowItWorks_Tiers_Eyebrow" xml:space="preserve">
+    <value>Niveles de proveedor</value>
+  </data>
+  <data name="HowItWorks_Tiers_Title" xml:space="preserve">
+    <value>Elige tu nivel de visibilidad</value>
+  </data>
+  <data name="HowItWorks_Tiers_Subtitle" xml:space="preserve">
+    <value>Todos los proveedores comienzan como Regular. La verificación es necesaria antes de desbloquear los beneficios VIP.</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_Title" xml:space="preserve">
+    <value>Gratis</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_Price" xml:space="preserve">
+    <value>Sin costo para publicar tu negocio</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_B1" xml:space="preserve">
+    <value>Anuncio público tras aprobación del GM</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_B2" xml:space="preserve">
+    <value>Contacto directo por WhatsApp</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_B3" xml:space="preserve">
+    <value>Recibir calificaciones verificadas</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_Missing1" xml:space="preserve">
+    <value>Insignia de verificado</value>
+  </data>
+  <data name="HowItWorks_Tier_Regular_Missing2" xml:space="preserve">
+    <value>Ranking prioritario</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_Title" xml:space="preserve">
+    <value>Gratis</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_Price" xml:space="preserve">
+    <value>Completa la verificación de identidad</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_B1" xml:space="preserve">
+    <value>Todo lo de Regular</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_B2" xml:space="preserve">
+    <value>Insignia de verificado en el anuncio</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_B3" xml:space="preserve">
+    <value>Mayor confianza de los clientes</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_B4" xml:space="preserve">
+    <value>Elegible para solicitar VIP</value>
+  </data>
+  <data name="HowItWorks_Tier_Verified_Missing1" xml:space="preserve">
+    <value>Impulso en el ranking prioritario</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_Popular" xml:space="preserve">
+    <value>Más visible</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_Title" xml:space="preserve">
+    <value>Nivel de pago</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_Price" xml:space="preserve">
+    <value>Requiere verificación — precio definido por el GM</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_B1" xml:space="preserve">
+    <value>Todo lo de Verificado</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_B2" xml:space="preserve">
+    <value>Ranking prioritario en resultados de búsqueda</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_B3" xml:space="preserve">
+    <value>Insignia VIP naranja en la tarjeta del anuncio</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_B4" xml:space="preserve">
+    <value>Borde VIP con brillo en la tarjeta</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_B5" xml:space="preserve">
+    <value>Máxima exposición ante clientes</value>
+  </data>
+  <data name="HowItWorks_Tier_VIP_Cta" xml:space="preserve">
+    <value>Hazte VIP</value>
+  </data>
+
+  <!-- HowItWorks — FAQ -->
+  <data name="HowItWorks_FAQ_Eyebrow" xml:space="preserve">
+    <value>Preguntas Frecuentes</value>
+  </data>
+  <data name="HowItWorks_FAQ_Title" xml:space="preserve">
+    <value>Preguntas frecuentes</value>
+  </data>
+  <data name="HowItWorks_FAQ_Q1" xml:space="preserve">
+    <value>¿Cómo funciona la verificación del proveedor?</value>
+  </data>
+  <data name="HowItWorks_FAQ_A1" xml:space="preserve">
+    <value>Tras registrarte, confirmas tu teléfono por SMS. Luego subes un ID gubernamental o pasaporte y vinculas al menos un perfil de redes sociales. Un Gerente General revisa los documentos y aprueba tu estado de Verificado. No puedes ser VIP sin completar los tres pasos de verificación.</value>
+  </data>
+  <data name="HowItWorks_FAQ_Q2" xml:space="preserve">
+    <value>¿Cuánto tarda la aprobación del anuncio?</value>
+  </data>
+  <data name="HowItWorks_FAQ_A2" xml:space="preserve">
+    <value>El Gerente General normalmente revisa los anuncios en 24–48 horas. Recibirás una notificación por correo o WhatsApp cuando tu anuncio sea aprobado, rechazado o marcado para cambios. Los anuncios no caducan mientras esperan aprobación.</value>
+  </data>
+  <data name="HowItWorks_FAQ_Q3" xml:space="preserve">
+    <value>¿Qué pasa si rechazan mi anuncio?</value>
+  </data>
+  <data name="HowItWorks_FAQ_A3" xml:space="preserve">
+    <value>El GM te enviará comentarios explicando el motivo. Puedes editar tu anuncio con base en esos comentarios y volver a enviarlo. Cada vez que editas un anuncio — incluso después de ser aprobado — vuelve al estado Pendiente para ser revisado antes de publicarse de nuevo.</value>
+  </data>
+  <data name="HowItWorks_FAQ_Q4" xml:space="preserve">
+    <value>¿Cómo funcionan las calificaciones?</value>
+  </data>
+  <data name="HowItWorks_FAQ_A4" xml:space="preserve">
+    <value>Solo los clientes que contactaron a un proveedor a través del botón de WhatsApp de la plataforma pueden dejar una calificación. Esto evita reseñas falsas o maliciosas. Todas las calificaciones enviadas son revisadas por el GM antes de aparecer públicamente en el anuncio.</value>
+  </data>
+  <data name="HowItWorks_FAQ_Q5" xml:space="preserve">
+    <value>¿Cuánto cuesta VIP?</value>
+  </data>
+  <data name="HowItWorks_FAQ_A5" xml:space="preserve">
+    <value>El precio VIP lo define el Gerente General y puede variar por categoría o temporada. Contáctanos por WhatsApp para obtener las tarifas actuales. Debes estar Verificado antes de solicitar VIP. El anuncio Regular siempre es gratuito.</value>
+  </data>
+
+  <!-- HowItWorks — Final CTA -->
+  <data name="HowItWorks_FinalCta_Eyebrow" xml:space="preserve">
+    <value>Comienza ahora</value>
+  </data>
+  <data name="HowItWorks_FinalCta_Title" xml:space="preserve">
+    <value>¿Listo para comenzar?</value>
+  </data>
+  <data name="HowItWorks_FinalCta_Subtitle" xml:space="preserve">
+    <value>Explora servicios locales ahora mismo — o publica tu negocio y llega a clientes en Wisconsin Dells hoy.</value>
+  </data>
+  <data name="HowItWorks_FinalCta_BtnBrowse" xml:space="preserve">
+    <value>Explorar anuncios</value>
+  </data>
+  <data name="HowItWorks_FinalCta_BtnProvider" xml:space="preserve">
+    <value>Publica tu negocio — es gratis</value>
+  </data>
+
+  <!-- HowItWorks — Page -->
+  <data name="PageTitle_HowItWorks" xml:space="preserve">
+    <value>Cómo Funciona — Bulletin Dells</value>
+  </data>
+
+  <!-- ManageOverview — Suggested Next Actions -->
+  <data name="ManageOverview_NextActions_Title" xml:space="preserve">
+    <value>Acciones sugeridas</value>
+  </data>
+  <data name="ManageOverview_NextActions_ActionNeeded" xml:space="preserve">
+    <value>Acción requerida</value>
+  </data>
+  <data name="ManageOverview_NextActions_Tip" xml:space="preserve">
+    <value>Consejo</value>
+  </data>
+  <data name="ManageOverview_NextActions_Info" xml:space="preserve">
+    <value>Información</value>
+  </data>
+  <data name="ManageOverview_NextActions_RespondReservation" xml:space="preserve">
+    <value>Responder reserva pendiente</value>
+  </data>
+  <data name="ManageOverview_NextActions_RespondReservation_Desc" xml:space="preserve">
+    <value>Tienes una o más reservas esperando tu respuesta. Responde rápido para mantener a tus clientes satisfechos.</value>
+  </data>
+  <data name="ManageOverview_NextActions_AddPhotos" xml:space="preserve">
+    <value>Agrega más fotos de vehículos</value>
+  </data>
+  <data name="ManageOverview_NextActions_AddPhotos_Desc" xml:space="preserve">
+    <value>Los anuncios con 5 o más fotos reciben significativamente más contactos. Sube imágenes de alta calidad para destacar.</value>
+  </data>
+  <data name="ManageOverview_NextActions_GoToReservations" xml:space="preserve">
+    <value>Ir a reservas</value>
+  </data>
+  <data name="ManageOverview_NextActions_UploadPhotos" xml:space="preserve">
+    <value>Subir fotos</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Vip" xml:space="preserve">
+    <value>Eres VIP — tu anuncio aparece primero en los resultados de búsqueda.</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Verified" xml:space="preserve">
+    <value>Estás Verificado. Contacta al GM para subir a VIP y obtener prioridad en el ranking.</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Regular" xml:space="preserve">
+    <value>Completa la verificación de identidad para desbloquear el badge Verificado y ser elegible para VIP.</value>
+  </data>
+  <data name="ManageOverview_NextActions_AllSet" xml:space="preserve">
+    <value>Todo en orden — no hay acciones pendientes por ahora.</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Title_Vip" xml:space="preserve">
+    <value>Estado VIP activo</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Title_Verified" xml:space="preserve">
+    <value>Verificado — sube a VIP</value>
+  </data>
+  <data name="ManageOverview_NextActions_VipStatus_Title_Regular" xml:space="preserve">
+    <value>Completa tu verificación</value>
+  </data>
+
+  <data name="Manage_EditWarning" xml:space="preserve">
+    <value>Editar regresa el anuncio a revisión Pendiente</value>
+  </data>
+  <data name="Manage_EditListing" xml:space="preserve">
+    <value>Editar anuncio</value>
+  </data>
+  <data name="Manage_Common_Edit" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Manage_Common_Remove" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Manage_Common_Add" xml:space="preserve">
+    <value>Agregar</value>
+  </data>
+  <data name="Manage_Common_Any" xml:space="preserve">
+    <value>Cualquiera</value>
+  </data>
+  <data name="Manage_Common_All" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="Manage_Common_Status" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Manage_Common_Disabled" xml:space="preserve">
+    <value>Deshabilitado</value>
+  </data>
+  <data name="Manage_VipUpsell_Title" xml:space="preserve">
+    <value>Desbloquea herramientas premium — Solo VIP</value>
+  </data>
+  <data name="Manage_VipUpsell_Body" xml:space="preserve">
+    <value>Verifícate para desbloquear analíticas, filtros avanzados, promociones y el badge VIP en tu anuncio público.</value>
+  </data>
+  <data name="Manage_VipUpsell_GetVerified" xml:space="preserve">
+    <value>Verifícate primero</value>
+  </data>
+  <data name="Manage_VipUpsell_LearnMore" xml:space="preserve">
+    <value>Conoce VIP</value>
+  </data>
+  <data name="Manage_Generic_Overview_Title" xml:space="preserve">
+    <value>Resumen del anuncio</value>
+  </data>
+  <data name="Manage_Generic_Overview_Subtitle" xml:space="preserve">
+    <value>Editar cualquier campo regresa el anuncio a revisión del GM.</value>
+  </data>
+  <data name="Manage_Generic_Vip_Subtitle" xml:space="preserve">
+    <value>Analíticas VIP, fotos y engagement de un vistazo.</value>
+  </data>
+  <data name="Manage_Generic_Rating" xml:space="preserve">
+    <value>Calificación</value>
+  </data>
+  <data name="Manage_Generic_Reviews" xml:space="preserve">
+    <value>reseñas</value>
+  </data>
+  <data name="Manage_Generic_Photos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="Manage_Generic_NoPhotos" xml:space="preserve">
+    <value>Aún no hay fotos públicas. Sube fotos desde la pantalla Editar — el GM aprueba cada una.</value>
+  </data>
+  <data name="Manage_Generic_Stat_Views" xml:space="preserve">
+    <value>Vistas · 30 días</value>
+  </data>
+  <data name="Manage_Generic_Stat_Last30d" xml:space="preserve">
+    <value>Últimos 30 días</value>
+  </data>
+  <data name="Manage_Generic_Stat_WhatsApp" xml:space="preserve">
+    <value>Contactos WhatsApp</value>
+  </data>
+  <data name="Manage_Generic_Stat_ViaPlatform" xml:space="preserve">
+    <value>vía plataforma</value>
+  </data>
+  <data name="Manage_Generic_Stat_Rating" xml:space="preserve">
+    <value>Calif. promedio</value>
+  </data>
+  <data name="Manage_Generic_Stat_Photos" xml:space="preserve">
+    <value>Fotos públicas</value>
+  </data>
+  <data name="Manage_Generic_Stat_Approved" xml:space="preserve">
+    <value>Aprobadas por el GM</value>
+  </data>
+  <data name="Manage_Generic_VipFooter" xml:space="preserve">
+    <value>Con VIP · Analíticas, promociones y posicionamiento prioritario</value>
+  </data>
+  <data name="Manage_Beauty_CategoryLabel" xml:space="preserve">
+    <value>Servicios de Belleza</value>
+  </data>
+  <data name="Manage_Beauty_Portfolio_Title" xml:space="preserve">
+    <value>Portafolio</value>
+  </data>
+  <data name="Manage_Beauty_Portfolio_Subtitle_Regular" xml:space="preserve">
+    <value>Plan regular: máximo 5 fotos aprobadas. El GM revisa cada subida antes de hacerla pública.</value>
+  </data>
+  <data name="Manage_Beauty_UploadPhoto" xml:space="preserve">
+    <value>Subir foto</value>
+  </data>
+  <data name="Manage_Beauty_Photo_Primary" xml:space="preserve">
+    <value>principal</value>
+  </data>
+  <data name="Manage_Beauty_Photo_Public" xml:space="preserve">
+    <value>pública</value>
+  </data>
+  <data name="Manage_Beauty_Portfolio_Empty" xml:space="preserve">
+    <value>Aún no hay fotos. Sube hasta 5 para mostrar tu trabajo.</value>
+  </data>
+  <data name="Manage_Beauty_VipUpsell_Title" xml:space="preserve">
+    <value>Portafolio extendido y reservas online — Solo VIP</value>
+  </data>
+  <data name="Manage_Beauty_VipUpsell_Body" xml:space="preserve">
+    <value>Agrega más de 10 fotos al portafolio, recibe reservas online por calendario integrado, lanza promociones y ve analíticas por servicio.</value>
+  </data>
+  <data name="Manage_Beauty_Promo_ActiveTitle" xml:space="preserve">
+    <value>Promoción activa</value>
+  </data>
+  <data name="Manage_Beauty_Promo_Placeholder" xml:space="preserve">
+    <value>Configura tu primera promoción para atraer tráfico.</value>
+  </data>
+  <data name="Manage_Beauty_Promo_NoActive" xml:space="preserve">
+    <value>Aún no hay promociones activas.</value>
+  </data>
+  <data name="Manage_Beauty_NewPromotion" xml:space="preserve">
+    <value>Nueva promoción</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_Title" xml:space="preserve">
+    <value>Analítica por servicio · Últimos 30 días</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_Service" xml:space="preserve">
+    <value>Servicio</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_Bookings" xml:space="preserve">
+    <value>Reservas</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_Revenue" xml:space="preserve">
+    <value>Ingreso</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_AvgRating" xml:space="preserve">
+    <value>Calif. promedio</value>
+  </data>
+  <data name="Manage_Beauty_Analytics_Empty" xml:space="preserve">
+    <value>Aún no hay servicios — agrégalos en la pantalla Editar.</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_Title" xml:space="preserve">
+    <value>Reservas online</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_Subtitle" xml:space="preserve">
+    <value>Los clientes pueden reservar cualquier hueco disponible. Recibirás aviso al instante.</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_PrevWeek" xml:space="preserve">
+    <value>Semana anterior</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_NextWeek" xml:space="preserve">
+    <value>Semana siguiente</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_Confirmed" xml:space="preserve">
+    <value>Confirmada</value>
+  </data>
+  <data name="Manage_Beauty_Calendar_Pending" xml:space="preserve">
+    <value>Pendiente de confirmación</value>
+  </data>
+  <data name="Manage_Beauty_VipFooter" xml:space="preserve">
+    <value>Con VIP · Reservas online, promociones, analíticas por servicio, portafolio extendido</value>
+  </data>
+  <data name="Manage_Housing_CategoryLabel" xml:space="preserve">
+    <value>Hospedaje / Rentas</value>
+  </data>
+  <data name="Manage_Housing_Properties_Title" xml:space="preserve">
+    <value>Tus propiedades</value>
+  </data>
+  <data name="Manage_Housing_Properties_Subtitle" xml:space="preserve">
+    <value>Editar una propiedad regresa el anuncio a revisión del GM.</value>
+  </data>
+  <data name="Manage_Housing_AddProperty" xml:space="preserve">
+    <value>Agregar propiedad</value>
+  </data>
+  <data name="Manage_Housing_Properties_AriaLabel" xml:space="preserve">
+    <value>Lista de propiedades</value>
+  </data>
+  <data name="Manage_Housing_Status_Approved" xml:space="preserve">
+    <value>Aprobada</value>
+  </data>
+  <data name="Manage_Housing_PerNight" xml:space="preserve">
+    <value>noche</value>
+  </data>
+  <data name="Manage_Housing_VipUpsell_Title" xml:space="preserve">
+    <value>Sincronización de calendario y multi-propiedad — Solo VIP</value>
+  </data>
+  <data name="Manage_Housing_VipUpsell_Body" xml:space="preserve">
+    <value>Sincronización bidireccional con Google Calendar, propiedades ilimitadas y analíticas de ocupación + conversión.</value>
+  </data>
+  <data name="Manage_Housing_Stat_Views30d" xml:space="preserve">
+    <value>Vistas · 30 días</value>
+  </data>
+  <data name="Manage_Housing_Stat_Conversion" xml:space="preserve">
+    <value>Conversión</value>
+  </data>
+  <data name="Manage_Housing_Stat_AvgResponse" xml:space="preserve">
+    <value>Tiempo respuesta</value>
+  </data>
+  <data name="Manage_Housing_Stat_Occupancy" xml:space="preserve">
+    <value>Ocupación</value>
+  </data>
+  <data name="Manage_Housing_Calendar_Title" xml:space="preserve">
+    <value>Calendario</value>
+  </data>
+  <data name="Manage_Housing_Calendar_Subtitle" xml:space="preserve">
+    <value>Sincronización bidireccional con Google Calendar activa. Los cambios se propagan en menos de 60 segundos.</value>
+  </data>
+  <data name="Manage_Housing_Calendar_GoogleConnected" xml:space="preserve">
+    <value>Google Calendar conectado</value>
+  </data>
+  <data name="Manage_Housing_Calendar_ExportIcal" xml:space="preserve">
+    <value>Exportar iCal</value>
+  </data>
+  <data name="Manage_Housing_Calendar_GridLabel" xml:space="preserve">
+    <value>cuadrícula de reservas</value>
+  </data>
+  <data name="Manage_Housing_Calendar_Booked" xml:space="preserve">
+    <value>Reservada</value>
+  </data>
+  <data name="Manage_Housing_Calendar_Pending" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="Manage_Housing_Calendar_External" xml:space="preserve">
+    <value>Externa (GCal)</value>
+  </data>
+  <data name="Manage_Housing_VipFooter" xml:space="preserve">
+    <value>Con VIP · Multi-propiedad, sincronización de calendario, analíticas de ocupación</value>
+  </data>
+  <data name="Manage_Jobs_CategoryLabel" xml:space="preserve">
+    <value>Empleos</value>
+  </data>
+  <data name="Manage_Jobs_Postings_Title" xml:space="preserve">
+    <value>Ofertas de trabajo</value>
+  </data>
+  <data name="Manage_Jobs_Postings_Subtitle_Regular" xml:space="preserve">
+    <value>El plan regular permite 1 oferta activa a la vez.</value>
+  </data>
+  <data name="Manage_Jobs_Postings_AriaLabel" xml:space="preserve">
+    <value>Ofertas de trabajo</value>
+  </data>
+  <data name="Manage_Jobs_J1Friendly" xml:space="preserve">
+    <value>Apto J1</value>
+  </data>
+  <data name="Manage_Jobs_Applications_Lower" xml:space="preserve">
+    <value>postulaciones</value>
+  </data>
+  <data name="Manage_Jobs_Posted" xml:space="preserve">
+    <value>Publicada</value>
+  </data>
+  <data name="Manage_Jobs_ClosePosting" xml:space="preserve">
+    <value>Cerrar oferta</value>
+  </data>
+  <data name="Manage_Jobs_VipUpsell_Title" xml:space="preserve">
+    <value>Publica múltiples ofertas a la vez — Solo VIP</value>
+  </data>
+  <data name="Manage_Jobs_VipUpsell_Body" xml:space="preserve">
+    <value>Lanza múltiples ofertas simultáneas, filtra postulantes por idioma y estado J1, exporta a CSV y desbloquea analíticas del embudo (Aplicaron → Revisados → Contratados).</value>
+  </data>
+  <data name="Manage_Jobs_Funnel_AriaLabel" xml:space="preserve">
+    <value>Embudo de contratación</value>
+  </data>
+  <data name="Manage_Jobs_Funnel_Title" xml:space="preserve">
+    <value>Embudo de contratación · Últimos 30 días</value>
+  </data>
+  <data name="Manage_Jobs_Funnel_ExportCsv" xml:space="preserve">
+    <value>Exportar CSV</value>
+  </data>
+  <data name="Manage_Jobs_Filters_Title" xml:space="preserve">
+    <value>Filtros avanzados</value>
+  </data>
+  <data name="Manage_Jobs_Filter_Posting" xml:space="preserve">
+    <value>Oferta</value>
+  </data>
+  <data name="Manage_Jobs_Filter_AllPostings" xml:space="preserve">
+    <value>Todas las ofertas</value>
+  </data>
+  <data name="Manage_Jobs_Filter_Language" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+  <data name="Manage_Jobs_Filter_J1Status" xml:space="preserve">
+    <value>Estado J1</value>
+  </data>
+  <data name="Manage_Jobs_Filter_J1Only" xml:space="preserve">
+    <value>Solo estudiantes J1</value>
+  </data>
+  <data name="Manage_Jobs_Filter_J1Exclude" xml:space="preserve">
+    <value>Excluir J1</value>
+  </data>
+  <data name="Manage_Jobs_Applications" xml:space="preserve">
+    <value>Postulaciones</value>
+  </data>
+  <data name="Manage_Jobs_Applications_Empty" xml:space="preserve">
+    <value>Aún no hay postulaciones. Comparte el enlace o verifícate para tener más alcance.</value>
+  </data>
+  <data name="Manage_Jobs_VipFooter" xml:space="preserve">
+    <value>Con VIP · Múltiples ofertas, filtros avanzados, embudo de analíticas, exportación CSV</value>
+  </data>
+  <data name="Manage_Mechanics_CategoryLabel" xml:space="preserve">
+    <value>Mecánicos</value>
+  </data>
+  <data name="Manage_Mechanics_Services_Title" xml:space="preserve">
+    <value>Servicios</value>
+  </data>
+  <data name="Manage_Mechanics_Services_Subtitle" xml:space="preserve">
+    <value>Muéstrale a los clientes lo que ofreces con precios estimados. Los presupuestos finales se acuerdan por WhatsApp.</value>
+  </data>
+  <data name="Manage_Mechanics_Services_Subtitle_Vip" xml:space="preserve">
+    <value>Servicios ilimitados en todas las especialidades.</value>
+  </data>
+  <data name="Manage_Mechanics_AddService" xml:space="preserve">
+    <value>Agregar servicio</value>
+  </data>
+  <data name="Manage_Mechanics_Services_AriaLabel" xml:space="preserve">
+    <value>Servicios</value>
+  </data>
+  <data name="Manage_Mechanics_Services_Empty" xml:space="preserve">
+    <value>Aún no hay servicios definidos. Agrega el primero para atraer solicitudes.</value>
+  </data>
+  <data name="Manage_Mechanics_From" xml:space="preserve">
+    <value>Desde</value>
+  </data>
+  <data name="Manage_Mechanics_VipUpsell_Title" xml:space="preserve">
+    <value>Emergencia 24/7, mapa de cobertura y métricas de respuesta — Solo VIP</value>
+  </data>
+  <data name="Manage_Mechanics_VipUpsell_Body" xml:space="preserve">
+    <value>Muestra un badge 'Emergencia 24/7' en tu perfil público, define múltiples especialidades, dibuja tu área de cobertura en el mapa y muestra tu tiempo promedio de respuesta.</value>
+  </data>
+  <data name="Manage_Mechanics_Metric_AvgResponse" xml:space="preserve">
+    <value>Tiempo promedio de respuesta</value>
+  </data>
+  <data name="Manage_Mechanics_Metric_Last30d" xml:space="preserve">
+    <value>Últimos 30 días</value>
+  </data>
+  <data name="Manage_Mechanics_Metric_Specialties" xml:space="preserve">
+    <value>Especialidades</value>
+  </data>
+  <data name="Manage_Mechanics_Metric_Requests30d" xml:space="preserve">
+    <value>Solicitudes · 30 días</value>
+  </data>
+  <data name="Manage_Mechanics_Metric_RequestsBreakdown" xml:space="preserve">
+    <value>Completadas · Activas · Cotizadas</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_AriaLabel" xml:space="preserve">
+    <value>Área de cobertura</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_Title" xml:space="preserve">
+    <value>Área de cobertura</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_Subtitle" xml:space="preserve">
+    <value>Servicio móvil dentro de este perímetro. Fuera de Dells: aplica recargo.</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_EditPerimeter" xml:space="preserve">
+    <value>Editar perímetro</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_MapAlt" xml:space="preserve">
+    <value>Mapa de cobertura de servicio alrededor de Wisconsin Dells</value>
+  </data>
+  <data name="Manage_Mechanics_Coverage_RadiusPlaceholder" xml:space="preserve">
+    <value>Radio aproximado: 22 millas · Incluye Lake Delton, Baraboo, Reedsburg, Portage</value>
+  </data>
+  <data name="Manage_Mechanics_VipFooter" xml:space="preserve">
+    <value>Con VIP · Emergencia 24/7, especialidades, mapa de cobertura, analíticas de respuesta</value>
+  </data>
+  <data name="Manage_Transportation_CategoryLabel" xml:space="preserve">
+    <value>Transporte</value>
+  </data>
+  <data name="Manage_Transportation_Routes_Title" xml:space="preserve">
+    <value>Rutas y precios</value>
+  </data>
+  <data name="Manage_Transportation_Routes_Subtitle_Regular" xml:space="preserve">
+    <value>El plan regular permite 1 ruta activa. Editar una ruta regresa el anuncio a Pendiente.</value>
+  </data>
+  <data name="Manage_Transportation_Routes_Subtitle_Vip" xml:space="preserve">
+    <value>Rutas activas ilimitadas · Motor de precios dinámicos habilitado.</value>
+  </data>
+  <data name="Manage_Transportation_Routes_AriaLabel" xml:space="preserve">
+    <value>Rutas</value>
+  </data>
+  <data name="Manage_Transportation_PerRide" xml:space="preserve">
+    <value>por viaje</value>
+  </data>
+  <data name="Manage_Transportation_Deactivate" xml:space="preserve">
+    <value>Desactivar</value>
+  </data>
+  <data name="Manage_Transportation_Pricing" xml:space="preserve">
+    <value>Precios</value>
+  </data>
+  <data name="Manage_Transportation_BaseFare" xml:space="preserve">
+    <value>Tarifa base</value>
+  </data>
+  <data name="Manage_Transportation_ExtraPassenger" xml:space="preserve">
+    <value>Pasajero extra</value>
+  </data>
+  <data name="Manage_Transportation_LuggageXl" xml:space="preserve">
+    <value>Equipaje (xl)</value>
+  </data>
+  <data name="Manage_Transportation_AddRoute" xml:space="preserve">
+    <value>Agregar ruta</value>
+  </data>
+  <data name="Manage_Transportation_Base" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Title" xml:space="preserve">
+    <value>Agrega una segunda ruta — Solo VIP</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Body" xml:space="preserve">
+    <value>Maneja múltiples rutas (MKE, MSN, Dane Co.), aplica precios dinámicos por hora y rastrea ocupación en tiempo real. Obtén el badge Verified Driver+.</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Bullet_Unlimited" xml:space="preserve">
+    <value>Rutas activas ilimitadas</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Bullet_Dynamic" xml:space="preserve">
+    <value>Precios dinámicos por franja horaria</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Bullet_Analytics" xml:space="preserve">
+    <value>Analíticas de ocupación y rutas</value>
+  </data>
+  <data name="Manage_Transportation_VipUpsell_Bullet_Badge" xml:space="preserve">
+    <value>Badge Verified Driver+</value>
+  </data>
+  <data name="Manage_Transportation_Kpi_Occupancy" xml:space="preserve">
+    <value>Ocupación · 30 días</value>
+  </data>
+  <data name="Manage_Transportation_Kpi_AvgRevenue" xml:space="preserve">
+    <value>Ingreso prom. / viaje</value>
+  </data>
+  <data name="Manage_Transportation_Kpi_ActiveRoutes" xml:space="preserve">
+    <value>Rutas activas</value>
+  </data>
+  <data name="Manage_Transportation_Kpi_Rides30d" xml:space="preserve">
+    <value>Viajes · 30 días</value>
+  </data>
+  <data name="Manage_Transportation_Kpi_Rides30dHint" xml:space="preserve">
+    <value>Viajes confirmados</value>
+  </data>
+  <data name="Manage_Transportation_DynamicPricing_Title" xml:space="preserve">
+    <value>Precios dinámicos</value>
+  </data>
+  <data name="Manage_Transportation_DynamicPricing_Subtitle" xml:space="preserve">
+    <value>Multiplicadores aplicados a la tarifa base en franjas horarias específicas.</value>
+  </data>
+  <data name="Manage_Transportation_DynamicPricing_Enable" xml:space="preserve">
+    <value>Habilitar precios dinámicos</value>
+  </data>
+  <data name="Manage_Transportation_VipFooter" xml:space="preserve">
+    <value>Con VIP · Rutas ilimitadas, precios dinámicos, analíticas de ocupación</value>
+  </data>
+  <data name="Manage_Tab_Overview" xml:space="preserve"><value>Resumen</value></data>
+  <data name="Manage_Tab_Vehicles" xml:space="preserve"><value>Vehículos</value></data>
+  <data name="Manage_Tab_Properties" xml:space="preserve"><value>Propiedades</value></data>
+  <data name="Manage_Tab_Services" xml:space="preserve"><value>Servicios</value></data>
+  <data name="Manage_Tab_Routes" xml:space="preserve"><value>Rutas</value></data>
+  <data name="Manage_Tab_Reservations" xml:space="preserve"><value>Reservas</value></data>
+  <data name="Manage_Tab_Appointments" xml:space="preserve"><value>Citas</value></data>
+  <data name="Manage_Tab_Applications" xml:space="preserve"><value>Postulaciones</value></data>
+  <data name="Manage_Tab_Inquiries" xml:space="preserve"><value>Consultas</value></data>
+  <data name="Manage_Tab_Photos" xml:space="preserve"><value>Fotos</value></data>
+  <data name="Manage_Tab_Reviews" xml:space="preserve"><value>Reseñas</value></data>
+  <data name="Manage_Tab_Analytics" xml:space="preserve"><value>Analíticas</value></data>
+  <data name="Manage_Tab_Settings" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Manage_ComingSoon_Badge" xml:space="preserve"><value>Próximamente</value></data>
+  <data name="Manage_ComingSoon_Inquiries_Title" xml:space="preserve"><value>Las consultas vienen en camino</value></data>
+  <data name="Manage_ComingSoon_Inquiries_Desc" xml:space="preserve"><value>Las consultas de los clientes aparecerán aquí en cuanto se active el backend de mensajería. Podrás responder, filtrar y dar seguimiento a cada conversación en un solo lugar.</value></data>
+  <data name="Manage_ComingSoon_Photos_Title" xml:space="preserve"><value>La gestión de fotos viene en camino</value></data>
+  <data name="Manage_ComingSoon_Photos_Desc" xml:space="preserve"><value>Sube y organiza las fotos de este anuncio. El GM sigue decidiendo cuáles son públicas — por eso este módulo espera el flujo de moderación antes de salir en vivo.</value></data>
+  <data name="Manage_ComingSoon_Analytics_Title" xml:space="preserve"><value>Las analíticas vienen en camino</value></data>
+  <data name="Manage_ComingSoon_Analytics_Desc" xml:space="preserve"><value>Vistas, contactos por WhatsApp, embudo de conversión y desglose de calificaciones para anuncios VIP. Estamos conectándolo al endpoint de analíticas.</value></data>
+  <data name="Manage_ComingSoon_Generic_Title" xml:space="preserve"><value>Esta sección viene en camino</value></data>
+  <data name="Manage_ComingSoon_Generic_Desc" xml:space="preserve"><value>Estamos puliendo el diseño y conectándolo al backend. Pásate pronto — el resto de las pestañas ya está disponible.</value></data>
+  <data name="Photo_Status_Public" xml:space="preserve"><value>Pública</value></data>
+  <data name="Photo_Status_Pending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="Photo_Status_Hidden" xml:space="preserve"><value>Oculta</value></data>
+  <data name="Photo_Status_Rejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="Review_Status_Published" xml:space="preserve"><value>Publicada</value></data>
+  <data name="Review_Status_PendingGm" xml:space="preserve"><value>Pendiente GM</value></data>
+  <data name="Review_Status_Rejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="Banner_GmCopy" xml:space="preserve"><value>El GM recibe automáticamente copia por email de cada interacción con clientes.</value></data>
+  <data name="Banner_EditingReturnsPending" xml:space="preserve"><value>Editar este anuncio lo devuelve a revisión Pendiente.</value></data>
+  <data name="Banner_GmDecidesPhotos" xml:space="preserve"><value>Puedes subir varias fotos, pero el GM decide cuáles son públicas.</value></data>
+  <data name="Manage_Index_LoadMore" xml:space="preserve"><value>Cargar más</value></data>
+  <data name="Manage_Index_Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="Manage_Index_LoadingInitial" xml:space="preserve"><value>Cargando tus anuncios…</value></data>
+  <data name="Manage_Index_LoadingMore" xml:space="preserve"><value>Cargando más anuncios…</value></data>
+  <data name="Manage_Index_ShowingXofY" xml:space="preserve"><value>Mostrando {0} de {1} anuncios</value></data>
+  <data name="Manage_Index_EndOfList" xml:space="preserve"><value>Llegaste al final · {0} anuncios mostrados</value></data>
+  <data name="Manage_Index_EmptyTitle" xml:space="preserve"><value>No se encontraron anuncios</value></data>
+  <data name="Manage_Index_EmptyDescription" xml:space="preserve"><value>Crea tu primer anuncio para empezar a conectar con clientes en Wisconsin Dells.</value></data>
+  <data name="Manage_NewListing" xml:space="preserve"><value>Nuevo Anuncio</value></data>
+  <data name="Rating_Summary_Title" xml:space="preserve"><value>Resumen de calificaciones</value></data>
+  <data name="Rating_Summary_TotalReviews" xml:space="preserve"><value>{0} reseñas</value></data>
+  <data name="VipUpsell_DefaultTitle" xml:space="preserve"><value>Hazte VIP — aparece al inicio de los resultados.</value></data>
+  <!-- ── Fase B: pestañas Housing + Beauty ── -->
+  <data name="Manage_Housing_Photos_Title" xml:space="preserve"><value>Galería de la propiedad</value></data>
+  <data name="Manage_Housing_Photos_Subtitle_Regular" xml:space="preserve"><value>Cada propiedad puede tener hasta 10 fotos públicas. El GM revisa cada subida.</value></data>
+  <data name="Manage_Housing_Photos_FilterByProperty" xml:space="preserve"><value>Filtrar por propiedad</value></data>
+  <data name="Manage_Housing_Photos_AllProperties" xml:space="preserve"><value>Todas las propiedades</value></data>
+  <data name="Manage_Housing_Photos_Upload" xml:space="preserve"><value>Subir fotos</value></data>
+  <data name="Manage_Housing_Photos_SlotsUsed" xml:space="preserve"><value>{0} de {1} espacios usados</value></data>
+  <data name="Manage_Housing_Photos_Cover" xml:space="preserve"><value>Portada</value></data>
+  <data name="Manage_Housing_Photos_Empty_Title" xml:space="preserve"><value>Aún no hay fotos</value></data>
+  <data name="Manage_Housing_Photos_Empty_Description" xml:space="preserve"><value>Sube fotos de tu propiedad. El GM las revisará antes de hacerlas públicas.</value></data>
+  <data name="Manage_Housing_Photos_Vip_Title" xml:space="preserve"><value>¿Necesitas más de 10 fotos por propiedad?</value></data>
+  <data name="Manage_Housing_Photos_Vip_Body" xml:space="preserve"><value>Los anuncios VIP permiten subidas ilimitadas y analíticas por foto.</value></data>
+  <data name="Manage_Housing_Reviews_Banner" xml:space="preserve"><value>Solo los huéspedes que te contactaron vía Bulletin Dells pueden reseñar. Cada reseña y respuesta es moderada por el GM.</value></data>
+  <data name="Manage_Housing_Overview_KpisAria" xml:space="preserve"><value>Métricas clave de Housing</value></data>
+  <data name="Manage_Housing_Overview_ConversionHint" xml:space="preserve"><value>Vista → Consulta</value></data>
+  <data name="Manage_Housing_Overview_AutoReplyOn" xml:space="preserve"><value>Auto-respuesta activada</value></data>
+  <data name="Manage_Housing_Overview_Properties_Title" xml:space="preserve"><value>Propiedades de un vistazo</value></data>
+  <data name="Manage_Housing_Overview_Properties_Empty_Title" xml:space="preserve"><value>Aún no hay propiedades</value></data>
+  <data name="Manage_Housing_Overview_Properties_Empty_Description" xml:space="preserve"><value>Añade tu primera propiedad para verla aquí.</value></data>
+  <data name="Manage_Housing_Overview_Activity_Title" xml:space="preserve"><value>Actividad reciente</value></data>
+  <data name="Manage_Housing_Overview_Activity_Empty" xml:space="preserve"><value>Sin actividad aún.</value></data>
+  <data name="Manage_Housing_Inquiries_KpisAria" xml:space="preserve"><value>Métricas de consultas</value></data>
+  <data name="Manage_Housing_Inquiries_OpenCount" xml:space="preserve"><value>Consultas abiertas</value></data>
+  <data name="Manage_Housing_Inquiries_ResponseRate" xml:space="preserve"><value>Tasa de respuesta</value></data>
+  <data name="Manage_Housing_Inquiries_AvgFirstReply" xml:space="preserve"><value>1ª respuesta prom.</value></data>
+  <data name="Manage_Housing_Inquiries_BookingConversion" xml:space="preserve"><value>→ Conv. a reserva</value></data>
+  <data name="Manage_Housing_Inquiries_AutoReply_Title" xml:space="preserve"><value>Auto-respuesta</value></data>
+  <data name="Manage_Housing_Inquiries_AutoReply_Subtitle" xml:space="preserve"><value>Envía un WhatsApp en segundos cuando llega una consulta. El GM sigue recibiendo copia.</value></data>
+  <data name="Manage_Housing_Inquiries_AutoReply_Placeholder" xml:space="preserve"><value>"¡Gracias por escribirnos! Te respondo con todos los detalles en menos de una hora…"</value></data>
+  <data name="Manage_Housing_Inquiries_Filter_New" xml:space="preserve"><value>Nuevas</value></data>
+  <data name="Manage_Housing_Inquiries_Filter_AutoReplied" xml:space="preserve"><value>Auto-respondidas</value></data>
+  <data name="Manage_Housing_Inquiries_Filter_Replied" xml:space="preserve"><value>Respondidas</value></data>
+  <data name="Manage_Housing_Inquiries_Empty_Title" xml:space="preserve"><value>Aún no hay consultas</value></data>
+  <data name="Manage_Housing_Inquiries_Empty_Description" xml:space="preserve"><value>Cuando un huésped te pregunte algo, aparecerá aquí. El GM siempre recibe copia.</value></data>
+  <data name="Manage_Housing_Inquiries_VipFooter" xml:space="preserve"><value>Powered by VIP · Auto-respuesta, plantillas de respuesta, analíticas de consultas</value></data>
+  <data name="Manage_Housing_Analytics_HighlightsAria" xml:space="preserve"><value>Resumen de analíticas</value></data>
+  <data name="Manage_Beauty_Appointments_Title" xml:space="preserve"><value>Citas</value></data>
+  <data name="Manage_Beauty_Appointments_Subtitle" xml:space="preserve"><value>Confirma por WhatsApp — el GM recibe copia de cada conversación.</value></data>
+  <data name="Manage_Beauty_Appointments_Filter_AriaLabel" xml:space="preserve"><value>Filtrar citas</value></data>
+  <data name="Manage_Beauty_Appointments_Filter_Upcoming" xml:space="preserve"><value>Próximas</value></data>
+  <data name="Manage_Beauty_Appointments_Filter_Pending" xml:space="preserve"><value>Pendientes</value></data>
+  <data name="Manage_Beauty_Appointments_Filter_Past" xml:space="preserve"><value>Pasadas</value></data>
+  <data name="Manage_Beauty_Appointments_Empty_Title" xml:space="preserve"><value>Aún no hay citas</value></data>
+  <data name="Manage_Beauty_Appointments_Empty_Description" xml:space="preserve"><value>Cuando los clientes reserven vía Bulletin Dells, sus citas aparecerán aquí.</value></data>
+  <data name="Manage_Beauty_Appointments_Footer" xml:space="preserve"><value>El GM recibe copia de cada conversación de WhatsApp — mantiene la plataforma segura y ayuda con cualquier disputa.</value></data>
+  <data name="Manage_Beauty_Inquiries_Title" xml:space="preserve"><value>Consultas previas a la reserva</value></data>
+  <data name="Manage_Beauty_Inquiries_Subtitle" xml:space="preserve"><value>Responde por WhatsApp — el GM recibe copia de cada conversación.</value></data>
+  <data name="Manage_Beauty_Inquiries_Filter_New" xml:space="preserve"><value>Nuevas</value></data>
+  <data name="Manage_Beauty_Inquiries_Filter_Replied" xml:space="preserve"><value>Respondidas</value></data>
+  <data name="Manage_Beauty_Inquiries_Filter_Closed" xml:space="preserve"><value>Cerradas</value></data>
+  <data name="Manage_Beauty_Inquiries_GmCopy" xml:space="preserve"><value>El GM recibe copia de cada consulta por email y de cada hilo de WhatsApp.</value></data>
+  <data name="Manage_Beauty_Inquiries_Empty_Title" xml:space="preserve"><value>Aún no hay consultas previas a la reserva</value></data>
+  <data name="Manage_Beauty_Inquiries_Empty_Description" xml:space="preserve"><value>Cuando los clientes pregunten sobre tus servicios antes de reservar, sus mensajes aparecerán aquí.</value></data>
+  <data name="Manage_Beauty_Reviews_Banner" xml:space="preserve"><value>Solo los clientes que reservaron vía Bulletin Dells pueden reseñar. Cada reseña y respuesta es moderada por el GM.</value></data>
+  <data name="Manage_Beauty_Portfolio_Empty_Description" xml:space="preserve"><value>Sube tu mejor trabajo. El GM revisa cada foto antes de hacerla pública.</value></data>
+  <data name="Manage_Beauty_Portfolio_Subtitle_Vip" xml:space="preserve"><value>Los pares antes/después generan 2.4× más reservas. El GM sigue aprobando cada subida.</value></data>
+  <data name="Manage_Beauty_Portfolio_VipUnlimited" xml:space="preserve"><value>Ilimitado</value></data>
+  <data name="Manage_Beauty_Portfolio_AddPair" xml:space="preserve"><value>Par antes/después</value></data>
+  <data name="Manage_Beauty_Portfolio_Filter_Pairs" xml:space="preserve"><value>Pares antes/después</value></data>
+  <data name="Manage_Beauty_Portfolio_VipFooter" xml:space="preserve"><value>Powered by VIP · Fotos ilimitadas, pares antes/después, vistas por foto</value></data>
+  <data name="Manage_Reviews_PendingGm_Title" xml:space="preserve"><value>Pendientes de moderación del GM</value></data>
+  <data name="Manage_Reviews_NotYetPublic" xml:space="preserve"><value>Aún no públicas</value></data>
+  <data name="Manage_Reviews_PendingGm_Empty_Title" xml:space="preserve"><value>No hay reseñas en moderación</value></data>
+  <data name="Manage_Reviews_PendingGm_Empty_Description" xml:space="preserve"><value>Las nuevas reseñas aparecen aquí mientras el GM las revisa.</value></data>
+  <data name="Manage_Reviews_Published_Title" xml:space="preserve"><value>Publicadas</value></data>
+  <data name="Manage_Reviews_Published_Empty_Title" xml:space="preserve"><value>Aún no hay reseñas publicadas</value></data>
+  <data name="Manage_Reviews_Published_Empty_Description" xml:space="preserve"><value>Las reseñas aprobadas por el GM aparecen aquí y en tu anuncio público.</value></data>
+  <data name="Manage_Photos_Filter_AriaLabel" xml:space="preserve"><value>Filtrar fotos por estado</value></data>
+  <data name="Manage_Inquiries_Filter_AriaLabel" xml:space="preserve"><value>Filtrar consultas</value></data>
+
+  <!-- ─── Fase C: pestañas de Mechanics ─────────────────────────────────── -->
+  <data name="Manage_Mechanics_Services_GroupOther" xml:space="preserve"><value>Otros</value></data>
+  <data name="Manage_Mechanics_Services_FreeQuote" xml:space="preserve"><value>Cotización gratis</value></data>
+  <data name="Manage_Mechanics_Services_PendingFootnote" xml:space="preserve"><value>Editar el precio de cualquier servicio regresa el anuncio a revisión Pendiente del GM.</value></data>
+  <data name="Manage_Mechanics_Reviews_Banner" xml:space="preserve"><value>Solo pueden reseñar los clientes que te contactaron a través de Bulletin Dells. Cada reseña y respuesta es moderada por el GM.</value></data>
+
+  <!-- ─── Fase C: pestañas de Transportation ────────────────────────────── -->
+  <data name="Manage_Transport_Reservations_Title" xml:space="preserve"><value>Viajes próximos</value></data>
+  <data name="Manage_Transport_Reservations_Subtitle" xml:space="preserve"><value>Confirma los detalles de recogida por WhatsApp — el GM recibe copia.</value></data>
+  <data name="Manage_Transport_Reservations_Filter_AriaLabel" xml:space="preserve"><value>Filtrar reservaciones</value></data>
+  <data name="Manage_Transport_Reservations_Filter_Upcoming" xml:space="preserve"><value>Próximas</value></data>
+  <data name="Manage_Transport_Reservations_Filter_Past" xml:space="preserve"><value>Pasadas</value></data>
+  <data name="Manage_Transport_Reservations_Empty_Title" xml:space="preserve"><value>Aún no hay reservaciones</value></data>
+  <data name="Manage_Transport_Reservations_Empty_Description" xml:space="preserve"><value>Cuando un cliente reserve un viaje aparecerá aquí. Confirma los detalles por WhatsApp y el GM recibirá copia por correo.</value></data>
+  <data name="Manage_Transport_Reservations_ConfirmOnWhatsApp" xml:space="preserve"><value>Abrir WhatsApp</value></data>
+
+  <data name="Manage_Transport_Reviews_Banner" xml:space="preserve"><value>Solo pueden reseñar los pasajeros que reservaron a través de Bulletin Dells. Cada reseña y respuesta es moderada por el GM.</value></data>
+
+  <data name="Manage_Transport_Routes_Title" xml:space="preserve"><value>Rutas</value></data>
+  <data name="Manage_Transport_Routes_Subtitle_Vip" xml:space="preserve"><value>Edita tarifa base, recargo de hora pico y recargo nocturno por ruta. Editar regresa el anuncio a Pendiente.</value></data>
+  <data name="Manage_Transport_Routes_BulkBadge" xml:space="preserve"><value>Precios por bloque</value></data>
+  <data name="Manage_Transport_Routes_ApplyPeakRule" xml:space="preserve"><value>Aplicar regla +10% pico</value></data>
+  <data name="Manage_Transport_Routes_Empty_Title" xml:space="preserve"><value>Sin rutas configuradas</value></data>
+  <data name="Manage_Transport_Routes_Empty_Description" xml:space="preserve"><value>Agrega rutas al aeropuerto, traslados de hotel o locales. Cada ruta puede tener su propia tarifa base y recargos.</value></data>
+  <data name="Manage_Transport_Routes_PeakHoursFootnote" xml:space="preserve"><value>Las horas pico son 07:00-09:30 y 16:00-19:00 hora local. Las horas nocturnas son 22:00-05:00. Configúralo en Ajustes.</value></data>
+  <data name="Manage_Transport_Routes_VipFooter" xml:space="preserve"><value>Impulsado por VIP · Reglas de precios por bloque, recargos pico, analíticas por ruta</value></data>
+  <data name="Manage_Transport_Routes_Col_Route" xml:space="preserve"><value>Ruta</value></data>
+  <data name="Manage_Transport_Routes_Col_Capacity" xml:space="preserve"><value>Capacidad</value></data>
+  <data name="Manage_Transport_Routes_Col_BaseFare" xml:space="preserve"><value>Tarifa base</value></data>
+  <data name="Manage_Transport_Routes_Col_PeakPct" xml:space="preserve"><value>Pico +%</value></data>
+  <data name="Manage_Transport_Routes_Col_NightPct" xml:space="preserve"><value>Noche +%</value></data>
+  <data name="Manage_Transport_Routes_Col_Trips30d" xml:space="preserve"><value>Viajes · 30d</value></data>
+  <!-- ── Fase D additions ─────────────────────────────────────────────────── -->
+  <data name="Manage_Common_Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Manage_Common_Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Manage_Common_SaveChanges" xml:space="preserve"><value>Guardar cambios</value></data>
+  <data name="Manage_Common_NotConfigured" xml:space="preserve"><value>Aún sin configurar.</value></data>
+  <data name="Manage_Common_Currently" xml:space="preserve"><value>Actualmente</value></data>
+
+  <!-- Manage_Jobs_* (Fase D) -->
+  <data name="Manage_Jobs_QuickStats_AriaLabel" xml:space="preserve"><value>Resumen rápido de la vacante</value></data>
+  <data name="Manage_Jobs_Stat_OpenPositions" xml:space="preserve"><value>Vacantes abiertas</value></data>
+  <data name="Manage_Jobs_Stat_TotalApplications" xml:space="preserve"><value>Postulaciones totales</value></data>
+  <data name="Manage_Jobs_Stat_NewThisWeek" xml:space="preserve"><value>Nuevas esta semana</value></data>
+  <data name="Manage_Jobs_Stat_Hired" xml:space="preserve"><value>Contratados</value></data>
+  <data name="Manage_Jobs_RecentApplications_Title" xml:space="preserve"><value>Postulaciones recientes</value></data>
+  <data name="Manage_Jobs_Applications_Empty_Title" xml:space="preserve"><value>Aún no hay postulaciones</value></data>
+  <data name="Manage_Jobs_Applications_Empty_Description" xml:space="preserve"><value>Cuando un candidato postule por Bulletin Dells aparecerá aquí. El GM recibe copia por email de cada conversación de WhatsApp.</value></data>
+  <data name="Manage_Jobs_Pipeline_Title" xml:space="preserve"><value>Pipeline</value></data>
+  <data name="Manage_Jobs_Pipeline_Subtitle" xml:space="preserve"><value>Arrastra candidatos entre etapas. Toda la mensajería pasa por WhatsApp — el GM recibe copia.</value></data>
+  <data name="Manage_Jobs_Pipeline_Col_New" xml:space="preserve"><value>Nuevos</value></data>
+  <data name="Manage_Jobs_Pipeline_Col_Contacted" xml:space="preserve"><value>Contactados</value></data>
+  <data name="Manage_Jobs_Pipeline_Col_Interview" xml:space="preserve"><value>Entrevista</value></data>
+  <data name="Manage_Jobs_Pipeline_Col_Hired" xml:space="preserve"><value>Contratados</value></data>
+  <data name="Manage_Jobs_Pipeline_EmptyColumn" xml:space="preserve"><value>Sin candidatos en esta etapa.</value></data>
+  <data name="Manage_Jobs_Pipeline_GmCopyFootnote" xml:space="preserve"><value>Toda la comunicación con candidatos pasa por WhatsApp — el GM recibe copia de cada conversación.</value></data>
+  <data name="Manage_Jobs_Pipeline_VipFooter" xml:space="preserve"><value>Con VIP · Vista pipeline, tags, analítica de candidatos, exportación CSV</value></data>
+  <data name="Manage_Jobs_Filter_Source" xml:space="preserve"><value>Origen</value></data>
+  <data name="Manage_Jobs_Filter_AllSources" xml:space="preserve"><value>Todos los orígenes</value></data>
+  <data name="Manage_Jobs_Filter_Local" xml:space="preserve"><value>Local</value></data>
+
+  <!-- Manage_CarRental_* (Fase D) -->
+  <data name="Manage_CarRental_CategoryLabel" xml:space="preserve"><value>Renta de autos</value></data>
+  <data name="Manage_CarRental_QuickStats_AriaLabel" xml:space="preserve"><value>Resumen rápido de renta de autos</value></data>
+  <data name="Manage_CarRental_Kpi_Views30d" xml:space="preserve"><value>Vistas · 30d</value></data>
+  <data name="Manage_CarRental_Kpi_VsPrev" xml:space="preserve"><value>vs período anterior</value></data>
+  <data name="Manage_CarRental_Kpi_Conversion" xml:space="preserve"><value>Conversión</value></data>
+  <data name="Manage_CarRental_Kpi_ViewToReservation" xml:space="preserve"><value>Vista → Reserva</value></data>
+  <data name="Manage_CarRental_Kpi_AvgResponse" xml:space="preserve"><value>Respuesta media</value></data>
+  <data name="Manage_CarRental_Kpi_AutoReply" xml:space="preserve"><value>Auto-respuesta activa</value></data>
+  <data name="Manage_CarRental_Kpi_FleetUtilization" xml:space="preserve"><value>Uso de flota</value></data>
+  <data name="Manage_CarRental_Kpi_Vehicles" xml:space="preserve"><value>Vehículos</value></data>
+  <data name="Manage_CarRental_Kpi_AvailableNow" xml:space="preserve"><value>disponibles ahora</value></data>
+  <data name="Manage_CarRental_Kpi_ActiveReservations" xml:space="preserve"><value>Reservas activas</value></data>
+  <data name="Manage_CarRental_Kpi_NeedConfirmation" xml:space="preserve"><value>requieren tu confirmación</value></data>
+  <data name="Manage_CarRental_Kpi_OpenInquiries" xml:space="preserve"><value>Consultas abiertas</value></data>
+  <data name="Manage_CarRental_Kpi_ReplyWithin24h" xml:space="preserve"><value>Responde en 24h</value></data>
+  <data name="Manage_CarRental_Kpi_PublicPhotos" xml:space="preserve"><value>Fotos públicas</value></data>
+  <data name="Manage_CarRental_Kpi_PendingGmReview" xml:space="preserve"><value>en revisión GM</value></data>
+
+  <data name="Manage_CarRental_VipUpsell_Title" xml:space="preserve"><value>Desbloquea analítica, fotos ilimitadas y posición destacada</value></data>
+  <data name="Manage_CarRental_VipUpsell_Body" xml:space="preserve"><value>Los anuncios VIP rankean más alto y reciben en promedio 3.2× más consultas.</value></data>
+  <data name="Manage_CarRental_Overview_Performance_Title" xml:space="preserve"><value>Rendimiento · últimos 30 días</value></data>
+  <data name="Manage_CarRental_Overview_PerformanceSubtitle" xml:space="preserve"><value>Reservas vs consultas por día</value></data>
+  <data name="Manage_CarRental_Overview_RecentActivity_Title" xml:space="preserve"><value>Actividad reciente</value></data>
+  <data name="Manage_CarRental_Overview_RecentActivitySubtitle" xml:space="preserve"><value>Últimos 7 días</value></data>
+  <data name="Manage_CarRental_Overview_ChartPlaceholder" xml:space="preserve"><value>Gráfico — endpoint de analítica pendiente.</value></data>
+  <data name="Manage_CarRental_Overview_NoActivity_Title" xml:space="preserve"><value>Aún sin actividad</value></data>
+  <data name="Manage_CarRental_Overview_NoActivity_Description" xml:space="preserve"><value>Las consultas, reservas y aprobaciones de fotos aparecerán aquí en cuanto sucedan.</value></data>
+  <data name="Manage_CarRental_QuickActions_Title" xml:space="preserve"><value>Acciones rápidas</value></data>
+  <data name="Manage_CarRental_QuickAction_AddVehicle" xml:space="preserve"><value>Agregar vehículo</value></data>
+  <data name="Manage_CarRental_QuickAction_UploadPhotos" xml:space="preserve"><value>Subir fotos</value></data>
+  <data name="Manage_CarRental_QuickAction_EditListing" xml:space="preserve"><value>Editar detalles del anuncio</value></data>
+  <data name="Manage_CarRental_VipFooter_Overview" xml:space="preserve"><value>Con VIP · Vehículos ilimitados, analítica avanzada, posición prioritaria</value></data>
+
+  <data name="Manage_CarRental_Vehicles_Title" xml:space="preserve"><value>Flota</value></data>
+  <data name="Manage_CarRental_Vehicles_Subtitle_Regular" xml:space="preserve"><value>Hasta 5 vehículos. Cualquier edición regresa el anuncio a revisión GM.</value></data>
+  <data name="Manage_CarRental_Vehicles_Subtitle_Vip" xml:space="preserve"><value>Flota ilimitada, precios masivos y analítica por vehículo. Las ediciones regresan el anuncio a revisión.</value></data>
+  <data name="Manage_CarRental_AddVehicle" xml:space="preserve"><value>Agregar vehículo</value></data>
+  <data name="Manage_CarRental_VehiclesTable_Col_Vehicle" xml:space="preserve"><value>Vehículo</value></data>
+  <data name="Manage_CarRental_VehiclesTable_Col_Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Manage_CarRental_VehiclesTable_Col_PricePerDay" xml:space="preserve"><value>Precio/día</value></data>
+  <data name="Manage_CarRental_VehiclesTable_Col_Utilization" xml:space="preserve"><value>Utilización</value></data>
+  <data name="Manage_CarRental_VehiclesTable_Col_Revenue30d" xml:space="preserve"><value>Ingresos · 30d</value></data>
+  <data name="Manage_CarRental_Vehicles_TableEmpty" xml:space="preserve"><value>Aún sin vehículos. Agrega tu primer vehículo para comenzar a recibir reservas.</value></data>
+  <data name="Manage_CarRental_Vehicles_VipFootnote" xml:space="preserve"><value>Editar un vehículo regresa todo el anuncio a revisión GM. Los cambios de precio surten efecto tras la aprobación.</value></data>
+  <data name="Manage_CarRental_Vehicles_Empty_Title" xml:space="preserve"><value>Aún sin vehículos</value></data>
+  <data name="Manage_CarRental_Vehicles_Empty_Description" xml:space="preserve"><value>Agrega tu primer vehículo para empezar a recibir reservas. El GM revisa cada vehículo antes de publicarlo.</value></data>
+  <data name="Manage_CarRental_Vehicles_VipUpsell_Title" xml:space="preserve"><value>¿Necesitas más de 5 vehículos?</value></data>
+  <data name="Manage_CarRental_Vehicles_VipUpsell_Body" xml:space="preserve"><value>Vehículos ilimitados, sincronización de disponibilidad en tiempo real y herramientas de precios masivos — solo en VIP.</value></data>
+  <data name="Manage_CarRental_VipFooter_Vehicles" xml:space="preserve"><value>Con VIP · Flota ilimitada, precios masivos, analítica por vehículo</value></data>
+
+  <data name="Manage_CarRental_Reservations_Title" xml:space="preserve"><value>Reservas</value></data>
+  <data name="Manage_CarRental_Reservations_Subtitle_Regular" xml:space="preserve"><value>Confirma reservas por WhatsApp — el GM recibe copia.</value></data>
+  <data name="Manage_CarRental_Reservations_Subtitle_Vip" xml:space="preserve"><value>Reglas de auto-confirmación, vista calendario y exportación CSV. WhatsApp + GM copy siguen aplicando.</value></data>
+  <data name="Manage_CarRental_ReservationsTable_Col_Customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Manage_CarRental_ReservationsTable_Col_Vehicle" xml:space="preserve"><value>Vehículo</value></data>
+  <data name="Manage_CarRental_ReservationsTable_Col_Dates" xml:space="preserve"><value>Fechas</value></data>
+  <data name="Manage_CarRental_ReservationsTable_Col_Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Manage_CarRental_ReservationsTable_Col_Channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Manage_CarRental_Reservations_TableEmpty" xml:space="preserve"><value>Aún no hay reservas.</value></data>
+  <data name="Manage_CarRental_Reservations_VipFootnote" xml:space="preserve"><value>El GM recibe copia de cada conversación de reserva — red de seguridad para ambas partes.</value></data>
+  <data name="Manage_CarRental_Reservations_Empty_Title" xml:space="preserve"><value>Aún no hay reservas</value></data>
+  <data name="Manage_CarRental_Reservations_Empty_Description" xml:space="preserve"><value>Cuando un cliente reserve un vehículo lo verás aquí. Confirma los detalles del pickup por WhatsApp; el GM recibe copia por email.</value></data>
+  <data name="Manage_CarRental_VipFooter_Reservations" xml:space="preserve"><value>Con VIP · Reglas de auto-confirmación, vista calendario, exportación CSV</value></data>
+
+  <data name="Manage_CarRental_Photos_Title" xml:space="preserve"><value>Fotos</value></data>
+  <data name="Manage_CarRental_Photos_Subtitle_Regular" xml:space="preserve"><value>Hasta 15 fotos. El GM decide cuáles son públicas.</value></data>
+  <data name="Manage_CarRental_Photos_Subtitle_Vip" xml:space="preserve"><value>Fotos ilimitadas, acciones masivas y analítica por foto.</value></data>
+  <data name="Manage_CarRental_Photos_FilterAriaLabel" xml:space="preserve"><value>Filtrar fotos por estado</value></data>
+  <data name="Manage_CarRental_Photos_FilterByVehicle" xml:space="preserve"><value>Filtrar por vehículo</value></data>
+  <data name="Manage_CarRental_Photos_AllVehicles" xml:space="preserve"><value>Todos los vehículos</value></data>
+  <data name="Manage_CarRental_Photos_Dropzone_Title" xml:space="preserve"><value>Suelta fotos aquí o haz clic para buscar</value></data>
+  <data name="Manage_CarRental_Photos_Dropzone_Subtitle" xml:space="preserve"><value>JPG, PNG o WebP · hasta 8 MB cada una · mín 1200×800</value></data>
+  <data name="Manage_CarRental_Photos_Empty_Title" xml:space="preserve"><value>Aún sin fotos</value></data>
+  <data name="Manage_CarRental_Photos_Empty_Description" xml:space="preserve"><value>Sube fotos de tus vehículos. El GM revisa cada foto antes de que sea pública.</value></data>
+  <data name="Manage_CarRental_Photos_VipUpsell_Title" xml:space="preserve"><value>¿Necesitas más de 15 fotos?</value></data>
+  <data name="Manage_CarRental_Photos_VipUpsell_Body" xml:space="preserve"><value>Los anuncios VIP tienen subidas ilimitadas, analítica por foto y acciones masivas.</value></data>
+  <data name="Manage_CarRental_VipFooter_Photos" xml:space="preserve"><value>Con VIP · Fotos ilimitadas, acciones masivas, analítica por foto</value></data>
+
+  <data name="Manage_CarRental_Reviews_Banner" xml:space="preserve"><value>Solo los clientes que reservaron por Bulletin Dells pueden dejar reseña. Cada reseña y respuesta es moderada por el GM.</value></data>
+  <data name="Manage_CarRental_VipFooter_Reviews" xml:space="preserve"><value>Con VIP · Analítica de reseñas, score de sentimiento, soporte prioritario</value></data>
+
+  <data name="Manage_CarRental_Settings_PublicInfo_Title" xml:space="preserve"><value>Información pública</value></data>
+  <data name="Manage_CarRental_Settings_PublicInfo_Subtitle" xml:space="preserve"><value>Título y descripción visibles para los clientes en inglés y español.</value></data>
+  <data name="Manage_CarRental_Settings_Title_En" xml:space="preserve"><value>Título (inglés)</value></data>
+  <data name="Manage_CarRental_Settings_Title_Es" xml:space="preserve"><value>Título (español)</value></data>
+  <data name="Manage_CarRental_Settings_Pickup_Title" xml:space="preserve"><value>Punto de recogida</value></data>
+  <data name="Manage_CarRental_Settings_Pickup_Subtitle" xml:space="preserve"><value>Dirección pública visible para los clientes.</value></data>
+  <data name="Manage_CarRental_Settings_Pickup_MapPlaceholder" xml:space="preserve"><value>Vista de mapa — integración pendiente</value></data>
+  <data name="Manage_CarRental_Settings_Hours_Title" xml:space="preserve"><value>Horario</value></data>
+  <data name="Manage_CarRental_Settings_Hours_Subtitle" xml:space="preserve"><value>Se usa para mostrar disponibilidad y configurar horarios de auto-respuesta.</value></data>
+  <data name="Manage_CarRental_Settings_Notifications_Title" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Manage_CarRental_Settings_Notifications_Subtitle" xml:space="preserve"><value>Cómo prefieres que Bulletin Dells te contacte sobre nueva actividad.</value></data>
+  <data name="Manage_CarRental_Settings_Notif_EmailInquiries" xml:space="preserve"><value>Avísame por email sobre nuevas consultas</value></data>
+  <data name="Manage_CarRental_Settings_Notif_WaModerated" xml:space="preserve"><value>Avísame por WhatsApp cuando el GM apruebe o rechace contenido</value></data>
+  <data name="Manage_CarRental_Settings_Notif_GmAlwaysCopied" xml:space="preserve"><value>El GM siempre recibe copia de cada conversación con clientes — esto no se puede desactivar.</value></data>
+  <data name="Manage_CarRental_Settings_State_Title" xml:space="preserve"><value>Estado del anuncio</value></data>
+  <data name="Manage_CarRental_Settings_State_Subtitle" xml:space="preserve"><value>Pausar oculta este anuncio de la búsqueda pública pero conserva tus datos.</value></data>
+  <data name="Manage_CarRental_Settings_State_Pause" xml:space="preserve"><value>Pausar anuncio</value></data>
+  <data name="Manage_CarRental_Settings_SavingPending_Title" xml:space="preserve"><value>Guardar regresa el anuncio a revisión Pendiente.</value></data>
+  <data name="Manage_CarRental_Settings_SavingPending_Body" xml:space="preserve"><value>La versión anterior sigue publicada hasta que el GM apruebe los cambios.</value></data>
+  <data name="Manage_CarRental_Settings_Danger_Title" xml:space="preserve"><value>Zona de peligro</value></data>
+  <data name="Manage_CarRental_Settings_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán todas las fotos, reservas y reseñas.</value></data>
+  <data name="Manage_CarRental_Settings_Danger_Delete" xml:space="preserve"><value>Eliminar anuncio</value></data>
+
+  <data name="Manage_Settings_Pill_Safe" xml:space="preserve"><value>Seguro</value></data>
+  <data name="Manage_Settings_Pill_Safe_Aria" xml:space="preserve"><value>Cambio seguro — se aplica al instante sin revisión del GM</value></data>
+  <data name="Manage_Settings_Pill_Content" xml:space="preserve"><value>Edición de contenido</value></data>
+  <data name="Manage_Settings_Pill_Content_Aria" xml:space="preserve"><value>Edición de contenido — al guardar el anuncio vuelve a revisión del GM</value></data>
+  <data name="Manage_Settings_Banner_Mixed" xml:space="preserve"><value>Los campos marcados Content regresan el anuncio a revisión del GM al guardar. Los Safe se aplican al instante.</value></data>
+  <data name="Manage_Settings_Save_Content_Title" xml:space="preserve"><value>Los cambios de contenido regresan el anuncio a Pending.</value></data>
+  <data name="Manage_Settings_Save_Mixed_Body" xml:space="preserve"><value>Los cambios Safe se aplican al instante. La versión pública previa sigue online hasta que el GM aprueba el nuevo contenido.</value></data>
+  <data name="Manage_Settings_Danger_Title" xml:space="preserve"><value>Zona de peligro</value></data>
+  <data name="Manage_Settings_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán todos los datos.</value></data>
+  <data name="Manage_Settings_Danger_Delete" xml:space="preserve"><value>Eliminar anuncio</value></data>
+  <data name="Manage_Settings_Lang_En" xml:space="preserve"><value>inglés</value></data>
+  <data name="Manage_Settings_Lang_Es" xml:space="preserve"><value>español</value></data>
+  <data name="Manage_Settings_Field_Title" xml:space="preserve"><value>Título</value></data>
+  <data name="Manage_Settings_Field_Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Manage_Settings_Visibility_Title" xml:space="preserve"><value>Visibilidad</value></data>
+  <data name="Manage_Settings_Visibility_Subtitle" xml:space="preserve"><value>Los interruptores se aplican al instante sin revisión del GM.</value></data>
+  <data name="Manage_Settings_Visibility_Pause" xml:space="preserve"><value>Pausar anuncio</value></data>
+  <data name="Manage_Settings_Visibility_Pause_Help" xml:space="preserve"><value>Ocultar de la búsqueda; los datos se conservan.</value></data>
+  <data name="Manage_Settings_Visibility_HidePhone" xml:space="preserve"><value>Ocultar número público</value></data>
+  <data name="Manage_Settings_Visibility_HidePhone_Help" xml:space="preserve"><value>Los clientes solo te contactan por el enlace de WhatsApp.</value></data>
+  <data name="Manage_Settings_Details_Title" xml:space="preserve"><value>Detalles del anuncio</value></data>
+  <data name="Manage_Settings_Details_Subtitle" xml:space="preserve"><value>Las ediciones regresan el anuncio a revisión Pending.</value></data>
+  <data name="Manage_Settings_Contact_Title" xml:space="preserve"><value>Contacto</value></data>
+  <data name="Manage_Settings_Contact_Subtitle" xml:space="preserve"><value>Métodos de contacto públicos que ven los clientes.</value></data>
+  <data name="Manage_Settings_Contact_Whatsapp" xml:space="preserve"><value>Número de WhatsApp</value></data>
+  <data name="Manage_Settings_Contact_Email" xml:space="preserve"><value>Correo del negocio</value></data>
+  <data name="Manage_Settings_Contact_TimeZone" xml:space="preserve"><value>Zona horaria</value></data>
+  <data name="Manage_Settings_Notifications_Title" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Manage_Settings_Notifications_Subtitle" xml:space="preserve"><value>Cómo te avisa Bulletin Dells sobre actividad nueva.</value></data>
+  <data name="Manage_Settings_Notif_Email_Inquiries" xml:space="preserve"><value>Avísame por email de nuevas consultas</value></data>
+  <data name="Manage_Settings_Notif_Email_NewReview" xml:space="preserve"><value>Avísame por email de nuevas reseñas</value></data>
+  <data name="Manage_Settings_Notif_Wa_Bookings" xml:space="preserve"><value>WhatsApp en nuevas reservas</value></data>
+  <data name="Manage_Settings_Language_Title" xml:space="preserve"><value>Preferencia de idioma</value></data>
+  <data name="Manage_Settings_Language_Subtitle" xml:space="preserve"><value>Idioma por defecto al abrir mensajes pre-rellenados de WhatsApp.</value></data>
+  <data name="Manage_Settings_Language_Auto" xml:space="preserve"><value>Detectar del cliente</value></data>
+  <data name="Manage_Settings_Language_English" xml:space="preserve"><value>Inglés</value></data>
+  <data name="Manage_Settings_Language_Spanish" xml:space="preserve"><value>Español</value></data>
+  <data name="Manage_Settings_Language_Both" xml:space="preserve"><value>Ambos (saludo bilingüe)</value></data>
+  <data name="Manage_Settings_VipUpsell_Title" xml:space="preserve"><value>Desbloquea opciones VIP</value></data>
+  <data name="Manage_Settings_VipUpsell_Housing" xml:space="preserve"><value>Plantillas de respuesta, sincronización iCal, estadía mínima, tiempo de anticipación, horas de silencio, SLA de respuesta y exportación semanal de analíticas.</value></data>
+  <data name="Manage_Settings_VipUpsell_Beauty" xml:space="preserve"><value>Plantillas de respuesta, tiempo buffer entre citas, política de depósito, horas de silencio, SLA y exportación de analíticas.</value></data>
+  <data name="Manage_Settings_VipUpsell_Mechanics" xml:space="preserve"><value>Plantillas de respuesta, radio de cobertura, insignia de cotización gratis, recargo de emergencia, horas de silencio, SLA y analíticas semanales.</value></data>
+  <data name="Manage_Settings_VipUpsell_Transportation" xml:space="preserve"><value>Plantillas de respuesta, política de asignación de vehículos, ventanas de activación de ruta, buffer de aeropuerto, horas de silencio, SLA y analíticas CSV.</value></data>
+  <data name="Manage_Settings_VipUpsell_Jobs" xml:space="preserve"><value>Preguntas de pre-filtro, etapas personalizadas de pipeline, plantillas de respuesta, horas de silencio, SLA y analíticas CSV.</value></data>
+  <data name="Manage_Settings_VipAutoReply_Title" xml:space="preserve"><value>Plantillas de respuesta automática</value></data>
+  <data name="Manage_Settings_VipAutoReply_Subtitle" xml:space="preserve"><value>Pre-aprobadas por el GM. Las ediciones envían la plantilla a revisión antes de mostrarse a clientes.</value></data>
+  <data name="Manage_Settings_VipQuietHours_Title" xml:space="preserve"><value>Horas de silencio</value></data>
+  <data name="Manage_Settings_VipQuietHours_Subtitle" xml:space="preserve"><value>Sin notificaciones en este rango. Los clientes pueden seguir enviando consultas.</value></data>
+  <data name="Manage_Settings_VipQuietHours_From" xml:space="preserve"><value>Desde</value></data>
+  <data name="Manage_Settings_VipQuietHours_To" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Manage_Settings_VipSla_Title" xml:space="preserve"><value>SLA objetivo de respuesta</value></data>
+  <data name="Manage_Settings_VipSla_Subtitle" xml:space="preserve"><value>Tiempo de respuesta promedio comprometido. Afecta la insignia pública Respuesta rápida.</value></data>
+  <data name="Manage_Settings_VipSla_Minutes" xml:space="preserve"><value>minutos</value></data>
+  <data name="Manage_Settings_VipSla_FastBadge" xml:space="preserve"><value>Respuesta rápida activa</value></data>
+  <data name="Manage_Settings_VipPromotion_Title" xml:space="preserve"><value>Ventanas de promoción destacada</value></data>
+  <data name="Manage_Settings_VipPromotion_Subtitle" xml:space="preserve"><value>Días y horas cuando aplica el boost del GM (según tu plan de jerarquía).</value></data>
+  <data name="Manage_Settings_VipAnalytics_Title" xml:space="preserve"><value>Exportar analíticas</value></data>
+  <data name="Manage_Settings_VipAnalytics_Subtitle" xml:space="preserve"><value>Programar un CSV semanal con KPIs enviado a tu email.</value></data>
+  <data name="Manage_Settings_VipAnalytics_Weekly" xml:space="preserve"><value>Enviar CSV cada lunes</value></data>
+  <data name="Manage_Settings_VipLanguagePresence_Title" xml:space="preserve"><value>Presencia multi-idioma</value></data>
+  <data name="Manage_Settings_VipLanguagePresence_Subtitle" xml:space="preserve"><value>Idiomas en los que se publica tu anuncio.</value></data>
+  <data name="Manage_Settings_Housing_Address_Title" xml:space="preserve"><value>Dirección y check-in</value></data>
+  <data name="Manage_Settings_Housing_Address_Subtitle" xml:space="preserve"><value>Dirección pública; la ubicación exacta se muestra solo tras una consulta confirmada.</value></data>
+  <data name="Manage_Settings_Housing_CheckIn" xml:space="preserve"><value>Check-in</value></data>
+  <data name="Manage_Settings_Housing_CheckOut" xml:space="preserve"><value>Check-out</value></data>
+  <data name="Manage_Settings_Housing_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán fotos, consultas y reseñas.</value></data>
+  <data name="Manage_Settings_Housing_Vip_Ical_Title" xml:space="preserve"><value>Sincronización de calendario</value></data>
+  <data name="Manage_Settings_Housing_Vip_Ical_Subtitle" xml:space="preserve"><value>Feed iCal de solo lectura. Suscríbete en Airbnb, VRBO o Google Calendar.</value></data>
+  <data name="Manage_Settings_Housing_Vip_Ical_Copy" xml:space="preserve"><value>Copiar</value></data>
+  <data name="Manage_Settings_Housing_Vip_Stay_Title" xml:space="preserve"><value>Valores por defecto de estadía</value></data>
+  <data name="Manage_Settings_Housing_Vip_Stay_Subtitle" xml:space="preserve"><value>Estadía mínima y tiempo de anticipación por defecto.</value></data>
+  <data name="Manage_Settings_Housing_Vip_Stay_MinNights" xml:space="preserve"><value>Estadía mínima (noches)</value></data>
+  <data name="Manage_Settings_Housing_Vip_Stay_LeadTime" xml:space="preserve"><value>Anticipación de reserva (días)</value></data>
+  <data name="Manage_Settings_Beauty_Address_Title" xml:space="preserve"><value>Dirección del estudio</value></data>
+  <data name="Manage_Settings_Beauty_Address_Subtitle" xml:space="preserve"><value>Dirección pública visible en el anuncio.</value></data>
+  <data name="Manage_Settings_Beauty_Hours_Title" xml:space="preserve"><value>Horario de servicio</value></data>
+  <data name="Manage_Settings_Beauty_Hours_Subtitle" xml:space="preserve"><value>Cuándo aceptas citas.</value></data>
+  <data name="Manage_Settings_Beauty_Notif_Appointments" xml:space="preserve"><value>Avisar por email en nuevas citas</value></data>
+  <data name="Manage_Settings_Beauty_Notif_WaInquiries" xml:space="preserve"><value>WhatsApp en nuevas consultas</value></data>
+  <data name="Manage_Settings_Beauty_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán fotos, citas y reseñas.</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Buffer_Title" xml:space="preserve"><value>Tiempo buffer entre servicios</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Buffer_Subtitle" xml:space="preserve"><value>Minutos bloqueados tras cada cita para limpieza y preparación.</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Buffer_Suffix" xml:space="preserve"><value>minutos entre citas</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Deposit_Title" xml:space="preserve"><value>Política de depósito online</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Deposit_Subtitle" xml:space="preserve"><value>Se muestra al reservar. Bulletin Dells no procesa pagos.</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Deposit_Suggested" xml:space="preserve"><value>Depósito sugerido (USD)</value></data>
+  <data name="Manage_Settings_Beauty_Vip_Deposit_Policy" xml:space="preserve"><value>Texto de la política</value></data>
+  <data name="Manage_Settings_Mechanics_Shop_Title" xml:space="preserve"><value>Dirección del taller</value></data>
+  <data name="Manage_Settings_Mechanics_Shop_Subtitle" xml:space="preserve"><value>Dirección pública visible en el anuncio.</value></data>
+  <data name="Manage_Settings_Mechanics_Hours_Title" xml:space="preserve"><value>Horario de servicio</value></data>
+  <data name="Manage_Settings_Mechanics_Hours_Subtitle" xml:space="preserve"><value>Cuándo aceptas cotizaciones y reparaciones.</value></data>
+  <data name="Manage_Settings_Mechanics_Notif_QuoteRequests" xml:space="preserve"><value>Avisar por email en nuevas cotizaciones</value></data>
+  <data name="Manage_Settings_Mechanics_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán fotos, servicios y reseñas.</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Coverage_Title" xml:space="preserve"><value>Radio de cobertura</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Coverage_Subtitle" xml:space="preserve"><value>Distancia máxima para servicio móvil desde tu taller.</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Coverage_Suffix" xml:space="preserve"><value>km desde tu taller</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_FreeQuote_Title" xml:space="preserve"><value>Insignia de cotización gratis</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_FreeQuote_Subtitle" xml:space="preserve"><value>Visibilidad pública de la insignia en la tarjeta y página de detalle.</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_FreeQuote_Toggle" xml:space="preserve"><value>Mostrar la insignia públicamente</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Emergency_Title" xml:space="preserve"><value>Recargo de emergencia</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Emergency_Subtitle" xml:space="preserve"><value>Se muestra al solicitar servicio fuera de horario o en carretera.</value></data>
+  <data name="Manage_Settings_Mechanics_Vip_Emergency_Text" xml:space="preserve"><value>Texto del descargo</value></data>
+  <data name="Manage_Settings_Transportation_Dispatch_Title" xml:space="preserve"><value>Dirección de la base de despacho</value></data>
+  <data name="Manage_Settings_Transportation_Dispatch_Subtitle" xml:space="preserve"><value>Dirección pública mostrada en el anuncio.</value></data>
+  <data name="Manage_Settings_Transportation_Notif_Reservations" xml:space="preserve"><value>Avisar por email en nuevas reservas</value></data>
+  <data name="Manage_Settings_Transportation_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán rutas, reservas y reseñas.</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Title" xml:space="preserve"><value>Política de asignación de vehículo</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Subtitle" xml:space="preserve"><value>Cómo emparejar reservas con vehículos de tu flota.</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Smallest" xml:space="preserve"><value>El vehículo más pequeño que acomode al grupo</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Smallest_Help" xml:space="preserve"><value>Mejor eficiencia de combustible.</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Largest" xml:space="preserve"><value>El vehículo más grande disponible</value></data>
+  <data name="Manage_Settings_Transportation_Vip_Assign_Manual" xml:space="preserve"><value>Asignación manual</value></data>
+  <data name="Manage_Settings_Transportation_Vip_RouteWindows_Title" xml:space="preserve"><value>Ventanas de activación de ruta</value></data>
+  <data name="Manage_Settings_Transportation_Vip_RouteWindows_Subtitle" xml:space="preserve"><value>Ventanas por defecto en las que cada ruta es reservable. Anulaciones por ruta en la pestaña Routes.</value></data>
+  <data name="Manage_Settings_Transportation_Vip_AirportBuffer_Title" xml:space="preserve"><value>Buffer de recogida en aeropuerto</value></data>
+  <data name="Manage_Settings_Transportation_Vip_AirportBuffer_Subtitle" xml:space="preserve"><value>Minutos sumados a la llegada del vuelo para equipaje e inmigración.</value></data>
+  <data name="Manage_Settings_Transportation_Vip_AirportBuffer_Suffix" xml:space="preserve"><value>minutos tras ETA del vuelo</value></data>
+  <data name="Manage_Settings_Jobs_Visibility_Pause" xml:space="preserve"><value>Pausar publicación</value></data>
+  <data name="Manage_Settings_Jobs_Visibility_Pause_Help" xml:space="preserve"><value>Oculta de la búsqueda; se conservan las postulaciones.</value></data>
+  <data name="Manage_Settings_Jobs_Posting_Title" xml:space="preserve"><value>Detalles de la publicación</value></data>
+  <data name="Manage_Settings_Jobs_Posting_Subtitle" xml:space="preserve"><value>Las ediciones regresan la publicación a revisión del GM.</value></data>
+  <data name="Manage_Settings_Jobs_Position" xml:space="preserve"><value>Título del puesto</value></data>
+  <data name="Manage_Settings_Jobs_Description" xml:space="preserve"><value>Descripción del puesto</value></data>
+  <data name="Manage_Settings_Jobs_WorkLocation_Title" xml:space="preserve"><value>Lugar de trabajo</value></data>
+  <data name="Manage_Settings_Jobs_HrEmail" xml:space="preserve"><value>Correo de RR.HH.</value></data>
+  <data name="Manage_Settings_Jobs_Notif_Applications" xml:space="preserve"><value>Avisar por email en nuevas postulaciones</value></data>
+  <data name="Manage_Settings_Jobs_Notif_WaUrgent" xml:space="preserve"><value>WhatsApp en postulaciones urgentes</value></data>
+  <data name="Manage_Settings_Jobs_GmCopy_Applicants" xml:space="preserve"><value>El GM recibe siempre copia de cada conversación con postulantes.</value></data>
+  <data name="Manage_Settings_Jobs_Danger_Subtitle" xml:space="preserve"><value>Eliminar es permanente. Se borrarán postulaciones y reseñas.</value></data>
+  <data name="Manage_Settings_Jobs_Vip_Screening_Title" xml:space="preserve"><value>Pre-filtro de postulaciones</value></data>
+  <data name="Manage_Settings_Jobs_Vip_Screening_Subtitle" xml:space="preserve"><value>Hasta 3 preguntas sí/no mostradas a postulantes. Pre-aprobadas por el GM.</value></data>
+  <data name="Manage_Settings_Jobs_Vip_Pipeline_Title" xml:space="preserve"><value>Etapas del pipeline</value></data>
+  <data name="Manage_Settings_Jobs_Vip_Pipeline_Subtitle" xml:space="preserve"><value>Arrastra para reordenar. La primera y última etapa son fijas (Nuevo, Contratado/Rechazado).</value></data>
+  <data name="Manage_Settings_CarRental_Vip_DynamicPricing_Title" xml:space="preserve"><value>Reglas de precio dinámico</value></data>
+  <data name="Manage_Settings_CarRental_Vip_DynamicPricing_Subtitle" xml:space="preserve"><value>Multiplicadores aplicados sobre el precio diario base de cada vehículo.</value></data>
+  <data name="Manage_Settings_CarRental_Vip_DynamicPricing_Weekend" xml:space="preserve"><value>Fin de semana (vie – dom)</value></data>
+  <data name="Manage_Settings_CarRental_Vip_DynamicPricing_HighSeason" xml:space="preserve"><value>Temporada alta (jun – ago)</value></data>
+  <data name="Manage_Settings_CarRental_Vip_DynamicPricing_LastMinute" xml:space="preserve"><value>Última hora (menos de 24h)</value></data>
+  <data name="Manage_Settings_CarRental_Vip_Insurance_Title" xml:space="preserve"><value>Descargo de seguro por defecto</value></data>
+  <data name="Manage_Settings_CarRental_Vip_Insurance_Subtitle" xml:space="preserve"><value>Visible en cada página de detalle de vehículo y al inicio de los mensajes de WhatsApp.</value></data>
+  <data name="Manage_Settings_CarRental_Vip_Insurance_Text" xml:space="preserve"><value>Texto del descargo</value></data>
+
+  <!-- ─── Manage · Shared common (Retry / LoadMore) ────────────────────── -->
+  <data name="Manage_Common_Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="Manage_Common_LoadMore" xml:space="preserve"><value>Cargar más</value></data>
+
+  <!-- ─── Manage · Analytics tab (VIP, todas las categorías) ───────────── -->
+  <data name="Manage_Analytics_Title" xml:space="preserve"><value>Analítica de desempeño</value></data>
+  <data name="Manage_Analytics_Subtitle" xml:space="preserve"><value>Cómo se está desempeñando tu anuncio en el mercado.</value></data>
+  <data name="Manage_Analytics_Period_AriaLabel" xml:space="preserve"><value>Selector de período</value></data>
+  <data name="Manage_Analytics_Period_7d" xml:space="preserve"><value>Últimos 7 días</value></data>
+  <data name="Manage_Analytics_Period_30d" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="Manage_Analytics_Period_90d" xml:space="preserve"><value>Últimos 90 días</value></data>
+  <data name="Manage_Analytics_PrimaryKpis_AriaLabel" xml:space="preserve"><value>KPIs principales</value></data>
+  <data name="Manage_Analytics_Kpi_Views" xml:space="preserve"><value>Vistas totales</value></data>
+  <data name="Manage_Analytics_Kpi_WhatsApp" xml:space="preserve"><value>Contactos WhatsApp</value></data>
+  <data name="Manage_Analytics_Kpi_AvgRating" xml:space="preserve"><value>Calificación promedio</value></data>
+  <data name="Manage_Analytics_Kpi_AvgRating_From" xml:space="preserve"><value>de {0} reseñas aprobadas</value></data>
+  <data name="Manage_Analytics_Kpi_Closed" xml:space="preserve"><value>Contactos cerrados</value></data>
+  <data name="Manage_Analytics_Kpi_Closed_Hint" xml:space="preserve"><value>Registrados vía ContactLog (Regla #8)</value></data>
+  <data name="Manage_Analytics_VsPrev" xml:space="preserve"><value>vs período anterior</value></data>
+  <data name="Manage_Analytics_Delta_Up" xml:space="preserve"><value>Sube</value></data>
+  <data name="Manage_Analytics_Delta_Down" xml:space="preserve"><value>Baja</value></data>
+  <data name="Manage_Analytics_Delta_Flat" xml:space="preserve"><value>Estable</value></data>
+  <data name="Manage_Analytics_Ratings_Title" xml:space="preserve"><value>Distribución de calificaciones</value></data>
+  <data name="Manage_Analytics_Ratings_Subtitle" xml:space="preserve"><value>Solo reseñas aprobadas (Regla #7)</value></data>
+  <data name="Manage_Analytics_Ratings_AriaList" xml:space="preserve"><value>Desglose de calificaciones por estrella</value></data>
+  <data name="Manage_Analytics_Ratings_Reviews" xml:space="preserve"><value>reseñas</value></data>
+  <data name="Manage_Analytics_Ratings_Note" xml:space="preserve"><value>Solo las reseñas aprobadas por el GM cuentan para tu puntaje.</value></data>
+  <data name="Manage_Analytics_Ratings_NoneYet" xml:space="preserve"><value>Aún no hay reseñas aprobadas.</value></data>
+  <data name="Manage_Analytics_Funnel_Title" xml:space="preserve"><value>Embudo de conversión</value></data>
+  <data name="Manage_Analytics_Funnel_Subtitle" xml:space="preserve"><value>Cómo los visitantes se convierten en contactos.</value></data>
+  <data name="Manage_Analytics_Funnel_Step1" xml:space="preserve"><value>Vistas del anuncio</value></data>
+  <data name="Manage_Analytics_Funnel_Step2" xml:space="preserve"><value>Clics en WhatsApp</value></data>
+  <data name="Manage_Analytics_Funnel_Step3" xml:space="preserve"><value>Contactos cerrados</value></data>
+  <data name="Manage_Analytics_Funnel_OfViews" xml:space="preserve"><value>de las vistas</value></data>
+  <data name="Manage_Analytics_Funnel_OfClicks" xml:space="preserve"><value>{0}% de los clics WhatsApp</value></data>
+  <data name="Manage_Analytics_Funnel_FooterNote" xml:space="preserve"><value>ContactLog y el tracking de clics WhatsApp alimentan este embudo (Regla #8). El GM recibe copia email de toda interacción.</value></data>
+  <data name="Manage_Analytics_Trend_Title" xml:space="preserve"><value>Actividad diaria</value></data>
+  <data name="Manage_Analytics_Trend_Subtitle" xml:space="preserve"><value>Vistas durante el período seleccionado.</value></data>
+  <data name="Manage_Analytics_Trend_Views" xml:space="preserve"><value>Vistas</value></data>
+  <data name="Manage_Analytics_Trend_Contacts" xml:space="preserve"><value>Contactos</value></data>
+  <data name="Manage_Analytics_Empty_Title" xml:space="preserve"><value>Aún no hay analítica</value></data>
+  <data name="Manage_Analytics_Empty_Description" xml:space="preserve"><value>Aún no hay datos para este período. Cuando los visitantes vean tu anuncio y hagan clic en WhatsApp, las métricas aparecerán aquí.</value></data>
+  <data name="Manage_Analytics_Loading_AriaLabel" xml:space="preserve"><value>Cargando analítica</value></data>
+  <data name="Manage_Analytics_Error_Title" xml:space="preserve"><value>No pudimos cargar la analítica</value></data>
+  <data name="Manage_Analytics_Error_Description" xml:space="preserve"><value>Algo salió mal cargando tus métricas. Inténtalo de nuevo.</value></data>
+  <data name="Manage_Analytics_VipFooter" xml:space="preserve"><value>Analítica es exclusiva VIP. Mejora otros anuncios para acceder.</value></data>
+
+  <!-- ─── Manage · Inquiries tab (Regular + VIP) ───────────────────────── -->
+  <data name="Manage_Inquiries_Title" xml:space="preserve"><value>Consultas de clientes</value></data>
+  <data name="Manage_Inquiries_Subtitle" xml:space="preserve"><value>Mensajes de personas interesadas en tu servicio.</value></data>
+  <data name="Manage_Inquiries_Filter_New" xml:space="preserve"><value>Nuevas</value></data>
+  <data name="Manage_Inquiries_Filter_Contacted" xml:space="preserve"><value>Contactadas</value></data>
+  <data name="Manage_Inquiries_Filter_Closed" xml:space="preserve"><value>Cerradas</value></data>
+  <data name="Manage_Inquiries_Status_New" xml:space="preserve"><value>Nueva</value></data>
+  <data name="Manage_Inquiries_Status_Contacted" xml:space="preserve"><value>Contactada</value></data>
+  <data name="Manage_Inquiries_Status_Closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Manage_Inquiries_Action_OpenWhatsApp" xml:space="preserve"><value>Abrir WhatsApp</value></data>
+  <data name="Manage_Inquiries_Action_ReopenWhatsApp" xml:space="preserve"><value>Volver a WhatsApp</value></data>
+  <data name="Manage_Inquiries_Action_MarkClosed" xml:space="preserve"><value>Marcar como cerrada</value></data>
+  <data name="Manage_Inquiries_Action_Reopen" xml:space="preserve"><value>Reabrir</value></data>
+  <data name="Manage_Inquiries_Meta_RepliedAt" xml:space="preserve"><value>Respondida vía WhatsApp</value></data>
+  <data name="Manage_Inquiries_Meta_ClosedBy" xml:space="preserve"><value>Cerrada por el proveedor</value></data>
+  <data name="Manage_Inquiries_Kpis_AriaLabel" xml:space="preserve"><value>KPIs de consultas</value></data>
+  <data name="Manage_Inquiries_Kpi_OpenCount" xml:space="preserve"><value>Consultas abiertas</value></data>
+  <data name="Manage_Inquiries_Kpi_NeedReply" xml:space="preserve"><value>Necesitan respuesta</value></data>
+  <data name="Manage_Inquiries_Kpi_ResponseRate" xml:space="preserve"><value>Tasa de respuesta</value></data>
+  <data name="Manage_Inquiries_Kpi_Last30Days" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="Manage_Inquiries_Kpi_AvgFirstReply" xml:space="preserve"><value>1.ª resp. promedio</value></data>
+  <data name="Manage_Inquiries_Kpi_MedianTime" xml:space="preserve"><value>Tiempo mediano</value></data>
+  <data name="Manage_Inquiries_Kpi_Conversion" xml:space="preserve"><value>Conversión</value></data>
+  <data name="Manage_Inquiries_Kpi_ContactToClose" xml:space="preserve"><value>Contacto → cierre</value></data>
+  <data name="Manage_Inquiries_GmCopy" xml:space="preserve"><value>El GM recibe copia email de toda interacción. Abrir WhatsApp registra el contacto automáticamente (Regla #8).</value></data>
+  <data name="Manage_Inquiries_LoadMore" xml:space="preserve"><value>Cargar más consultas</value></data>
+  <data name="Manage_Inquiries_Loading_AriaLabel" xml:space="preserve"><value>Cargando consultas</value></data>
+  <data name="Manage_Inquiries_Empty_Title" xml:space="preserve"><value>Aún no hay consultas</value></data>
+  <data name="Manage_Inquiries_Empty_Description" xml:space="preserve"><value>Cuando un cliente te contacte vía WhatsApp, el mensaje aparecerá aquí.</value></data>
+  <data name="Manage_Inquiries_Error_Title" xml:space="preserve"><value>No pudimos cargar las consultas</value></data>
+  <data name="Manage_Inquiries_Error_Description" xml:space="preserve"><value>Algo salió mal cargando tus consultas. Inténtalo de nuevo.</value></data>
+  <data name="Manage_Inquiries_VipFooter" xml:space="preserve"><value>VIP incluye KPIs de respuesta e historial ilimitado de consultas.</value></data>
+
+  <!-- ─── Manage · Photos tab (listing único — mechanic / transport) ───── -->
+  <data name="Manage_Photos_Title" xml:space="preserve"><value>Fotos del anuncio</value></data>
+  <data name="Manage_Photos_Subtitle" xml:space="preserve"><value>Sube hasta 15 fotos. El GM decide cuáles se hacen públicas.</value></data>
+  <data name="Manage_Photos_Upload" xml:space="preserve"><value>Subir fotos</value></data>
+  <data name="Manage_Photos_Cover" xml:space="preserve"><value>Portada</value></data>
+  <data name="Manage_Photos_MakeCover" xml:space="preserve"><value>Usar como portada</value></data>
+  <data name="Manage_Photos_AwaitingReview" xml:space="preserve"><value>En revisión por el GM</value></data>
+  <data name="Manage_Photos_GmFeedback" xml:space="preserve"><value>Comentario del GM</value></data>
+  <data name="Manage_Photos_HiddenByGm" xml:space="preserve"><value>Ocultada por el GM</value></data>
+  <data name="Manage_Photos_Replace" xml:space="preserve"><value>Reemplazar</value></data>
+  <data name="Manage_Photos_AddPhoto" xml:space="preserve"><value>Añadir foto</value></data>
+  <data name="Manage_Photos_DragDrop" xml:space="preserve"><value>o arrastra aquí</value></data>
+  <data name="Manage_Photos_Format" xml:space="preserve"><value>JPG, PNG, WebP · hasta 5 MB cada una</value></data>
+  <data name="Manage_Photos_RecommendedSize" xml:space="preserve"><value>Recomendado 1600×1200 px o más</value></data>
+  <data name="Manage_Photos_SlotsUsedFormat" xml:space="preserve"><value>{0} de {1} espacios usados</value></data>
+  <data name="Manage_Photos_Loading_AriaLabel" xml:space="preserve"><value>Cargando fotos</value></data>
+  <data name="Manage_Photos_Empty_Title" xml:space="preserve"><value>Aún no hay fotos</value></data>
+  <data name="Manage_Photos_Empty_Description" xml:space="preserve"><value>Añade al menos 3 fotos para que los clientes vean tu servicio. El GM las revisará antes de hacerlas públicas.</value></data>
+  <data name="Manage_Photos_Error_Title" xml:space="preserve"><value>No pudimos cargar las fotos</value></data>
+  <data name="Manage_Photos_Error_Description" xml:space="preserve"><value>Algo salió mal cargando tus fotos. Inténtalo de nuevo.</value></data>
+  <!-- ── DELL-LANDING (Home v5 oscuro) ─────────────────────────────────────── -->
+  <data name="Home_Marquee_Bilingual" xml:space="preserve"><value>Bilingüe EN · ES</value></data>
+  <data name="Home_Marquee_Trusted" xml:space="preserve"><value>Directorio local de confianza</value></data>
+  <data name="Home_Marquee_Location" xml:space="preserve"><value>Wisconsin Dells</value></data>
+  <data name="Home_Marquee_Established" xml:space="preserve"><value>EST. 2024</value></data>
+  <data name="Home_Categories_Eyebrow" xml:space="preserve"><value>Explora · Browse</value></data>
+  <data name="Home_Categories_Heading" xml:space="preserve"><value>Ocho categorías, todas curadas.</value></data>
+  <data name="Home_Categories_Sub" xml:space="preserve"><value>Cada categoría revisada personalmente.</value></data>
+  <data name="Home_Categories_ViewAll" xml:space="preserve"><value>Ver todas</value></data>
+  <data name="Home_Cat_Housing_Tagline" xml:space="preserve"><value>Lago, centro, alojamiento J1</value></data>
+  <data name="Home_ListingsSuffix" xml:space="preserve"><value>anuncios</value></data>
+  <data name="Home_TopPicks_Eyebrow" xml:space="preserve"><value>Destacados</value></data>
+  <data name="Home_TopPicks_Heading" xml:space="preserve"><value>Proveedores reales. Reseñas reales.</value></data>
+  <data name="Home_TopPicks_ViewAll" xml:space="preserve"><value>Ver todos</value></data>
+  <data name="Home_TopPicks_CarouselLabel" xml:space="preserve"><value>Carrusel de proveedores destacados</value></data>
+  <data name="Home_Trust_Eyebrow" xml:space="preserve"><value>Por qué Bulletin Dells</value></data>
+  <data name="Home_Trust_Heading" xml:space="preserve"><value>La confianza no es una característica. Es el producto.</value></data>
+  <data name="Home_Trust_Sub" xml:space="preserve"><value>La confianza no es un extra — así construimos la plataforma.</value></data>
+  <data name="Home_Trust_Card1_Title" xml:space="preserve"><value>El GM aprueba manualmente cada anuncio</value></data>
+  <data name="Home_Trust_Card1_Desc" xml:space="preserve"><value>Cada anuncio revisado por el GM antes de ser público.</value></data>
+  <data name="Home_Trust_Card2_Title" xml:space="preserve"><value>Verificación — teléfono + ID + redes</value></data>
+  <data name="Home_Trust_Card2_Desc" xml:space="preserve"><value>Proveedores verificados con teléfono, ID y redes sociales.</value></data>
+  <data name="Home_Trust_Card3_Title" xml:space="preserve"><value>Calificaciones reales, contactos reales</value></data>
+  <data name="Home_Trust_Card3_Desc" xml:space="preserve"><value>Solo califica quien contactó. Cada reseña revisada.</value></data>
+  <data name="Home_Trust_Card4_Title" xml:space="preserve"><value>Contacto WhatsApp + auditoría por email</value></data>
+  <data name="Home_Trust_Card4_Desc" xml:space="preserve"><value>Tú hablas por WhatsApp; el GM recibe email de cada interacción.</value></data>
+  <data name="Home_Trust_Card5_Title" xml:space="preserve"><value>El GM cura cada foto</value></data>
+  <data name="Home_Trust_Card5_Desc" xml:space="preserve"><value>El proveedor sube, el GM elige. Galerías sin sorpresas.</value></data>
+  <data name="Home_Trust_Card6_Title" xml:space="preserve"><value>Aviso legal al primer contacto</value></data>
+  <data name="Home_Trust_Card6_Desc" xml:space="preserve"><value>Bulletin Dells conecta — no presta el servicio.</value></data>
+  <data name="Home_Tiers_Eyebrow" xml:space="preserve"><value>Para proveedores</value></data>
+  <data name="Home_Tiers_Heading" xml:space="preserve"><value>Tres formas de estar listado.</value></data>
+  <data name="Home_Tiers_Sub" xml:space="preserve"><value>Tres formas de estar en el directorio.</value></data>
+  <data name="Home_Tier_Regular_Label" xml:space="preserve"><value>Regular</value></data>
+  <data name="Home_Tier_Regular_Title" xml:space="preserve"><value>Aparece en el directorio</value></data>
+  <data name="Home_Tier_Regular_Price" xml:space="preserve"><value>Gratis</value></data>
+  <data name="Home_Tier_Regular_F1" xml:space="preserve"><value>Anuncio en tu categoría</value></data>
+  <data name="Home_Tier_Regular_F2" xml:space="preserve"><value>3 fotos aprobadas por el GM</value></data>
+  <data name="Home_Tier_Regular_F3" xml:space="preserve"><value>Contacto por WhatsApp</value></data>
+  <data name="Home_Tier_Regular_F4" xml:space="preserve"><value>Insignia Verificado</value></data>
+  <data name="Home_Tier_Regular_F5" xml:space="preserve"><value>Ubicación prioritaria</value></data>
+  <data name="Home_Tier_Regular_Cta" xml:space="preserve"><value>Empezar gratis</value></data>
+  <data name="Home_Tier_Verified_Label" xml:space="preserve"><value>Verificado</value></data>
+  <data name="Home_Tier_Verified_Title" xml:space="preserve"><value>Genera confianza</value></data>
+  <data name="Home_Tier_Verified_Price" xml:space="preserve"><value>Gratis tras verificación</value></data>
+  <data name="Home_Tier_Verified_F1" xml:space="preserve"><value>Todo lo de Regular</value></data>
+  <data name="Home_Tier_Verified_F2" xml:space="preserve"><value>Teléfono + ID + redes verificados</value></data>
+  <data name="Home_Tier_Verified_F3" xml:space="preserve"><value>Insignia Verificado</value></data>
+  <data name="Home_Tier_Verified_F4" xml:space="preserve"><value>Hasta 8 fotos</value></data>
+  <data name="Home_Tier_Verified_F5" xml:space="preserve"><value>Ubicación VIP superior</value></data>
+  <data name="Home_Tier_Verified_Cta" xml:space="preserve"><value>Verifícate</value></data>
+  <data name="Home_Tier_Vip_Label" xml:space="preserve"><value>★ VIP</value></data>
+  <data name="Home_Tier_Vip_Title" xml:space="preserve"><value>Estar arriba</value></data>
+  <data name="Home_Tier_Vip_Price" xml:space="preserve"><value>Precio a medida</value></data>
+  <data name="Home_Tier_Vip_F1" xml:space="preserve"><value>Todo lo de Verificado</value></data>
+  <data name="Home_Tier_Vip_F2" xml:space="preserve"><value>Insignia VIP + ubicación destacada</value></data>
+  <data name="Home_Tier_Vip_F3" xml:space="preserve"><value>Fotos ilimitadas (curadas por GM)</value></data>
+  <data name="Home_Tier_Vip_F4" xml:space="preserve"><value>Panel de analíticas</value></data>
+  <data name="Home_Tier_Vip_F5" xml:space="preserve"><value>Elegible para top hierarchy</value></data>
+  <data name="Home_Tier_Vip_Cta" xml:space="preserve"><value>Aplicar a VIP</value></data>
+  <data name="Home_Tiers_Footnote" xml:space="preserve"><value>VIP requiere estar Verificado primero. El ranking por Hierarchy queda a discreción exclusiva del GM — nunca se vende.</value></data>
+  <data name="Home_Onboarding_Eyebrow" xml:space="preserve"><value>Cómo unirse</value></data>
+  <data name="Home_Onboarding_Heading" xml:space="preserve"><value>Cinco pasos. Una revisión real.</value></data>
+  <data name="Home_Onboarding_Sub" xml:space="preserve"><value>Cinco pasos. Una revisión humana real.</value></data>
+  <data name="Home_Onboarding_Step1_Title" xml:space="preserve"><value>Regístrate</value></data>
+  <data name="Home_Onboarding_Step1_Desc" xml:space="preserve"><value>Crea cuenta gratis</value></data>
+  <data name="Home_Onboarding_Step2_Title" xml:space="preserve"><value>Sube fotos</value></data>
+  <data name="Home_Onboarding_Step2_Desc" xml:space="preserve"><value>GM elige las públicas</value></data>
+  <data name="Home_Onboarding_Step3_Title" xml:space="preserve"><value>Verifica identidad</value></data>
+  <data name="Home_Onboarding_Step3_Desc" xml:space="preserve"><value>Teléfono + ID + redes</value></data>
+  <data name="Home_Onboarding_Step4_Title" xml:space="preserve"><value>Revisión del GM</value></data>
+  <data name="Home_Onboarding_Step4_Desc" xml:space="preserve"><value>Aprueba o pide cambios</value></data>
+  <data name="Home_Onboarding_Step5_Title" xml:space="preserve"><value>Aplica a VIP</value></data>
+  <data name="Home_Onboarding_Step5_Desc" xml:space="preserve"><value>Ubicación destacada (opcional)</value></data>
+  <data name="Home_Onboarding_PrimaryCta" xml:space="preserve"><value>Empezar como proveedor</value></data>
+  <data name="Home_Onboarding_SecondaryCta" xml:space="preserve"><value>Leer la guía</value></data>
+  <data name="Home_FinalCta_Heading" xml:space="preserve"><value>Servicios locales. Confianza local.</value></data>
+  <data name="Home_FinalCta_Sub" xml:space="preserve"><value>Servicios locales. Confianza local.</value></data>
+  <data name="Home_FinalCta_Primary" xml:space="preserve"><value>Ver todos los proveedores</value></data>
+  <data name="Home_FinalCta_Secondary" xml:space="preserve"><value>Lista tu negocio</value></data>
+</root>

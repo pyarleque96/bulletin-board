@@ -1,0 +1,142 @@
+@namespace Bulletin.Board.Web.Client.Shared
+
+@*
+    AppToast — notificación flotante reutilizable.
+    Variants: Success | Error | Warning | Info.
+    Auto-dismiss configurable via AutoDismissMs (default 4000).
+    Implementa IDisposable para cancelar el CTS al desmontar.
+*@
+
+@implements IDisposable
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="fixed top-20 right-4 z-50 max-w-sm w-full"
+         role="status"
+         aria-live="polite"
+         aria-atomic="true">
+        <div class="flex items-center gap-3 @_variantClasses rounded-2xl px-4 py-3 shadow-lg border transition-all duration-300">
+
+            @* Icon por variant *@
+            @if (Variant == ToastVariant.Success)
+            {
+                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            }
+            else if (Variant == ToastVariant.Error)
+            {
+                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            }
+            else if (Variant == ToastVariant.Warning)
+            {
+                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            }
+            else
+            {
+                @* Info *@
+                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+            }
+
+            <span class="text-sm font-medium flex-1">@Message</span>
+
+            <button type="button"
+                    @onclick="HandleDismiss"
+                    class="text-current opacity-60 hover:opacity-100 transition-opacity cursor-pointer ml-auto"
+                    aria-label="Dismiss notification">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Mensaje a mostrar. Cuando es null o vacío el componente no se renderiza.</summary>
+    [Parameter] public string? Message { get; set; }
+
+    /// <summary>Variante visual del toast.</summary>
+    [Parameter] public ToastVariant Variant { get; set; } = ToastVariant.Success;
+
+    /// <summary>Milisegundos antes del auto-dismiss. 0 deshabilita el auto-dismiss.</summary>
+    [Parameter] public int AutoDismissMs { get; set; } = 4000;
+
+    /// <summary>Callback invocado cuando el toast se cierra (click X o auto-dismiss).</summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private CancellationTokenSource? _cts;
+
+    private string _variantClasses => Variant switch
+    {
+        ToastVariant.Success => "bg-green-50 border-green-200 text-green-800",
+        ToastVariant.Error   => "bg-red-50 border-red-200 text-red-800",
+        ToastVariant.Warning => "bg-amber-50 border-amber-200 text-amber-800",
+        ToastVariant.Info    => "bg-blue-50 border-blue-200 text-blue-800",
+        _                    => "bg-green-50 border-green-200 text-green-800",
+    };
+
+    protected override void OnParametersSet()
+    {
+        // Cada vez que Message cambia a un valor no-nulo, reiniciamos el timer.
+        if (!string.IsNullOrEmpty(Message) && AutoDismissMs > 0)
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            _ = Task.Delay(AutoDismissMs, token).ContinueWith(async _ =>
+            {
+                if (!token.IsCancellationRequested)
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        await OnDismiss.InvokeAsync();
+                        StateHasChanged();
+                    });
+                }
+            }, TaskScheduler.Default);
+        }
+        else if (string.IsNullOrEmpty(Message))
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+        }
+    }
+
+    private async Task HandleDismiss()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        await OnDismiss.InvokeAsync();
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+    }
+}

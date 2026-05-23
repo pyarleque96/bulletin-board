@@ -1,0 +1,372 @@
+@page "/register"
+@layout AuthLayout
+@using Bulletin.Board.Web.Client.Layout
+
+<PageTitle>Create account · Crear cuenta — Bulletin Dells</PageTitle>
+
+<div class="w-full" style="max-width:520px;">
+
+    <!-- Header -->
+    <div class="form-enter mb-4">
+        <h1 class="text-white font-bold tracking-tight mb-0.5" style="font-size:3rem;">
+            @_localizer["Register_Title"]
+        </h1>
+        <p class="text-white/40 text-xs">@_localizer["Register_Subtitle"]</p>
+    </div>
+
+    <!-- Account type selector -->
+    <div class="form-enter-d1 mb-4">
+        <p class="field-label mb-2">@_localizer["Register_RoleLabel"]</p>
+        <div class="flex gap-2.5" role="group" aria-label="Account type">
+            <AppRadio OptionValue="User"
+                      WrapperClass="flex-1"
+                      Value="@_role"
+                      ValueChanged="v => _role = v"
+                      Label="@_localizer["Register_RoleCustomer"]"
+                      Subtitle="@_localizer["Register_RoleCustomerDesc"]"
+                      Variant="card"
+                      GroupName="account-type">
+                <CardIcon>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+                    </svg>
+                </CardIcon>
+            </AppRadio>
+            <AppRadio OptionValue="Provider"
+                      WrapperClass="flex-1"
+                      Value="@_role"
+                      ValueChanged="v => _role = v"
+                      Label="@_localizer["Register_RoleProvider"]"
+                      Subtitle="@_localizer["Register_RoleProviderDesc"]"
+                      Variant="card"
+                      GroupName="account-type">
+                <CardIcon>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" />
+                    </svg>
+                </CardIcon>
+            </AppRadio>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-enter-d2">
+
+        <AlertBanner Variant="error" CssClass="mb-3" Message="@_errorMessage" />
+
+        <!-- Row 1: First Name + Last Name -->
+        <div class="grid grid-cols-2 gap-3 mb-3 form-enter" style="animation-delay:0.06s;">
+            <div>
+                <AppTextInput InputId="reg-firstname"
+                              Label="First Name · Nombre"
+                              Type="text"
+                              Value="@_firstName"
+                              ValueChanged="v => _firstName = v"
+                              Placeholder="Ana"
+                              AutoComplete="given-name"
+                              HasError="@_fullNameError"
+                              ErrorMessage="@_localizer["Register_FullNameRequired"]">
+                    <LeadingIcon>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </LeadingIcon>
+                </AppTextInput>
+            </div>
+            <div>
+                <AppTextInput InputId="reg-lastname"
+                              Label="Last Name · Apellido"
+                              Type="text"
+                              Value="@_lastName"
+                              ValueChanged="v => _lastName = v"
+                              Placeholder="Rodríguez"
+                              AutoComplete="family-name">
+                    <LeadingIcon>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </LeadingIcon>
+                </AppTextInput>
+            </div>
+        </div>
+
+        <!-- Row 2: Email + Phone -->
+        <div class="grid grid-cols-2 gap-3 mb-3 form-enter" style="animation-delay:0.12s;">
+            <div>
+                <AppTextInput InputId="reg-email"
+                              Label="Email"
+                              Type="email"
+                              Value="@_email"
+                              ValueChanged="v => _email = v"
+                              Placeholder="you@email.com"
+                              AutoComplete="email"
+                              HasError="@_emailError"
+                              ErrorMessage="@_localizer["Register_EmailInvalid"]">
+                    <LeadingIcon>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,12 2,6" />
+                        </svg>
+                    </LeadingIcon>
+                </AppTextInput>
+            </div>
+            <div>
+                <AppPhoneInput InputId="reg-phone"
+                               Label="@_localizer["Register_Phone"]"
+                               Prefix="@_phonePrefix"
+                               PrefixChanged="v => _phonePrefix = v"
+                               PhoneNumber="@_phone"
+                               PhoneNumberChanged="v => _phone = v" />
+            </div>
+        </div>
+
+        <!-- Row 3: Password + Confirm Password -->
+        <div class="grid grid-cols-2 gap-3 mb-3 form-enter" style="animation-delay:0.18s;">
+            <div>
+                <AppTextInput InputId="reg-password"
+                              Label="@_localizer["Register_Password"]"
+                              Type="password"
+                              ShowPasswordText="@_showPassword"
+                              Value="@_password"
+                              ValueChanged="OnPasswordInput"
+                              Placeholder="Min. 8 characters"
+                              AutoComplete="new-password"
+                              HasError="@_passwordError"
+                              ErrorMessage="@_localizer["Register_PasswordMinLength"]">
+                    <LeadingIcon>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+                        </svg>
+                    </LeadingIcon>
+                    <TrailingContent>
+                        <IconButton Variant="ghost"
+                                    AriaLabel="@_passwordToggleLabel"
+                                    OnClick="() => _showPassword = !_showPassword"
+                                    CssClass="absolute right-1 top-1/2 -translate-y-1/2">
+                            <Icon>
+                                @if (_showPassword)
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                }
+                            </Icon>
+                        </IconButton>
+                    </TrailingContent>
+                </AppTextInput>
+                <PasswordStrengthIndicator Score="@_strengthScore"
+                                           Label="@_strengthLabel"
+                                           LabelClass="@_strengthLabelClass"
+                                           CssClass="mt-1.5" />
+            </div>
+            <div>
+                <AppTextInput InputId="reg-confirm"
+                              Label="@_localizer["Register_ConfirmPassword"]"
+                              Type="password"
+                              ShowPasswordText="@_showConfirm"
+                              Value="@_confirmPassword"
+                              ValueChanged="v => _confirmPassword = v"
+                              Placeholder="Repeat password"
+                              AutoComplete="new-password"
+                              HasError="@_confirmError"
+                              ErrorMessage="@_localizer["Register_PasswordsMismatch"]">
+                    <LeadingIcon>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </LeadingIcon>
+                    <TrailingContent>
+                        <IconButton Variant="ghost"
+                                    AriaLabel="@_confirmToggleLabel"
+                                    OnClick="() => _showConfirm = !_showConfirm"
+                                    CssClass="absolute right-1 top-1/2 -translate-y-1/2">
+                            <Icon>
+                                @if (_showConfirm)
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                }
+                            </Icon>
+                        </IconButton>
+                    </TrailingContent>
+                </AppTextInput>
+            </div>
+        </div>
+
+        <!-- Terms — disclaimer legal (Regla #2 del producto) -->
+        <div class="mb-3 form-enter" style="animation-delay:0.24s;">
+            <AppCheckbox InputId="reg-terms"
+                         Value="@_termsAccepted"
+                         ValueChanged="v => _termsAccepted = v"
+                         Align="start"
+                         HasError="@_termsError"
+                         ErrorMessage="@_localizer["Register_TermsRequired"]"
+                         LabelClass="text-white/45 text-xs leading-relaxed cursor-pointer"
+                         WrapperClass="pt-0.5">
+                <ChildContent>
+                    I agree to the <a href="/terms" class="text-brand-500 hover:text-brand-400 transition-colors">Terms of Service</a>
+                    and <a href="/privacy" class="text-brand-500 hover:text-brand-400 transition-colors">Privacy Policy</a>.
+                    I understand this platform connects me with local providers and does not provide services directly.
+                </ChildContent>
+            </AppCheckbox>
+        </div>
+
+        <!-- Submit -->
+        <div class="pt-1 form-enter" style="animation-delay:0.3s;">
+            <AccentButton Text="@_localizer["Register_SubmitBtn"]"
+                          OnClick="HandleRegister"
+                          IsLoading="@_loading"
+                          Disabled="@_loading" />
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="form-enter-d3 mt-3 mb-2.5">
+        <AuthDivider Text="@_localizer["Auth_OrSignUpWith"]" />
+    </div>
+
+    <!-- Google (UI only) -->
+    <div class="form-enter-d3">
+        <SocialButton Text="@_localizer["Auth_ContinueGoogleSoon"]"
+                      Disabled="true">
+            <Icon>
+                <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                </svg>
+            </Icon>
+        </SocialButton>
+    </div>
+
+    <!-- Footer links -->
+    <div class="flex items-center justify-between mt-3">
+        <LinkButton Href="/" Variant="white-dim" CssClass="text-xs">
+            &larr; @_localizer["Auth_BackToSite"]
+        </LinkButton>
+        <p class="text-white/32 text-xs">
+            @_localizer["Register_HaveAccount"]
+            <LinkButton Text="@_localizer["Login_SubmitBtn"]" Href="/login" Variant="accent" CssClass="ml-0.5 font-semibold" />
+        </p>
+    </div>
+
+</div>
+
+@code {
+    [Inject] private IAuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private IStringLocalizer<SharedResource> _localizer { get; set; } = default!;
+
+    // UI fields (split first/last for the 2-column layout; combined into _fullName on submit)
+    private string _firstName = "";
+    private string _lastName = "";
+    private string _fullName = "";
+
+    private string _email = "";
+    private string _phone = "";
+    private string _phonePrefix = "+1";
+    private string _password = "";
+    private string _confirmPassword = "";
+    private string _role = "User";
+    private bool _showPassword;
+    private bool _showConfirm;
+    private bool _termsAccepted;
+    private bool _loading;
+    private string? _errorMessage;
+
+    private bool _fullNameError;
+    private bool _emailError;
+    private bool _passwordError;
+    private bool _confirmError;
+    private bool _termsError;
+
+    private int _strengthScore;
+    private string _strengthLabel = "";
+    private string _strengthLabelClass = "text-white/30";
+
+    protected override void OnInitialized()
+    {
+        _strengthLabel = _localizer["Pwd_Hint"].Value;
+    }
+
+    private string _passwordType        => _showPassword  ? "text" : "password";
+    private string _confirmType         => _showConfirm   ? "text" : "password";
+    private string _passwordToggleLabel => _showPassword  ? _localizer["Login_HidePassword"].Value : _localizer["Login_ShowPassword"].Value;
+    private string _confirmToggleLabel  => _showConfirm   ? _localizer["Login_HidePassword"].Value : _localizer["Login_ShowPassword"].Value;
+
+    private void OnPasswordInput(string val)
+    {
+        _password = val;
+        ComputeStrength(_password);
+    }
+
+    private void ComputeStrength(string val)
+    {
+        if (string.IsNullOrEmpty(val))
+        {
+            _strengthScore = 0;
+            _strengthLabel = _localizer["Pwd_Hint"].Value;
+            _strengthLabelClass = "text-white/30";
+            return;
+        }
+        int score = 0;
+        if (val.Length >= 8) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(val, "[A-Z]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(val, "[0-9]")) score++;
+        if (System.Text.RegularExpressions.Regex.IsMatch(val, "[^A-Za-z0-9]")) score++;
+        _strengthScore = score;
+        (_strengthLabel, _strengthLabelClass) = score switch
+        {
+            1 => (_localizer["Pwd_Weak"].Value,   "text-red-400 font-medium"),
+            2 => (_localizer["Pwd_Fair"].Value,   "text-orange-400 font-medium"),
+            3 => (_localizer["Pwd_Good"].Value,   "text-yellow-400 font-medium"),
+            4 => (_localizer["Pwd_Strong"].Value, "text-green-400 font-medium"),
+            _ => (_localizer["Pwd_Hint"].Value,   "text-white/30"),
+        };
+    }
+
+    private async Task HandleRegister()
+    {
+        // Combine first + last name into _fullName for the service call
+        _fullName = $"{_firstName.Trim()} {_lastName.Trim()}".Trim();
+
+        _errorMessage  = null;
+        _fullNameError = string.IsNullOrWhiteSpace(_fullName);
+        _emailError    = string.IsNullOrWhiteSpace(_email) || !_email.Contains('@');
+        _passwordError = _password.Length < 8;
+        _confirmError  = _password != _confirmPassword;
+        _termsError    = !_termsAccepted;
+
+        if (_fullNameError || _emailError || _passwordError || _confirmError || _termsError)
+            return;
+
+        _loading = true;
+        try
+        {
+            var success = await AuthService.RegisterAsync(_email, _password, _role);
+            if (success)
+                Navigation.NavigateTo("/login?registered=true");
+            else
+                _errorMessage = AuthService.LastError ?? _localizer["Register_RegistrationFailed"].Value;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

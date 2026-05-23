@@ -1,0 +1,30 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@*  SettingsSectionHeader — header for a Manage Settings section.
+    Renders a flex justify-between with the title (and optional subtitle / VIP chip)
+    on the left and the SafeContentPill on the right.
+*@
+
+<div class="flex items-center justify-between gap-3 mb-1">
+    <h2 class="text-base font-semibold text-ink flex items-center gap-2">
+        @if (IsVipSection)
+        {
+            <span class="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-vip-700 border border-vip-200"
+                  style="background:linear-gradient(135deg,#fae8ff,#fdf4ff);letter-spacing:.04em;">VIP</span>
+        }
+        @Title
+    </h2>
+    <SafeContentPill PillType="@PillType" />
+</div>
+@if (!string.IsNullOrWhiteSpace(Subtitle))
+{
+    <p class="text-xs text-muted mb-5">@Subtitle</p>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Subtitle { get; set; }
+    /// <summary>"safe" or "content".</summary>
+    [Parameter] public string PillType { get; set; } = "safe";
+    [Parameter] public bool IsVipSection { get; set; }
+}

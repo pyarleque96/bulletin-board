@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Search In Progress / Búsqueda en Progreso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 07-empty-with-loading.html
+    SPEC:   Estado "búsqueda en progreso" — se muestra cuando el usuario
+            acaba de enviar una búsqueda y se espera el resultado de
+            GET /api/v1/listings?q=X. No es el estado vacío definitivo
+            (sin resultados) sino el estado de transición activa.
+    CUÁNDO: @if (isSearching) { <SearchInProgress Query="@query" /> }
+            Se muestra desde que el usuario envía hasta que llegan los datos.
+    VARIANTES:
+      A) Búsqueda de proveedores (principal)
+      B) Búsqueda sin resultados (estado vacío post-carga)
+      C) Error de red durante búsqueda
+    BLAZOR: Componente <SearchState State="@searchState" Query="@query" Category="@category" />
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      min-height: 100dvh;
+    }
+
+    /* ---- Puntos animados (typewriter dots) ---- */
+    @keyframes dot-bounce {
+      0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+      30%            { transform: translateY(-5px); opacity: 1;   }
+    }
+
+    .search-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      animation: dot-bounce 1.4s ease-in-out infinite;
+    }
+    .search-dot:nth-child(2) { animation-delay: 0.18s; }
+    .search-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    /* ---- Pulso del icono de búsqueda ---- */
+    @keyframes icon-pulse {
+      0%, 100% { transform: scale(1);    opacity: 0.9; }
+      50%       { transform: scale(1.08); opacity: 1;   }
+    }
+    .search-icon-pulse {
+      animation: icon-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* ---- Onda de radar detrás del icono ---- */
+    @keyframes radar-ring {
+      0%   { transform: scale(1);   opacity: 0.3; }
+      100% { transform: scale(2.2); opacity: 0;   }
+    }
+    .radar-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid #fd8c1b;
+      animation: radar-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .radar-ring:nth-child(2) { animation-delay: 0.7s; }
+    .radar-ring:nth-child(3) { animation-delay: 1.4s; }
+
+    /* ---- Fade-in general ---- */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .fade-up-d1 { animation-delay: 0.1s; opacity: 0; }
+    .fade-up-d2 { animation-delay: 0.2s; opacity: 0; }
+    .fade-up-d3 { animation-delay: 0.3s; opacity: 0; }
+
+    /* ---- Skeleton mini (sugerencias mientras espera) ---- */
+    @keyframes shimmer {
+      0%   { background-position: -400% 0; }
+      100% { background-position: 400% 0; }
+    }
+    .sk-mini {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    /* ---- Estado vacío (sin resultados) ---- */
+    @keyframes empty-bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-6px); }
+    }
+    .empty-icon {
+      animation: empty-bounce 2.5s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .search-dot, .search-icon-pulse, .radar-ring, .fade-up,
+      .fade-up-d1, .fade-up-d2, .fade-up-d3, .sk-mini, .empty-icon {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     NAVEGACIÓN CON SEARCHBAR ACTIVA
+     ================================================================ -->
+<nav style="background:#ffffff; border-bottom:1px solid #f1f5f9; padding:14px 24px; position:sticky; top:0; z-index:40;">
+  <div style="max-width:1100px; margin:0 auto; display:flex; align-items:center; gap:16px; justify-content:space-between;">
+    <div style="font-weight:700; font-size:18px; color:#1e293b; white-space:nowrap;">
+      Bulletin<span style="color:#fd8c1b;">Dells</span>
+    </div>
+    <!-- Search bar con query activa -->
+    <div style="flex:1; max-width:500px; position:relative;">
+      <div style="
+        display:flex; align-items:center; gap:10px;
+        border:2px solid #fd8c1b; border-radius:9999px;
+        padding:8px 16px; background:#ffffff;
+        box-shadow:0 0 0 4px rgba(253,140,27,0.08);
+      ">
+        <!-- Icono lupa SVG -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fd8c1b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <!-- BLAZOR: @query — el texto que el usuario buscó -->
+        <span style="font-size:14px; color:#1e293b; flex:1;">mecánicos en Wisconsin Dells</span>
+        <!-- Spinner de búsqueda activa -->
+        <div style="
+          width:16px; height:16px; border-radius:50%;
+          border:2px solid #fde8c8; border-top-color:#fd8c1b;
+          animation:spin 0.85s linear infinite;
+        " aria-hidden="true"></div>
+        <style>@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }</style>
+      </div>
+    </div>
+    <div class="sk-mini" style="width:36px; height:36px; border-radius:50%;"></div>
+  </div>
+</nav>
+
+<!-- ================================================================
+     VARIANTE A: BÚSQUEDA EN PROGRESO (estado principal)
+     BLAZOR: @if (searchState == SearchState.Loading)
+     ================================================================ -->
+<section
+  style="min-height:70vh; display:flex; align-items:center; justify-content:center; padding:48px 24px;"
+  role="status"
+  aria-live="polite"
+  aria-label="Buscando proveedores, por favor espera / Searching providers, please wait"
+>
+  <div style="display:flex; flex-direction:column; align-items:center; gap:28px; max-width:480px; text-align:center;">
+
+    <!-- Icono de búsqueda con radar -->
+    <div class="fade-up search-icon-pulse" style="position:relative; width:72px; height:72px;">
+      <!-- Anillos de radar -->
+      <div class="radar-ring" aria-hidden="true"></div>
+      <div class="radar-ring" aria-hidden="true"></div>
+      <div class="radar-ring" aria-hidden="true"></div>
+      <!-- Círculo base -->
+      <div style="
+        position:relative; z-index:1;
+        width:72px; height:72px; border-radius:50%;
+        background:#fff7ed; border:2px solid #fde8c8;
+        display:flex; align-items:center; justify-content:center;
+      ">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fd8c1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Texto principal -->
+    <div class="fade-up fade-up-d1" style="display:flex; flex-direction:column; gap:8px;">
+      <h2 style="font-size:20px; font-weight:700; color:#1e293b; line-height:1.3;">
+        Buscando proveedores en Wisconsin Dells
+        <!-- Puntos animados -->
+        <span style="display:inline-flex; gap:4px; margin-left:4px; vertical-align:middle;" aria-hidden="true">
+          <span class="search-dot"></span>
+          <span class="search-dot"></span>
+          <span class="search-dot"></span>
+        </span>
+      </h2>
+      <p style="font-size:14px; color:#64748b; line-height:1.6;">
+        Searching providers in Wisconsin Dells
+      </p>
+    </div>
+
+    <!-- Sub-mensaje contextual -->
+    <div class="fade-up fade-up-d2" style="display:flex; flex-direction:column; gap:6px;">
+      <p style="font-size:13px; color:#94a3b8;">
+        <!-- BLAZOR: @category si aplica -->
+        Explorando la categoría <strong style="color:#1e293b;">Mecánicos</strong> ·
+        Browsing <strong style="color:#1e293b;">Mechanics</strong> category
+      </p>
+      <p style="font-size:12px; color:#cbd5e1;">
+        Esto puede tomar unos segundos · This may take a moment
+      </p>
+    </div>
+
+    <!-- Skeleton mini de "resultados que vienen" — pre-visualización -->
+    <div class="fade-up fade-up-d3" style="width:100%; display:flex; flex-direction:column; gap:10px;">
+      <p style="font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.12em; color:#cbd5e1; margin-bottom:2px;">
+        Preparando resultados / Preparing results
+      </p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="border:1px solid #f1f5f9; border-radius:10px; overflow:hidden; opacity:0.6;">
+          <div class="sk-mini" style="width:100%; height:80px; border-radius:0;"></div>
+          <div style="padding:10px; display:flex; flex-direction:column; gap:6px;">
+            <div class="sk-mini" style="width:80%; height:12px;"></div>
+            <div class="sk-mini" style="width:60%; height:10px;"></div>
+          </div>
+        </div>
+        <div style="border:1px solid #f1f5f9; border-radius:10px; overflow:hidden; opacity:0.4;">
+          <div class="sk-mini" style="width:100%; height:80px; border-radius:0;"></div>
+          <div style="padding:10px; display:flex; flex-direction:column; gap:6px;">
+            <div class="sk-mini" style="width:70%; height:12px;"></div>
+            <div class="sk-mini" style="width:50%; height:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================
+     SEPARADOR DE VARIANTES (solo para demo — ocultar en prod)
+     ================================================================ -->
+<div style="background:#f8fafc; border-top:1px solid #f1f5f9; border-bottom:1px solid #f1f5f9; padding:12px 24px;">
+  <p style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; color:#94a3b8; max-width:1100px; margin:0 auto;">
+    Variante B — Sin resultados / No results (post-load) &amp; Variante C — Error de red / Network error
+  </p>
+</div>
+
+<!-- ================================================================
+     VARIANTE B: SIN RESULTADOS (estado vacío post-carga)
+     BLAZOR: @if (searchState == SearchState.Empty)
+     ================================================================ -->
+<section
+  style="padding:64px 24px; display:flex; align-items:center; justify-content:center;"
+  aria-label="Sin resultados / No results"
+>
+  <div style="display:flex; flex-direction:column; align-items:center; gap:20px; max-width:400px; text-align:center;">
+
+    <!-- Icono vacío -->
+    <div class="empty-icon" style="
+      width:72px; height:72px; border-radius:50%;
+      background:#f8fafc; border:2px solid #e2e8f0;
+      display:flex; align-items:center; justify-content:center;
+    " aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6M11 8v6" opacity="0.4"/>
+        <path d="M8 11h6" stroke="#94a3b8" stroke-width="2"/>
+        <line x1="9" y1="9" x2="13" y2="13" stroke="#94a3b8" stroke-width="2"/>
+        <line x1="13" y1="9" x2="9" y2="13" stroke="#94a3b8" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h3 style="font-size:18px; font-weight:700; color:#1e293b;">
+        No encontramos proveedores / No providers found
+      </h3>
+      <p style="font-size:13px; color:#64748b; line-height:1.6;">
+        No hay resultados para <strong>"mecánicos"</strong> en este momento.<br/>
+        No results for <strong>"mechanics"</strong> right now.
+      </p>
+    </div>
+
+    <!-- Sugerencias -->
+    <div style="background:#f8fafc; border-radius:10px; padding:14px; width:100%; text-align:left;">
+      <p style="font-size:12px; font-weight:600; color:#475569; margin-bottom:8px;">
+        Sugerencias / Suggestions:
+      </p>
+      <ul style="font-size:12px; color:#64748b; list-style:none; display:flex; flex-direction:column; gap:5px;">
+        <li style="display:flex; align-items:center; gap:8px;">
+          <span style="width:4px; height:4px; border-radius:50%; background:#fd8c1b; flex-shrink:0;"></span>
+          Intenta con otro término · Try a different term
+        </li>
+        <li style="display:flex; align-items:center; gap:8px;">
+          <span style="width:4px; height:4px; border-radius:50%; background:#fd8c1b; flex-shrink:0;"></span>
+          Revisa la ortografía · Check your spelling
+        </li>
+        <li style="display:flex; align-items:center; gap:8px;">
+          <span style="width:4px; height:4px; border-radius:50%; background:#fd8c1b; flex-shrink:0;"></span>
+          Explora todas las categorías · Browse all categories
+        </li>
+      </ul>
+    </div>
+
+    <!-- CTA -->
+    <button style="
+      display:inline-flex; align-items:center; gap:8px;
+      background:#fd8c1b; color:#ffffff; font-weight:600; font-size:14px;
+      border:none; border-radius:8px; padding:10px 24px; min-height:44px;
+      cursor:pointer; font-family:Inter,system-ui,sans-serif;
+    " type="button">
+      Ver todas las categorías / Browse all categories
+    </button>
+  </div>
+</section>
+
+<!-- ================================================================
+     VARIANTE C: ERROR DE RED DURANTE BÚSQUEDA
+     BLAZOR: @if (searchState == SearchState.Error)
+     ================================================================ -->
+<section
+  style="padding:48px 24px; display:flex; align-items:center; justify-content:center; background:#fafafa; border-top:1px solid #f1f5f9;"
+  aria-label="Error de búsqueda / Search error"
+>
+  <div style="display:flex; flex-direction:column; align-items:center; gap:20px; max-width:380px; text-align:center;">
+
+    <!-- Icono error -->
+    <div style="
+      width:64px; height:64px; border-radius:50%;
+      background:#fef2f2; border:2px solid #fecaca;
+      display:flex; align-items:center; justify-content:center;
+    " aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:7px;">
+      <h3 style="font-size:17px; font-weight:700; color:#1e293b;">
+        Error al buscar / Search failed
+      </h3>
+      <p style="font-size:13px; color:#64748b; line-height:1.6;">
+        No pudimos conectar con el servidor. Revisa tu conexión y vuelve a intentarlo.<br/>
+        <span style="color:#94a3b8;">We couldn't connect to the server. Check your connection and try again.</span>
+      </p>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <button style="
+        display:inline-flex; align-items:center; gap:8px;
+        background:#fd8c1b; color:#ffffff; font-weight:600; font-size:13px;
+        border:none; border-radius:8px; padding:9px 20px; min-height:44px;
+        cursor:pointer; font-family:Inter,system-ui,sans-serif;
+      " type="button">
+        <!-- Icono de reintentar -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        Reintentar / Retry
+      </button>
+      <button style="
+        display:inline-flex; align-items:center;
+        background:#ffffff; color:#475569; font-weight:500; font-size:13px;
+        border:1.5px solid #e2e8f0; border-radius:8px; padding:9px 20px; min-height:44px;
+        cursor:pointer; font-family:Inter,system-ui,sans-serif;
+      " type="button">
+        Ir al inicio / Go home
+      </button>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

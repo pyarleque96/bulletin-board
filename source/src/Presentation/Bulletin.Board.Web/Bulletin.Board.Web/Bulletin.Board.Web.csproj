@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bulletin.Board.Web.Client\Bulletin.Board.Web.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.0" />
+  </ItemGroup>
+
+  <!-- Excluir node_modules y archivos npm del compilador (si no, MSBuild los escanea por defecto). -->
+  <ItemGroup>
+    <Content Remove="node_modules\**" />
+    <None Remove="node_modules\**" />
+    <Compile Remove="node_modules\**" />
+    <Content Remove="package.json;package-lock.json;tailwind.config.js" />
+    <None Include="package.json;package-lock.json;tailwind.config.js;Styles\tailwind.input.css" />
+  </ItemGroup>
+
+  <!-- Genera wwwroot/tailwind.css en cada `dotnet build` antes de empaquetar static assets. -->
+  <Target Name="BuildTailwindCss" BeforeTargets="AssignTargetPaths">
+    <Exec Command="npm install --no-audit --no-fund --silent" Condition="!Exists('node_modules')" />
+    <Exec Command="npm run css:build" />
+  </Target>
+
+</Project>

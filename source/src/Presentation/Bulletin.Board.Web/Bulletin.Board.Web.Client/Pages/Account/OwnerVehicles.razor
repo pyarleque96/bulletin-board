@@ -1,0 +1,482 @@
+@page "/account/listings/{ListingId:guid}/vehicles"
+@attribute [Authorize]
+
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Listings.Detail
+@using Microsoft.AspNetCore.Authorization
+
+@inject IListingsService _listings
+@inject NavigationManager _nav
+
+<PageTitle>Manage vehicles | Bulletin Dells</PageTitle>
+
+<section class="max-w-5xl mx-auto px-4 pt-24 pb-16">
+
+    <header class="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-ink tracking-tight">Manage vehicles</h1>
+            <p class="text-muted text-sm mt-1">
+                Vehicles in your fleet. Editing any of them sends the listing back to GM for re-approval.
+            </p>
+        </div>
+        <button type="button" @onclick="StartCreate" disabled="@_busy"
+                class="px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold disabled:opacity-50 transition-colors">
+            + Add vehicle
+        </button>
+    </header>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="mb-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm">
+            @_errorMessage
+        </div>
+    }
+
+    @* ── Inline editor ── *@
+    @if (_form is not null)
+    {
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 mb-6">
+            <h2 class="text-base font-semibold text-ink mb-4">@(_editingId is null ? "New vehicle" : "Edit vehicle")</h2>
+            <EditForm Model="_form" OnValidSubmit="SaveAsync" FormName="vehicle-form" class="space-y-4">
+                <DataAnnotationsValidator />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Name</span>
+                        <InputText @bind-Value="_form.Name" maxlength="80"
+                                   class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Display order</span>
+                        <InputNumber @bind-Value="_form.DisplayOrder"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Max passengers</span>
+                        <InputNumber @bind-Value="_form.PassengerMax"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Transmission</span>
+                        <InputSelect @bind-Value="_form.Transmission"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">
+                            <option value="Manual">Manual</option>
+                            <option value="Automatic">Automatic</option>
+                            <option value="Both">Both</option>
+                        </InputSelect>
+                    </label>
+                    <label class="flex items-center gap-2 mt-5">
+                        <InputCheckbox @bind-Value="_form.HasAirConditioning" class="rounded" />
+                        <span class="text-sm text-ink">A/C</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Daily rate ($)</span>
+                        <InputNumber @bind-Value="_form.DailyRateDollars" step="0.01"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Weekly ($) <span class="text-muted">(optional)</span></span>
+                        <InputNumber @bind-Value="_form.WeeklyRateDollars" step="0.01"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Monthly ($) <span class="text-muted">(optional)</span></span>
+                        <InputNumber @bind-Value="_form.MonthlyRateDollars" step="0.01"
+                                     class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="submit" disabled="@_busy"
+                            class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold disabled:opacity-50">
+                        @(_editingId is null ? "Create" : "Save")
+                    </button>
+                    <button type="button" @onclick="CancelEdit" disabled="@_busy"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    @* ── Vehicle list ── *@
+    @if (_loading)
+    {
+        <p class="text-muted text-sm">Loading…</p>
+    }
+    else if (_vehicles is null || _vehicles.Count == 0)
+    {
+        <div class="bg-white rounded-3xl border border-dashed border-slate-200 p-10 text-center">
+            <p class="text-muted text-sm">No vehicles yet. Add your first one.</p>
+        </div>
+    }
+    else
+    {
+        <ul class="space-y-4">
+            @foreach (var v in _vehicles)
+            {
+                <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="font-semibold text-ink">@v.Name</h3>
+                                @if (!v.IsActive)
+                                {
+                                    <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                                        inactive
+                                    </span>
+                                }
+                            </div>
+                            <p class="text-muted text-xs mt-0.5">@FormatSpecs(v)</p>
+                            <p class="text-ink text-sm mt-1 font-medium">
+                                @FormatRate(v.DailyRateCents)/day
+                                @if (v.WeeklyRateCents.HasValue) { <span class="text-muted text-xs">· @FormatRate(v.WeeklyRateCents.Value)/wk</span> }
+                                @if (v.MonthlyRateCents.HasValue) { <span class="text-muted text-xs">· @FormatRate(v.MonthlyRateCents.Value)/mo</span> }
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1 flex-wrap">
+                            <button type="button" @onclick="() => StartEdit(v)" disabled="@_busy"
+                                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium disabled:opacity-50">
+                                Edit
+                            </button>
+                            <button type="button" @onclick="() => ToggleActiveAsync(v)" disabled="@_busy"
+                                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium disabled:opacity-50">
+                                @(v.IsActive ? "Deactivate" : "Reactivate")
+                            </button>
+                            <button type="button" @onclick="() => DeleteAsync(v)" disabled="@_busy"
+                                    class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium disabled:opacity-50">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    @* ── Availability calendar (collapsed by default) ── *@
+                    <div class="mt-5 border-t border-slate-100 pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-semibold text-ink">Availability</h4>
+                            <button type="button" @onclick="() => ToggleCalendar(v.Id)" class="text-xs text-brand-500 hover:text-brand-700">
+                                @(_calendarOpen.Contains(v.Id) ? "Hide calendar" : "Manage availability")
+                            </button>
+                        </div>
+                        @if (_calendarOpen.Contains(v.Id))
+                        {
+                            <VehicleCalendar
+                                @ref="_calendars[v.Id]"
+                                VehicleId="v.Id"
+                                IsEditor="true"
+                                OnAddBlackout="(args) => AddBlackoutAsync(v.Id, args)"
+                                OnRemoveBlackout="(args) => RemoveBlackoutAsync(v.Id, args)" />
+                        }
+                    </div>
+
+                    @* ── Photos ── *@
+                    <div class="mt-5 border-t border-slate-100 pt-4">
+                        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                            <h4 class="text-sm font-semibold text-ink">Photos (@v.Photos.Length)</h4>
+                            <div class="flex items-center gap-2">
+                                <label class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium cursor-pointer disabled:opacity-50">
+                                    Upload photo
+                                    <InputFile OnChange="(args) => UploadPhotoAsync(v, args)"
+                                               accept="image/jpeg,image/png,image/webp,image/gif"
+                                               disabled="@_busy"
+                                               class="hidden" />
+                                </label>
+                                <span class="text-[11px] text-muted">JPG / PNG / WEBP / GIF, up to 8 MB</span>
+                            </div>
+                        </div>
+                        @if (v.Photos.Length == 0)
+                        {
+                            <p class="text-muted text-xs">No photos yet. Paste an image URL above.</p>
+                        }
+                        else
+                        {
+                            <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                @foreach (var p in v.Photos)
+                                {
+                                    <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+                                        <div class="aspect-video bg-slate-100">
+                                            <img src="@p.FilePath" alt="" class="w-full h-full object-cover" />
+                                        </div>
+                                        <div class="absolute top-2 left-2 flex gap-1">
+                                            @if (p.IsPrimary)
+                                            {
+                                                <span class="text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">primary</span>
+                                            }
+                                            <span class="@($"text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full {(p.IsPublic ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600")}")">
+                                                @(p.IsPublic ? "public" : "pending GM")
+                                            </span>
+                                        </div>
+                                        <div class="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            @if (!p.IsPrimary)
+                                            {
+                                                <button type="button" @onclick="() => SetPrimaryAsync(p)" disabled="@_busy"
+                                                        class="px-2 py-1 rounded-lg bg-white/95 text-ink text-[10px] font-semibold disabled:opacity-50">
+                                                    Make primary
+                                                </button>
+                                            }
+                                            <button type="button" @onclick="() => DeletePhotoAsync(p)" disabled="@_busy"
+                                                    class="px-2 py-1 rounded-lg bg-white/95 text-red-700 text-[10px] font-semibold disabled:opacity-50">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    [Parameter] public Guid ListingId { get; set; }
+
+    private bool _loading = true;
+    private bool _busy;
+    private string? _errorMessage;
+    private IReadOnlyList<OwnerVehicleDto>? _vehicles;
+    private VehicleForm? _form;
+    private Guid? _editingId;
+    private readonly Dictionary<Guid, string> _photoInputs = new();
+    private readonly HashSet<Guid> _calendarOpen = new();
+    private readonly Dictionary<Guid, VehicleCalendar?> _calendars = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        _errorMessage = null;
+        try
+        {
+            _vehicles = await _listings.GetOwnerVehiclesAsync(ListingId);
+            if (_vehicles is not null)
+            {
+                foreach (var v in _vehicles)
+                    _photoInputs.TryAdd(v.Id, string.Empty);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to load vehicles: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void StartCreate()
+    {
+        _editingId = null;
+        _form = new VehicleForm { Transmission = "Automatic", PassengerMax = 4 };
+    }
+
+    private void StartEdit(OwnerVehicleDto v)
+    {
+        _editingId = v.Id;
+        _form = new VehicleForm
+        {
+            Name = v.Name,
+            PassengerMax = v.PassengerMax,
+            Transmission = v.Transmission,
+            HasAirConditioning = v.HasAirConditioning,
+            DailyRateDollars = v.DailyRateCents / 100m,
+            WeeklyRateDollars = v.WeeklyRateCents.HasValue ? v.WeeklyRateCents.Value / 100m : null,
+            MonthlyRateDollars = v.MonthlyRateCents.HasValue ? v.MonthlyRateCents.Value / 100m : null,
+            DisplayOrder = v.DisplayOrder
+        };
+    }
+
+    private void CancelEdit()
+    {
+        _form = null;
+        _editingId = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_form is null) return;
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            if (_editingId is null)
+            {
+                var req = new CreateVehicleRequest(
+                    _form.Name, _form.PassengerMax, _form.Transmission,
+                    _form.HasAirConditioning,
+                    DailyRateCents: ToCents(_form.DailyRateDollars),
+                    WeeklyRateCents: _form.WeeklyRateDollars.HasValue ? ToCents(_form.WeeklyRateDollars.Value) : null,
+                    MonthlyRateCents: _form.MonthlyRateDollars.HasValue ? ToCents(_form.MonthlyRateDollars.Value) : null,
+                    _form.DisplayOrder);
+                await _listings.CreateVehicleAsync(ListingId, req);
+            }
+            else
+            {
+                var req = new UpdateVehicleRequest(
+                    _form.Name, _form.PassengerMax, _form.Transmission,
+                    _form.HasAirConditioning,
+                    DailyRateCents: ToCents(_form.DailyRateDollars),
+                    WeeklyRateCents: _form.WeeklyRateDollars.HasValue ? ToCents(_form.WeeklyRateDollars.Value) : null,
+                    MonthlyRateCents: _form.MonthlyRateDollars.HasValue ? ToCents(_form.MonthlyRateDollars.Value) : null,
+                    _form.DisplayOrder);
+                await _listings.UpdateVehicleAsync(_editingId.Value, req);
+            }
+
+            CancelEdit();
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Save failed: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeleteAsync(OwnerVehicleDto v)
+    {
+        _busy = true;
+        try { await _listings.DeleteVehicleAsync(v.Id); await ReloadAsync(); }
+        catch (Exception ex) { _errorMessage = $"Delete failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private async Task ToggleActiveAsync(OwnerVehicleDto v)
+    {
+        _busy = true;
+        try { await _listings.SetVehicleActiveAsync(v.Id, !v.IsActive); await ReloadAsync(); }
+        catch (Exception ex) { _errorMessage = $"Toggle failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private async Task UploadPhotoAsync(OwnerVehicleDto v, InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        if (file is null) return;
+        if (file.Size > 8 * 1024 * 1024)
+        {
+            _errorMessage = "File is too large (max 8 MB).";
+            return;
+        }
+
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            // 8 MB stream cap — defense in depth alongside server-side RequestSizeLimit.
+            await using var stream = file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024);
+
+            var id = await _listings.UploadVehiclePhotoAsync(
+                vehicleId: v.Id,
+                content: stream,
+                fileName: file.Name,
+                contentType: string.IsNullOrWhiteSpace(file.ContentType) ? "image/jpeg" : file.ContentType,
+                displayOrder: v.Photos.Length,
+                isPrimary: v.Photos.Length == 0);
+
+            if (id is null)
+                _errorMessage = "Upload failed. Check the file type/size and try again.";
+
+            await ReloadAsync();
+        }
+        catch (Exception ex) { _errorMessage = $"Upload failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeletePhotoAsync(OwnerVehiclePhotoDto p)
+    {
+        _busy = true;
+        try { await _listings.DeleteVehiclePhotoAsync(p.Id); await ReloadAsync(); }
+        catch (Exception ex) { _errorMessage = $"Delete photo failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private async Task SetPrimaryAsync(OwnerVehiclePhotoDto p)
+    {
+        _busy = true;
+        try { await _listings.SetVehiclePhotoPrimaryAsync(p.Id); await ReloadAsync(); }
+        catch (Exception ex) { _errorMessage = $"Set primary failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private void ToggleCalendar(Guid vehicleId)
+    {
+        if (!_calendarOpen.Add(vehicleId))
+            _calendarOpen.Remove(vehicleId);
+    }
+
+    private async Task AddBlackoutAsync(Guid vehicleId, (DateOnly Start, DateOnly End, string Reason) args)
+    {
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            var req = new AddUnavailabilityRequest(args.Start, args.End, args.Reason);
+            var id = await _listings.AddVehicleUnavailabilityAsync(vehicleId, req);
+            if (id is null)
+                _errorMessage = "Selected dates overlap an existing blackout. Pick a different range.";
+            if (_calendars.TryGetValue(vehicleId, out var cal) && cal is not null)
+                await cal.RefreshAsync();
+        }
+        catch (Exception ex) { _errorMessage = $"Add blackout failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private async Task RemoveBlackoutAsync(Guid vehicleId, (Guid BlackoutId, string Reason) args)
+    {
+        if (string.Equals(args.Reason, "Reserved", StringComparison.OrdinalIgnoreCase))
+        {
+            _errorMessage = "Reserved blackouts come from accepted reservations and can't be removed here.";
+            return;
+        }
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            await _listings.DeleteVehicleUnavailabilityAsync(args.BlackoutId);
+            if (_calendars.TryGetValue(vehicleId, out var cal) && cal is not null)
+                await cal.RefreshAsync();
+        }
+        catch (Exception ex) { _errorMessage = $"Remove blackout failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private static int ToCents(decimal dollars) => (int)Math.Round(dollars * 100m, MidpointRounding.AwayFromZero);
+    private static string FormatRate(int cents) => $"${cents / 100m:0.##}";
+
+    private static string FormatSpecs(OwnerVehicleDto v)
+    {
+        var ac = v.HasAirConditioning ? " · A/C" : string.Empty;
+        return $"Up to {v.PassengerMax} passengers · {v.Transmission}{ac}";
+    }
+
+    private sealed class VehicleForm
+    {
+        public string Name { get; set; } = string.Empty;
+        public int PassengerMax { get; set; } = 4;
+        public string Transmission { get; set; } = "Automatic";
+        public bool HasAirConditioning { get; set; } = true;
+        public decimal DailyRateDollars { get; set; }
+        public decimal? WeeklyRateDollars { get; set; }
+        public decimal? MonthlyRateDollars { get; set; }
+        public int DisplayOrder { get; set; }
+    }
+}

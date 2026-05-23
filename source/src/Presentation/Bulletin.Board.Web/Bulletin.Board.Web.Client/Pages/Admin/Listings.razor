@@ -1,0 +1,262 @@
+@page "/admin/listings"
+@layout AdminLayout
+@attribute [Authorize(Roles = "Admin")]
+
+@using Bulletin.Board.Web.Client.Components.Admin
+@using Bulletin.Board.Web.Client.States
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAdminService AdminService
+@inject AdminNavigationState AdminNav
+@inject NavigationManager Nav
+
+<PageTitle>Listings — Bulletin Dells Admin</PageTitle>
+
+
+<AppToast Message="@_toastMessage" Variant="@_toastVariant" OnDismiss="DismissToast" />
+
+@if (!_isLoading || !AdminNav.IsNavigating)
+{
+<div class="flex flex-col" style="height:calc(100vh - 64px); overflow:hidden;">
+    <div class="flex-1 p-6 flex flex-col overflow-hidden min-h-0">
+
+        <AdminDataTable IsLoading="@_isLoading"
+                        HasError="@_hasError"
+                        IsEmpty="@(_listings is not null && _listings.Items.Length == 0)"
+                        EmptyMessage="No listings found"
+                        OnRetry="LoadListingsAsync"
+                        CurrentPage="@_currentPage"
+                        TotalPages="@(_listings?.TotalPages ?? 1)"
+                        OnPageChanged="GoToPage">
+
+            <ToolbarContent>
+                @* Chip de filtro activo por provider — solo visible cuando se llega
+                   desde /admin/providers vía la acción "View listings". *@
+                @if (ProviderId.HasValue)
+                {
+                    <div class="inline-flex items-center gap-2 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+                        </svg>
+                        <span>Provider: <strong>@(string.IsNullOrWhiteSpace(ProviderName) ? "—" : ProviderName)</strong></span>
+                        <button type="button"
+                                @onclick="ClearProviderFilter"
+                                class="ml-1 text-blue-600 hover:text-blue-900 cursor-pointer"
+                                aria-label="Clear provider filter">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                }
+
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-muted">Status</label>
+                    <select value="@_filterStatus" @onchange="OnStatusChanged"
+                            class="text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="NeedsChanges">Needs Changes</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-muted">Tier</label>
+                    <select value="@_filterTier" @onchange="OnTierChanged"
+                            class="text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Verified">Verified</option>
+                        <option value="VIP">VIP</option>
+                    </select>
+                </div>
+            </ToolbarContent>
+
+            <FooterLeft>
+                <p class="text-xs text-muted">
+                    Showing @(_listings?.Items.Length ?? 0) of @(_listings?.TotalCount ?? 0) listings
+                </p>
+            </FooterLeft>
+
+            <HeaderContent>
+                <th class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-5 py-1 align-middle">Title</th>
+                <th class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle">Provider</th>
+                <th class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle hidden md:table-cell">Category</th>
+                <th class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle">Status</th>
+                <th class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle">Tier</th>
+                <th class="text-right text-xs font-semibold text-muted uppercase tracking-wider px-5 py-1 align-middle">Actions</th>
+            </HeaderContent>
+
+            <RowContent>
+                @foreach (var listing in _listings?.Items ?? [])
+                {
+                    var providerInitials = BuildProviderInitials(listing.ProviderName);
+                    var isPending = listing.Status == "Pending";
+
+                    <tr class="lst-row group">
+                        <td class="px-5 py-1 align-middle">
+                            <p class="text-xs font-semibold text-ink truncate max-w-[280px]">@listing.TitleEn</p>
+                        </td>
+                        <td class="px-4 py-1 align-middle">
+                            <div class="relative group/avatar inline-flex">
+                                <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center cursor-default select-none">
+                                    @providerInitials
+                                </span>
+                                <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white opacity-0 transition-opacity duration-150 group-hover/avatar:opacity-100 z-10">
+                                    @listing.ProviderName
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-1 align-middle hidden md:table-cell text-xs text-muted">@listing.CategoryName</td>
+                        <td class="px-4 py-1 align-middle">
+                            <ListingStatusBadge Status="@listing.Status" />
+                        </td>
+                        <td class="px-4 py-1 align-middle">
+                            <TierBadge Tier="@listing.ProviderTier" />
+                        </td>
+                        <td class="px-5 py-1 align-middle text-right">
+                            <AdminActionMenu>
+                                @if (isPending)
+                                {
+                                    <button type="button"
+                                            class="block w-full text-left text-sm px-3 py-2 hover:bg-blue-50 cursor-pointer text-blue-700 font-medium"
+                                            @onclick="() => ReviewListing(listing)">
+                                        Review
+                                    </button>
+                                }
+                                <a href="@($"/admin/listings-queue#{listing.Id}")"
+                                   class="block w-full text-left text-sm px-3 py-2 hover:bg-slate-50 cursor-pointer text-ink">
+                                    View full detail
+                                </a>
+                                <a href="@($"/listings/{listing.Id}")" target="_blank"
+                                   class="block w-full text-left text-sm px-3 py-2 hover:bg-slate-50 cursor-pointer text-ink">
+                                    View publication
+                                </a>
+                                <button type="button"
+                                        class="block w-full text-left text-sm px-3 py-2 hover:bg-rose-50 cursor-pointer text-rose-600"
+                                        @onclick="() => DisableListing(listing)">
+                                    Disable
+                                </button>
+                            </AdminActionMenu>
+                        </td>
+                    </tr>
+                }
+            </RowContent>
+
+        </AdminDataTable>
+    </div>
+</div>
+}
+
+@code {
+    private const int PageSize = 15;
+
+    // Query params — alimentan el filtro por proveedor desde /admin/providers → "View listings".
+    // ProviderName se pasa también para evitar un fetch extra solo para mostrar el chip.
+    [SupplyParameterFromQuery] public Guid? ProviderId { get; set; }
+    [SupplyParameterFromQuery] public string? ProviderName { get; set; }
+
+    private PagedResult<AdminListingDto>? _listings;
+    private bool _isLoading = true;
+    private bool _hasError;
+    private int _currentPage = 1;
+    private string _filterStatus = "";
+    private string _filterTier = "";
+
+    private string? _toastMessage;
+    private ToastVariant _toastVariant = ToastVariant.Success;
+
+    // Recargar cuando cambian los query params (ej: al limpiar el filtro o al
+    // entrar desde Providers con un ProviderId distinto sin desmontar la página).
+    protected override async Task OnParametersSetAsync()
+    {
+        _currentPage = 1;
+        await LoadListingsAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        AdminNav.MarkNavigationDone();
+    }
+
+    private async Task LoadListingsAsync()
+    {
+        _isLoading = true;
+        _hasError = false;
+        try
+        {
+            _listings = await AdminService.GetListingsAsync(
+                string.IsNullOrEmpty(_filterStatus) ? null : _filterStatus,
+                string.IsNullOrEmpty(_filterTier) ? null : _filterTier,
+                null,
+                _currentPage,
+                PageSize,
+                ProviderId);
+        }
+        catch
+        {
+            _hasError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ClearProviderFilter()
+    {
+        // Navega a la misma vista sin query string. OnParametersSetAsync se encargará de recargar.
+        Nav.NavigateTo("/admin/listings");
+    }
+
+    private async Task OnStatusChanged(ChangeEventArgs e)
+    {
+        _filterStatus = e.Value?.ToString() ?? "";
+        _currentPage = 1;
+        await LoadListingsAsync();
+    }
+
+    private async Task OnTierChanged(ChangeEventArgs e)
+    {
+        _filterTier = e.Value?.ToString() ?? "";
+        _currentPage = 1;
+        await LoadListingsAsync();
+    }
+
+    private async Task GoToPage(int page)
+    {
+        _currentPage = Math.Max(1, page);
+        await LoadListingsAsync();
+    }
+
+    private void ReviewListing(AdminListingDto listing)
+    {
+        // No-op por ahora — futuro: abrir flujo de review.
+        ShowToast("Review flow not implemented yet.", ToastVariant.Error);
+    }
+
+    private void DisableListing(AdminListingDto listing)
+    {
+        ShowToast("Disable listing is not implemented yet.", ToastVariant.Error);
+    }
+
+    private void ShowToast(string message, ToastVariant variant = ToastVariant.Success)
+    {
+        _toastMessage = message;
+        _toastVariant = variant;
+    }
+
+    private void DismissToast() => _toastMessage = null;
+
+    private static string BuildProviderInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
+    }
+}

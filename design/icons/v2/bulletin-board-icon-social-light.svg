@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Social Share (Light)</title>
+  <rect width="1200" height="630" fill="#FFFFFF"/>
+  <rect x="0" y="600" width="1200" height="30" fill="#F39323"/>
+  <g transform="translate(80 140)">
+    <g font-family="'Nunito','Poppins',system-ui,sans-serif" font-weight="900" letter-spacing="-6">
+      <text x="0" y="160" font-size="160" fill="#101A3D">Bulletin</text>
+      <text x="220" y="320" font-size="160" fill="#F39323">Board</text>
+    </g>
+    <circle cx="498" cy="40" r="18" fill="#F39323"/>
+  </g>
+  <text x="80" y="540" font-family="'Nunito',system-ui,sans-serif" font-size="28" font-weight="600" fill="#475569">Wisconsin Dells — Bilingual local marketplace</text>
+</svg>

@@ -1,0 +1,281 @@
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using Bulletin.Board.Web.Client.Components.Admin
+@using Bulletin.Board.Web.Client.States
+@using System.Security.Claims
+@inherits LayoutComponentBase
+@attribute [Authorize(Roles = "Admin")]
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject IAdminService AdminService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject BulletinAuthStateProvider AuthProvider
+@inject AdminNavigationState AdminNav
+
+<style>
+    #admin-sidebar {
+        transition: width 300ms cubic-bezier(0.32,0.72,0,1);
+        background: #050f1a;
+        border-right: 1px solid rgba(255,255,255,0.08);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 40;
+        flex-shrink: 0;
+    }
+    #admin-sidebar::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 20% 30%, rgba(37,99,235,0.25) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(249,115,22,0.10) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    #admin-sidebar > * { position: relative; z-index: 1; }
+    #admin-sidebar:not(.collapsed) { width: 256px; }
+    #admin-sidebar.collapsed { width: 64px; }
+
+    #admin-sidebar .sb-label {
+        transition: opacity 200ms ease, max-width 250ms cubic-bezier(0.32,0.72,0,1);
+        max-width: 300px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    #admin-sidebar.collapsed .sb-label { opacity: 0; max-width: 0; pointer-events: none; }
+    #admin-sidebar.collapsed .logo-header { justify-content: center; }
+    #admin-sidebar nav { overflow-x: hidden; }
+
+    .sb-item {
+        transition: background 200ms ease, color 200ms ease, transform 100ms ease;
+        border-radius: 8px;
+        position: relative;
+    }
+    .sb-item:hover { transform: translateX(2px); }
+    .sb-item.active { background: rgba(96,165,250,0.18); color: #93c5fd; }
+    .sb-item.active svg { color: #93c5fd; }
+    .sb-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background: #F97316;
+        border-radius: 0 3px 3px 0;
+    }
+    .sb-item:hover .nav-icon,
+    .sb-item.active .nav-icon {
+        box-shadow: 0 0 12px rgba(59,130,246,0.4);
+        border-radius: 20px;
+    }
+    .logo-icon-glow { box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+
+    #admin-main {
+        margin-left: 256px;
+        transition: margin-left 300ms cubic-bezier(0.32,0.72,0,1);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    #admin-main.sidebar-collapsed { margin-left: 64px; }
+
+    @@keyframes pulse-soft {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    .badge-pulse { animation: pulse-soft 2s ease-in-out infinite; }
+
+@@media (max-width: 768px) {
+        #admin-sidebar { width: 0; }
+        #admin-sidebar.mobile-open { width: 256px; }
+        #admin-main { margin-left: 0 !important; }
+    }
+</style>
+
+<!-- TOP PROGRESS BAR (visible solo durante navegación entre páginas admin) -->
+<AdminProgressBar />
+
+<!-- SIDEBAR -->
+<AdminSidebar Collapsed="@_collapsed"
+              CollapsedChanged="@OnCollapsedChanged"
+              Stats="@_stats"
+              StatsLoaded="@_statsLoaded" />
+
+<!-- MAIN CONTENT -->
+<div id="admin-main" class="@(_collapsed ? "sidebar-collapsed" : "") flex flex-col min-h-screen" style="background-color:rgb(248 250 252);">
+
+    <!-- Top header -->
+    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20"
+            style="box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div>
+            <h1 class="text-lg font-semibold text-ink">@PageTitle</h1>
+            <p class="text-xs text-muted mt-0.5">@PageSubtitle</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="relative cursor-pointer text-muted hover:text-ink transition-colors" aria-label="Notifications">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                @if (_stats is not null && (_stats.PendingListings + _stats.PendingReviews) > 0)
+                {
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] text-white flex items-center justify-center font-bold"
+                          style="background:#F97316;">@(_stats.PendingListings + _stats.PendingReviews)</span>
+                }
+            </button>
+            <div class="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-xs font-bold text-white cursor-pointer">@_initials</div>
+        </div>
+    </header>
+
+    <!-- Page body -->
+    <div class="flex-1">
+        @Body
+    </div>
+</div>
+
+@code {
+    private bool _collapsed = false;
+    private AdminStatsDto? _stats;
+    private bool _statsLoaded = false;
+    private string _initials = "GM";
+    private IDisposable? _locationChangingRegistration;
+
+    private string PageTitle => NavigationManager.Uri switch
+    {
+        var u when u.EndsWith("/admin") || u.EndsWith("/admin/") => "Dashboard",
+        var u when u.Contains("/admin/listings-queue") => "Listings Queue",
+        var u when u.Contains("/admin/reviews-queue") => "Reviews Queue",
+        var u when u.Contains("/admin/providers") => "Providers",
+        var u when u.Contains("/admin/categories") => "Categories",
+        _ => "Admin Panel"
+    };
+
+    private string PageSubtitle => NavigationManager.Uri switch
+    {
+        var u when u.EndsWith("/admin") || u.EndsWith("/admin/") => "Wisconsin Dells, WI",
+        var u when u.Contains("/admin/listings-queue") =>
+            _stats is null ? "Loading..." : $"{_stats.PendingListings} listings awaiting review",
+        var u when u.Contains("/admin/reviews-queue") =>
+            _stats is null ? "Loading..." : $"{_stats.PendingReviews} reviews pending GM approval",
+        var u when u.Contains("/admin/providers") =>
+            _stats is null ? "Loading..." : $"{_stats.TotalProviders} registered providers",
+        var u when u.Contains("/admin/categories") => "Manage service categories",
+        _ => string.Empty
+    };
+
+    protected override void OnInitialized()
+    {
+        // Intercepta la navegación ANTES del cambio de ruta para encender la barra.
+        _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        // Solo marcar navegación si vamos hacia otra página admin (estamos en admin layout).
+        if (!context.TargetLocation.Contains("/admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        // Si la URL destino es la misma que la actual, no hay navegación real:
+        // ningún componente se re-inicializa, por lo tanto nadie llamará a
+        // MarkNavigationDone() y la barra se quedaría pegada.
+        var currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).TrimEnd('/');
+        var targetPath = NavigationManager.ToBaseRelativePath(
+            NavigationManager.ToAbsoluteUri(context.TargetLocation).ToString()).TrimEnd('/');
+
+        // Comparar sin querystring/fragment para que ?page=2 no dispare loader inútil.
+        var currentNoQuery = currentPath.Split('?', '#')[0];
+        var targetNoQuery = targetPath.Split('?', '#')[0];
+
+        if (string.Equals(currentNoQuery, targetNoQuery, StringComparison.OrdinalIgnoreCase))
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        AdminNav.MarkNavigating();
+        return ValueTask.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        // El shell admin ya está en pantalla → futuras transiciones son "navegación", no "initial load".
+        AdminNav.MarkInitialLoadDone();
+
+        // Restore sidebar collapsed state from localStorage.
+        try
+        {
+            var stored = await JS.InvokeAsync<string>("localStorage.getItem", "admin-sidebar-collapsed");
+            _collapsed = stored == "true";
+        }
+        catch { /* localStorage unavailable in prerender */ }
+
+        // Wait until BulletinAuthStateProvider has finished reading the token from
+        // localStorage. This is zero-cost in the normal path (parent Routes.razor
+        // already initialized) and only blocks during the rare hydration edge case.
+        await AuthProvider.WhenInitialized;
+
+        // Load admin stats — token is now available via AuthenticatedHttpHandler.
+        _stats = await AdminService.GetStatsAsync();
+        _statsLoaded = true;
+
+        // Resolve user initials from the authenticated JWT claims.
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var fullName = user.FindFirst(ClaimTypes.Name)?.Value
+                    ?? user.FindFirst("name")?.Value;
+
+        if (!string.IsNullOrWhiteSpace(fullName))
+        {
+            var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            _initials = parts.Length >= 2
+                ? $"{char.ToUpperInvariant(parts[0][0])}{char.ToUpperInvariant(parts[^1][0])}"
+                : parts[0].Length >= 2
+                    ? parts[0][..2].ToUpperInvariant()
+                    : parts[0].ToUpperInvariant();
+        }
+        else
+        {
+            var email = user.FindFirst(ClaimTypes.Email)?.Value
+                     ?? user.FindFirst("email")?.Value
+                     ?? string.Empty;
+            if (!string.IsNullOrEmpty(email))
+            {
+                var localPart = email.Split('@')[0];
+                _initials = localPart.Length >= 2
+                    ? localPart[..2].ToUpperInvariant()
+                    : localPart.ToUpperInvariant();
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task OnCollapsedChanged(bool value)
+    {
+        _collapsed = value;
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "admin-sidebar-collapsed", _collapsed.ToString().ToLower());
+        }
+        catch { /* ignore */ }
+    }
+
+    public void Dispose()
+    {
+        _locationChangingRegistration?.Dispose();
+    }
+}

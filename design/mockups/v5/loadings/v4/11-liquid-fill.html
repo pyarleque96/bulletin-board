@@ -1,0 +1,313 @@
+<!--
+  SCREEN: 11 — Liquid Fill
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga con progreso determinado (upload, verification, data fetch largo)
+  CONCEPTO: Círculo grande con líquido naranja llenándose mediante wave SVG
+            con clip-path. Porcentaje al centro en tipografía display.
+            Las olas del líquido son dos capas con desfase de fase para
+            profundidad. La superficie del líquido tiene movimiento realista.
+  HIGH-END: Double-Bezel alrededor del contenedor circular.
+            Porcentaje en DM Serif Display para contraste editorial.
+            Halo naranja detrás del círculo que intensifica al llenar.
+  BLAZOR HOOK: Bind percentage to actual upload/fetch progress (0–100).
+               Ejemplo: EventCallback<int> OnProgressChanged.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Main wrap intro ── */
+    .liquid-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      transform: scale(0.9);
+      animation: wrap-in 0.9s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; transform: scale(1); } }
+
+    /* ── Ambient halo — grows with fill ── */
+    .halo {
+      position: absolute;
+      width: 18rem;
+      height: 18rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253,140,27,0.06) 0%, transparent 65%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.32,0.72,0,1);
+    }
+    .halo.visible { opacity: 1; }
+
+    /* ── Double Bezel circle ── */
+    .bezel-outer {
+      width: 13rem;
+      height: 13rem;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(30,41,59,0.05);
+      padding: 7px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 20px 60px -20px rgba(30,41,59,0.1);
+      position: relative;
+    }
+    .bezel-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+      position: relative;
+    }
+
+    /* ── SVG liquid container ── */
+    .liquid-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Percentage overlay ── */
+    .pct-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 2;
+    }
+    .pct-num {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: #0f172a;
+      line-height: 1;
+      transition: color 0.4s cubic-bezier(0.32,0.72,0,1);
+    }
+    .pct-num.light { color: #ffffff; }
+    .pct-sign {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 1rem;
+      font-weight: 400;
+      vertical-align: super;
+      color: inherit;
+    }
+    .pct-label {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-top: 0.2rem;
+      transition: color 0.4s;
+    }
+    .pct-label.light { color: rgba(255,255,255,0.7); }
+
+    /* ── Bottom labels ── */
+    .bottom-labels {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: lab-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.9s forwards;
+    }
+    @keyframes lab-in { to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .sub {
+      margin-top: 0.35rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading Bulletin Dells · Cargando Bulletin Dells">
+
+    <!-- Ambient halo -->
+    <div class="halo" id="halo" aria-hidden="true"></div>
+
+    <div class="liquid-wrap">
+
+      <!-- Circle -->
+      <div class="bezel-outer" aria-hidden="true">
+        <div class="bezel-inner" id="bezInner">
+
+          <!-- Liquid SVG -->
+          <svg class="liquid-svg" id="liquidSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <clipPath id="circleClip">
+                <circle cx="100" cy="100" r="98"/>
+              </clipPath>
+              <!-- Wave gradient fill -->
+              <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fde8c8"/>
+                <stop offset="100%" stop-color="#fd8c1b"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Liquid fill group — clipped to circle -->
+            <g clip-path="url(#circleClip)">
+              <!-- Wave back layer (lighter, slower) -->
+              <path id="waveBg"
+                d="M-200,160 Q-150,145 -100,160 Q-50,175 0,160 Q50,145 100,160 Q150,175 200,160 Q250,145 300,160 Q350,175 400,160 L400,300 L-200,300 Z"
+                fill="rgba(253,140,27,0.35)"
+                style="animation: wave-slow 3.8s linear infinite; will-change: transform;"/>
+              <!-- Wave front layer (orange, faster) -->
+              <path id="waveFg"
+                d="M-200,165 Q-150,150 -100,165 Q-50,180 0,165 Q50,150 100,165 Q150,180 200,165 Q250,150 300,165 Q350,180 400,165 L400,300 L-200,300 Z"
+                fill="url(#liquidGrad)"
+                style="animation: wave-fast 2.6s linear infinite; will-change: transform;"/>
+            </g>
+          </svg>
+
+          <!-- Percentage -->
+          <div class="pct-overlay">
+            <span class="pct-num" id="pctNum">0<span class="pct-sign">%</span></span>
+            <span class="pct-label" id="pctLabel">Loading</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Labels -->
+      <div class="bottom-labels">
+        <p class="eyebrow" id="eyebrowText">Preparing your marketplace · Preparando</p>
+        <p class="sub">Bulletin Dells · Wisconsin</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <style>
+    /* Wave animations — CSS defined here to use transform safely */
+    @keyframes wave-slow {
+      from { transform: translateX(0); }
+      to   { transform: translateX(100px); }
+    }
+    @keyframes wave-fast {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-100px); }
+    }
+  </style>
+
+  <script>
+    /* BLAZOR HOOK: Replace interval with actual progress from EventCallback<int> */
+    /* Update pct value from upload/fetch stream events */
+
+    const liquidSvg = document.getElementById('liquidSvg');
+    const waveBg = document.getElementById('waveBg');
+    const waveFg = document.getElementById('waveFg');
+    const pctNum = document.getElementById('pctNum');
+    const pctLabel = document.getElementById('pctLabel');
+    const halo = document.getElementById('halo');
+    const eyebrowText = document.getElementById('eyebrowText');
+
+    const steps = [
+      { pct: 0, label: 'Loading', es: 'Preparando tu marketplace' },
+      { pct: 15, label: 'Fetching', es: 'Obteniendo categorías…' },
+      { pct: 32, label: 'Indexing', es: 'Indexando proveedores…' },
+      { pct: 55, label: 'Sorting', es: 'Ordenando por relevancia…' },
+      { pct: 74, label: 'Ranking', es: 'Aplicando jerarquía VIP…' },
+      { pct: 91, label: 'Finalizing', es: 'Finalizando…' },
+      { pct: 100, label: 'Ready', es: 'Bulletin Dells listo' }
+    ];
+
+    let stepIndex = 0;
+
+    function setProgress(pct) {
+      // Wave Y position — 200 at 0%, 20 at 100%
+      const yOffset = 200 - (pct / 100) * 190;
+
+      // Update wave paths
+      const bgPath = `M-200,${yOffset+5} Q-150,${yOffset-10} -100,${yOffset+5} Q-50,${yOffset+20} 0,${yOffset+5} Q50,${yOffset-10} 100,${yOffset+5} Q150,${yOffset+20} 200,${yOffset+5} Q250,${yOffset-10} 300,${yOffset+5} Q350,${yOffset+20} 400,${yOffset+5} L400,300 L-200,300 Z`;
+      const fgPath = `M-200,${yOffset+10} Q-150,${yOffset-5} -100,${yOffset+10} Q-50,${yOffset+25} 0,${yOffset+10} Q50,${yOffset-5} 100,${yOffset+10} Q150,${yOffset+25} 200,${yOffset+10} Q250,${yOffset-5} 300,${yOffset+10} Q350,${yOffset+25} 400,${yOffset+10} L400,300 L-200,300 Z`;
+
+      waveBg.setAttribute('d', bgPath);
+      waveFg.setAttribute('d', fgPath);
+
+      // Update percentage
+      pctNum.innerHTML = `${pct}<span class="pct-sign">%</span>`;
+
+      // Toggle text color based on fill level
+      if (pct > 52) {
+        pctNum.classList.add('light');
+        pctLabel.classList.add('light');
+      } else {
+        pctNum.classList.remove('light');
+        pctLabel.classList.remove('light');
+      }
+
+      // Halo intensity
+      halo.classList.toggle('visible', pct > 10);
+    }
+
+    // Animate progress
+    let delay = 500;
+    steps.forEach((step) => {
+      setTimeout(() => {
+        setProgress(step.pct);
+        pctLabel.textContent = step.label;
+        eyebrowText.textContent = step.es;
+      }, delay);
+      delay += step.pct === 0 ? 300 : 500;
+    });
+
+    // Initialize
+    setProgress(0);
+  </script>
+</body>
+</html>

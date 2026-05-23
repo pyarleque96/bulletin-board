@@ -1,0 +1,166 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   OverviewTab (CarRental) — Tab Overview compartido Regular/VIP, diferenciado
+   por parámetro IsVip:
+     - Regular: 4 KPIs simples (Vehicles / Active res / Inquiries / Public photos)
+                + VIP upsell + Recent activity + Quick actions.
+     - VIP:     4 KPIs con deltas (Views 30d / Conversion / Avg response / Fleet
+                utilization) + chart placeholder + Recent activity.
+
+   TODO: API GET /api/v1/manage/listings/{id}/car-rental/summary
+   TODO: API GET /api/v1/manage/listings/{id}/analytics (VIP only — BACKEND_AUDIT §1.4)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .vip-glow  { box-shadow: 0 4px 24px -4px rgba(249,115,22,0.16); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-overview"
+      role="tabpanel"
+      aria-labelledby="tab-overview"
+      tabindex="0">
+
+    @* Quick stats *@
+    <section aria-label="@_localizer["Manage_CarRental_QuickStats_AriaLabel"]" class="mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            @if (IsVip)
+            {
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_Views30d"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_VsPrev"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_Conversion"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_ViewToReservation"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_AvgResponse"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_AutoReply"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_FleetUtilization"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@DateTime.UtcNow.ToString("MMM yyyy")</p>
+                </div>
+            }
+            else
+            {
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_Vehicles"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_AvailableNow"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_ActiveReservations"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-amber-700 mt-1">@_localizer["Manage_CarRental_Kpi_NeedConfirmation"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_OpenInquiries"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_ReplyWithin24h"]</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                    <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_CarRental_Kpi_PublicPhotos"]</p>
+                    <p class="text-2xl font-bold text-ink mt-1 tabular-nums">— <span class="text-muted text-sm font-medium">/ —</span></p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Kpi_PendingGmReview"]</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    @if (!IsVip)
+    {
+        @* VIP upsell — Regular only *@
+        <section class="mb-8">
+            <VipUpsellBanner Tier="@Listing.Tier"
+                             Title="@(_localizer["Manage_CarRental_VipUpsell_Title"])">
+                <p class="text-sm text-white/90 mt-1">@_localizer["Manage_CarRental_VipUpsell_Body"]</p>
+            </VipUpsellBanner>
+        </section>
+    }
+
+    @* Two-column row: Activity / chart + Recent / Quick actions *@
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <section class="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="text-base font-semibold text-ink">
+                        @(IsVip
+                            ? _localizer["Manage_CarRental_Overview_Performance_Title"]
+                            : _localizer["Manage_CarRental_Overview_RecentActivity_Title"])
+                    </h2>
+                    <p class="text-[11px] text-muted mt-0.5">
+                        @(IsVip
+                            ? _localizer["Manage_CarRental_Overview_PerformanceSubtitle"]
+                            : _localizer["Manage_CarRental_Overview_RecentActivitySubtitle"])
+                    </p>
+                </div>
+            </div>
+
+            @if (IsVip)
+            {
+                @* Chart placeholder — TODO: API GET /api/v1/manage/listings/{id}/analytics?series=reservations,inquiries *@
+                <div class="h-40 flex items-center justify-center rounded-2xl bg-slate-50 border border-dashed border-slate-200">
+                    <p class="text-xs text-muted">@_localizer["Manage_CarRental_Overview_ChartPlaceholder"]</p>
+                </div>
+            }
+            else
+            {
+                @* Recent activity placeholder — TODO: API GET /api/v1/manage/listings/{id}/activity *@
+                <ManageEmptyState Title="@_localizer["Manage_CarRental_Overview_NoActivity_Title"]"
+                                  Description="@_localizer["Manage_CarRental_Overview_NoActivity_Description"]" />
+            }
+        </section>
+
+        <aside class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <h2 class="text-base font-semibold text-ink mb-4">@_localizer["Manage_CarRental_QuickActions_Title"]</h2>
+            <div class="space-y-2">
+                <a href="@($"/manage/{Listing.Id}/vehicles?new")"
+                   class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink"
+                   data-tooltip="@_localizer["Banner_EditingReturnsPending"]">
+                    <span class="text-sm font-medium">@_localizer["Manage_CarRental_QuickAction_AddVehicle"]</span>
+                    <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="@($"/manage/{Listing.Id}/photos")"
+                   class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink">
+                    <span class="text-sm font-medium">@_localizer["Manage_CarRental_QuickAction_UploadPhotos"]</span>
+                    <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="@($"/manage/{Listing.Id}/edit")"
+                   class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink"
+                   data-tooltip="@_localizer["Banner_EditingReturnsPending"]">
+                    <span class="text-sm font-medium">@_localizer["Manage_CarRental_QuickAction_EditListing"]</span>
+                    <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+            <p class="text-[11px] text-muted mt-4 leading-relaxed">
+                @_localizer["Banner_EditingReturnsPending"]
+            </p>
+        </aside>
+    </div>
+
+    @if (IsVip)
+    {
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_CarRental_VipFooter_Overview"]
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    /// <summary>True when rendered inside the VIP container, false for Regular.</summary>
+    [Parameter] public bool IsVip { get; set; }
+}

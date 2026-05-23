@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Wisconsin Dells Local Services</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Outfit', 'sans-serif'],
+            body: ['DM Sans', 'sans-serif'],
+          },
+          colors: {
+            lake: { 50:'#e6f4fb',100:'#b3daf2',200:'#80c0e9',300:'#4da6e0',400:'#1a8cd7',500:'#0077B6',600:'#005f91',700:'#00476d',800:'#002f48',900:'#001724' },
+            amber: { 50:'#fffbf0',100:'#fef3c7',200:'#fde68a',300:'#fcd34d',400:'#fbbf24',500:'#F59E0B',600:'#d97706',700:'#b45309',800:'#92400e' },
+            forest: { 50:'#e8f5ee',100:'#c3e6cf',200:'#9dd8b0',500:'#2D6A4F',600:'#24553f',700:'#1b3f2f' },
+            ink: { 950:'#0F172A', 800:'#1E293B', 600:'#475569', 400:'#94A3B8', 200:'#E2E8F0', 50:'#F8FAFC' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+
+    /* ── ANIMATIONS (transform + opacity only) ── */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideLeft {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .6; transform: scale(.85); }
+    }
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @keyframes drawLine {
+      from { stroke-dashoffset: 1000; }
+      to   { stroke-dashoffset: 0; }
+    }
+
+    .anim-fsu  { animation: fadeSlideUp .65s cubic-bezier(.16,1,.3,1) both; }
+    .anim-fsu-1{ animation: fadeSlideUp .65s cubic-bezier(.16,1,.3,1) .1s both; }
+    .anim-fsu-2{ animation: fadeSlideUp .65s cubic-bezier(.16,1,.3,1) .22s both; }
+    .anim-fsu-3{ animation: fadeSlideUp .65s cubic-bezier(.16,1,.3,1) .34s both; }
+    .anim-fsu-4{ animation: fadeSlideUp .65s cubic-bezier(.16,1,.3,1) .46s both; }
+    .anim-fsl  { animation: fadeSlideLeft .7s cubic-bezier(.16,1,.3,1) .3s both; }
+    .anim-float{ animation: floatCard 4s ease-in-out infinite; }
+    .anim-pulse{ animation: pulseDot 2.2s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+    /* ── Z-INDEX SCALE ── */
+    /* 10 = sticky nav | 20 = dropdowns | 30 = modals | 50 = toasts */
+
+    /* ── GLASS CARD — liquid glass with inner refraction ── */
+    .glass {
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow:
+        0 8px 32px -8px rgba(0,0,0,.12),
+        inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    .glass-dark {
+      background: rgba(15,23,42,.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow:
+        0 8px 32px -8px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    /* ── TIER BADGES ── */
+    .badge-sdvip {
+      background: linear-gradient(135deg, #F59E0B 0%, #d97706 100%);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      letter-spacing: .04em;
+      box-shadow: 0 2px 12px rgba(245,158,11,.4);
+    }
+    .badge-vip {
+      background: #0077B6;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+    .badge-verified {
+      background: #2D6A4F;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      background: #F59E0B;
+      color: #0F172A;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      transition: background .2s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
+      box-shadow: 0 4px 18px rgba(245,158,11,.38);
+    }
+    .btn-primary:hover  { background: #d97706; box-shadow: 0 6px 24px rgba(245,158,11,.48); }
+    .btn-primary:active { transform: scale(.97) translateY(1px); }
+
+    .btn-secondary {
+      background: #0077B6;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      transition: background .2s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
+      box-shadow: 0 4px 16px rgba(0,119,182,.28);
+    }
+    .btn-secondary:hover  { background: #005f91; }
+    .btn-secondary:active { transform: scale(.97); }
+
+    .btn-ghost {
+      color: #0F172A;
+      border: 1.5px solid #E2E8F0;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      transition: border-color .2s ease, background .2s ease, transform .15s cubic-bezier(.16,1,.3,1);
+    }
+    .btn-ghost:hover  { border-color: #0077B6; background: rgba(0,119,182,.05); }
+    .btn-ghost:active { transform: scale(.97); }
+
+    .btn-ghost-white {
+      color: rgba(255,255,255,.9);
+      border: 1.5px solid rgba(255,255,255,.25);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      transition: border-color .2s ease, background .2s ease, transform .15s cubic-bezier(.16,1,.3,1);
+    }
+    .btn-ghost-white:hover  { border-color: rgba(255,255,255,.65); background: rgba(255,255,255,.08); }
+    .btn-ghost-white:active { transform: scale(.97); }
+
+    /* ── CATEGORY SCROLL CHIP ── */
+    .cat-chip {
+      transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, background .2s ease;
+      will-change: transform;
+    }
+    .cat-chip:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px -6px rgba(0,119,182,.2);
+    }
+
+    /* ── LISTING CARD ── */
+    .listing-card {
+      background: #fff;
+      border: 1px solid #E2E8F0;
+      transition: transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s ease;
+      will-change: transform;
+    }
+    .listing-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 44px -14px rgba(0,119,182,.22);
+    }
+    .listing-card-sdvip {
+      background: linear-gradient(160deg, #fffbf0 0%, #fff 55%);
+      border: 1.5px solid #F59E0B;
+      box-shadow: 0 4px 22px rgba(245,158,11,.12);
+    }
+    .listing-card-sdvip:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 24px 52px -12px rgba(245,158,11,.32);
+    }
+
+    /* ── STAR RATING ── */
+    .star-filled { color: #F59E0B; }
+    .star-empty  { color: #E2E8F0; }
+
+    /* ── TRUST TIER ROW ── */
+    .tier-row { transition: transform .2s ease; }
+    .tier-row:hover { transform: translateX(4px); }
+
+    /* ── MARQUEE ── */
+    .marquee-inner { display: flex; animation: marquee 28s linear infinite; }
+    .marquee-inner:hover { animation-play-state: paused; }
+
+    /* ── SKELETON ── */
+    .skeleton { background: #e8edf2; position: relative; overflow: hidden; }
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.65) 50%, transparent 100%);
+      animation: shimmer 1.6s infinite;
+    }
+
+    /* ── LANGUAGE TOGGLE ── */
+    .lang-active { background: #0077B6; color: #fff; }
+
+    /* ── SECTION LABEL ── */
+    .section-eyebrow {
+      font-family: 'DM Sans', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    /* ── STAT CARD — no box, just spacing ── */
+    .stat-item { border-right: 1px solid #E2E8F0; }
+    .stat-item:last-child { border-right: none; }
+
+    /* ── CUSTOM SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    .scrollbar-none { scrollbar-width: none; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+
+    /* ── MOBILE NAV ── */
+    #mobile-nav { transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
+    #mobile-nav.closed { transform: translateY(-16px); opacity: 0; pointer-events: none; }
+
+    /* ── DARK TRUST SECTION metric tile ── */
+    .metric-tile {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .metric-tile:hover {
+      background: rgba(255,255,255,.07);
+      transform: translateY(-2px);
+    }
+
+    /* ── WA BUTTON ── */
+    .wa-btn {
+      background: #25D366;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      transition: background .2s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
+      box-shadow: 0 4px 16px rgba(37,211,102,.3);
+    }
+    .wa-btn:hover  { background: #1da851; box-shadow: 0 6px 22px rgba(37,211,102,.42); }
+    .wa-btn:active { transform: scale(.97); }
+  </style>
+</head>
+<body class="bg-ink-50">
+
+  <!-- ============================================================
+       @component: NavBar
+       floating glass pill, sticky
+  ============================================================ -->
+  <nav class="fixed top-0 left-0 right-0 z-10 px-4 sm:px-6 pt-3" id="navbar" aria-label="Main navigation">
+    <div class="mx-auto max-w-7xl">
+      <div class="glass rounded-2xl px-4 py-3 flex items-center gap-4">
+
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 flex-shrink-0" aria-label="Bulletin Dells — Inicio">
+          <svg width="34" height="34" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <rect width="36" height="36" rx="10" fill="#0077B6"/>
+            <path d="M6 24 C10 20 14 28 18 24 C22 20 26 28 30 24" stroke="#F8FAFC" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <circle cx="18" cy="13" r="5" fill="#F59E0B"/>
+            <circle cx="18" cy="13" r="2.5" fill="#fff"/>
+            <line x1="18" y1="16" x2="18" y2="21" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="font-heading font-800 text-ink-950 text-lg leading-none">
+            Bulletin<span class="text-lake-500">Dells</span>
+          </span>
+        </a>
+
+        <!-- Desktop links -->
+        <div class="hidden md:flex items-center gap-5 text-sm font-body font-500 text-ink-600 ml-2">
+          <a href="#categories" class="hover:text-lake-500 transition-colors">Browse / Explorar</a>
+          <a href="#how-it-works" class="hover:text-lake-500 transition-colors">How it Works</a>
+          <a href="#trust" class="hover:text-lake-500 transition-colors">Verified Providers</a>
+        </div>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <!-- Language -->
+          <div class="hidden sm:flex items-center rounded-lg overflow-hidden border border-ink-200 text-xs font-heading font-600" role="group" aria-label="Idioma">
+            <button class="lang-active px-3 py-1.5 cursor-pointer transition-colors" aria-pressed="true" aria-label="English">EN</button>
+            <button class="px-3 py-1.5 text-ink-600 hover:bg-lake-50 cursor-pointer transition-colors" aria-pressed="false" aria-label="Español">ES</button>
+          </div>
+
+          <!-- CTA -->
+          <a href="home-listings.html" class="btn-primary hidden sm:inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm cursor-pointer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            Find Services
+          </a>
+
+          <!-- Mobile burger -->
+          <button id="mobile-btn" class="md:hidden p-2 rounded-xl hover:bg-ink-200/40 transition-colors cursor-pointer" aria-label="Abrir menú" aria-expanded="false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile nav drawer -->
+    <div id="mobile-nav" class="closed md:hidden mx-4 mt-1 glass rounded-2xl px-5 py-4 flex-col gap-3 text-sm font-body hidden" role="navigation" aria-label="Navegación móvil">
+      <a href="#categories" class="py-2 border-b border-ink-200 text-ink-800 hover:text-lake-500 transition-colors">Browse / Explorar</a>
+      <a href="#how-it-works" class="py-2 border-b border-ink-200 text-ink-800 hover:text-lake-500 transition-colors">How it Works</a>
+      <a href="#trust" class="py-2 border-b border-ink-200 text-ink-800 hover:text-lake-500 transition-colors">Verified Providers</a>
+      <div class="flex gap-2 pt-1">
+        <a href="home-listings.html" class="btn-primary flex-1 text-center rounded-xl px-4 py-2.5 text-sm cursor-pointer">Find Services</a>
+        <a href="#list-business" class="btn-ghost flex-1 text-center rounded-xl px-4 py-2.5 text-sm cursor-pointer">List Business</a>
+      </div>
+      <div class="flex gap-1 pt-1" role="group" aria-label="Language">
+        <button class="lang-active flex-1 rounded-lg py-2 text-xs font-heading font-700 cursor-pointer">EN</button>
+        <button class="flex-1 rounded-lg py-2 text-xs font-heading font-600 text-ink-600 border border-ink-200 hover:bg-lake-50 cursor-pointer transition-colors">ES</button>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    const mobileBtn = document.getElementById('mobile-btn');
+    const mobileNav = document.getElementById('mobile-nav');
+    mobileBtn?.addEventListener('click', () => {
+      const isOpen = !mobileNav.classList.contains('closed');
+      if (isOpen) {
+        mobileNav.classList.add('closed');
+        mobileNav.classList.remove('flex');
+        setTimeout(() => mobileNav.classList.add('hidden'), 300);
+        mobileBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        mobileNav.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          mobileNav.classList.remove('closed');
+          mobileNav.classList.add('flex');
+        });
+        mobileBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => nav.classList.toggle('shadow-lg', window.scrollY > 50), { passive: true });
+  </script>
+
+  <!-- ============================================================
+       @component: HeroSection
+       Full-bleed photo background, asymmetric 55/45 split
+       Left: left-aligned oversized type + CTAs
+       Right: floating featured listing card
+  ============================================================ -->
+  <section class="relative min-h-[100dvh] flex items-center overflow-hidden" aria-labelledby="hero-heading">
+
+    <!-- Background: real photo + dark gradient overlay -->
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="https://picsum.photos/seed/dellswisconsin/1600/900"
+        alt=""
+        class="w-full h-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+      />
+      <!-- Gradient overlay: darker on left (content area), lighter on right -->
+      <div class="absolute inset-0" style="background: linear-gradient(105deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.75) 42%, rgba(15,23,42,.45) 65%, rgba(15,23,42,.25) 100%);"></div>
+      <!-- Subtle color tint bottom -->
+      <div class="absolute bottom-0 left-0 right-0 h-48" style="background: linear-gradient(to top, rgba(0,119,182,.18) 0%, transparent 100%);"></div>
+    </div>
+
+    <div class="mx-auto max-w-7xl w-full px-4 sm:px-6 pt-28 pb-16 md:pt-32 md:pb-24">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-10 xl:gap-16 items-center">
+
+        <!-- LEFT: Copy — left-aligned, massive type -->
+        <div class="text-white max-w-2xl">
+
+          <!-- Eyebrow -->
+          <div class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs font-heading font-600 text-white/90 mb-7 anim-fsu">
+            <span class="w-2 h-2 rounded-full bg-lake-400 anim-pulse flex-shrink-0" aria-hidden="true"></span>
+            Wisconsin Dells, WI — The Waterpark Capital
+          </div>
+
+          <!-- H1 — massive, tight, left-aligned -->
+          <h1 id="hero-heading" class="font-heading font-900 leading-none tracking-tight mb-4 anim-fsu-1"
+            style="font-size: clamp(2.8rem, 6vw, 5rem); letter-spacing: -0.035em;">
+            Find Trusted<br />
+            <span class="text-lake-300">Local Services</span><br />
+            Fast.
+          </h1>
+
+          <!-- Spanish subtitle -->
+          <p class="font-heading font-400 text-white/60 mb-6 anim-fsu-1"
+            style="font-size: clamp(1rem, 2vw, 1.25rem);" aria-label="Spanish tagline">
+            Encuentra servicios locales de confianza, rápido.
+          </p>
+
+          <!-- Sub-copy -->
+          <p class="font-body text-white/70 leading-relaxed max-w-[50ch] mb-8 anim-fsu-2" style="font-size: .95rem;">
+            Car rentals, housing, rides, beauty, jobs — all verified by our GM team.
+            Built for J1 workers, seasonal staff, tourists, and locals.
+            <span class="text-forest-200 font-600">Every provider screened. Every listing curated.</span>
+          </p>
+
+          <!-- CTAs -->
+          <div class="flex flex-col sm:flex-row gap-3 mb-10 anim-fsu-2">
+            <a href="home-listings.html"
+               class="btn-primary inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base cursor-pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              Find Services / Buscar
+            </a>
+            <a href="#list-business"
+               class="btn-ghost-white inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base cursor-pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              List Your Business
+            </a>
+          </div>
+
+          <!-- Stats — inline, separated by dividers -->
+          <div class="flex items-center gap-0 anim-fsu-3" role="list" aria-label="Platform statistics">
+            <div role="listitem" class="stat-item pr-6">
+              <p class="font-heading font-800 text-white" style="font-size: 1.6rem;">143</p>
+              <p class="font-body text-xs text-white/55 mt-0.5">Verified Providers</p>
+            </div>
+            <div role="listitem" class="stat-item px-6">
+              <p class="font-heading font-800 text-amber-400" style="font-size: 1.6rem;">287</p>
+              <p class="font-body text-xs text-white/55 mt-0.5">Active Listings</p>
+            </div>
+            <div role="listitem" class="stat-item px-6">
+              <p class="font-heading font-800 text-lake-300" style="font-size: 1.6rem;">9</p>
+              <p class="font-body text-xs text-white/55 mt-0.5">Categories</p>
+            </div>
+            <div role="listitem" class="pl-6">
+              <p class="font-heading font-800 text-white" style="font-size: 1.6rem;">4.8<span class="text-amber-400 text-xl">★</span></p>
+              <p class="font-body text-xs text-white/55 mt-0.5">Avg Rating</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Featured card — glass, floating -->
+        <div class="hidden lg:flex justify-center anim-fsl">
+          <div class="relative w-full max-w-[380px]">
+
+            <!-- Main featured card -->
+            <div class="listing-card-sdvip rounded-[28px] overflow-hidden anim-float" style="animation-delay: .2s;">
+              <!-- Photo from picsum -->
+              <div class="relative h-52 overflow-hidden">
+                <img
+                  src="https://picsum.photos/seed/dells-car-fleet/600/300"
+                  alt="Dells Premier Auto — featured car rental"
+                  class="w-full h-full object-cover"
+                  loading="eager"
+                />
+                <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(15,23,42,.55) 0%, transparent 55%);"></div>
+                <span class="badge-sdvip absolute top-3 left-3 px-3 py-1 rounded-full text-xs">Super Duper VIP</span>
+                <span class="absolute top-3 right-3 bg-white/90 text-forest-600 text-xs font-heading font-600 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                  GM Approved
+                </span>
+              </div>
+              <div class="p-5 bg-white">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <h3 class="font-heading font-700 text-base text-ink-950">Dells Premier Auto</h3>
+                    <p class="font-body text-xs text-ink-600 mt-0.5">Car Rental · Wisconsin Dells, WI</p>
+                  </div>
+                  <p class="font-heading font-700 text-lake-600 text-base flex-shrink-0">$35<span class="text-xs font-400 text-ink-400">/day</span></p>
+                </div>
+                <!-- Rating -->
+                <div class="flex items-center gap-1 mb-3" aria-label="Rating: 4.9 out of 5">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span class="font-body text-xs text-ink-400 ml-1">4.9 (52 reviews)</span>
+                </div>
+                <a href="detail-car-rental.html" class="wa-btn w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm cursor-pointer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                    <path d="M11.99 0C5.366 0 0 5.373 0 12.001c0 2.117.551 4.103 1.515 5.832L.057 23.73a.5.5 0 0 0 .609.635l5.977-1.568A11.922 11.922 0 0 0 11.99 24C18.62 24 24 18.627 24 12S18.62 0 11.99 0zm0 21.818a9.748 9.748 0 0 1-5.031-1.395l-.36-.213-3.737.98.998-3.638-.234-.374A9.76 9.76 0 0 1 2.182 12c0-5.41 4.402-9.818 9.808-9.818 5.41 0 9.826 4.408 9.826 9.818 0 5.407-4.416 9.818-9.826 9.818z"/>
+                  </svg>
+                  Contact via WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <!-- Floating new review badge -->
+            <div class="absolute -bottom-5 -left-6 glass rounded-2xl px-4 py-3 anim-float" style="animation-delay: .9s;" aria-hidden="true">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-xs text-white" style="background: linear-gradient(135deg, #F59E0B, #d97706);">M</div>
+                <div>
+                  <p class="font-heading font-700 text-xs text-ink-950">New verified review</p>
+                  <p class="font-body text-xs text-ink-600">"Clean car, great service!"</p>
+                </div>
+                <svg class="star-filled w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+
+            <!-- Floating verified badge -->
+            <div class="absolute -top-4 -right-4 glass rounded-2xl px-3 py-2 anim-float" style="animation-delay: 1.5s;" aria-hidden="true">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-forest-500 anim-pulse flex-shrink-0"></span>
+                <p class="font-heading font-600 text-xs text-ink-950">GM Approved</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Curved bottom divider -->
+    <div class="absolute bottom-0 left-0 right-0 overflow-hidden leading-none" aria-hidden="true">
+      <svg viewBox="0 0 1440 72" preserveAspectRatio="none" class="w-full" style="height: 56px;">
+        <path d="M0 72 L0 36 C360 72 720 0 1080 36 C1260 54 1380 28 1440 36 L1440 72 Z" fill="#F8FAFC"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       @component: CategoryStrip — horizontal scroll (no 5-col equal grid)
+       Data: GET /api/categories
+  ============================================================ -->
+  <section id="categories" class="bg-ink-50 pt-14 pb-16 sm:pb-20" aria-labelledby="categories-heading">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+
+      <div class="flex items-end justify-between mb-8">
+        <div>
+          <p class="section-eyebrow text-lake-500 mb-2">Browse by Category / Explorar</p>
+          <h2 id="categories-heading" class="font-heading font-800 text-ink-950" style="font-size: clamp(1.6rem, 3.5vw, 2.4rem); letter-spacing: -0.025em;">
+            Everything you need in Dells
+          </h2>
+        </div>
+        <a href="home-listings.html" class="hidden md:flex items-center gap-1.5 font-body text-sm text-lake-500 hover:text-lake-600 font-500 transition-colors cursor-pointer">
+          See all listings
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Horizontal scroll strip — not a 3-col grid -->
+      <div class="overflow-x-auto scrollbar-none -mx-4 sm:mx-0 pb-3" role="list" aria-label="Service categories">
+        <div class="flex gap-3 px-4 sm:px-0 w-max sm:w-auto sm:flex-wrap">
+
+          <!-- @binding: categories.map() -->
+          <a href="home-listings.html?cat=car-rental" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Car Rental — 38 listings">
+            <div class="w-12 h-12 rounded-xl bg-lake-50 flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5h-2"/>
+                <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Car Rental</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">38 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=housing" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Housing — 52 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#e8f5ee;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Housing</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">52 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=rides" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Rides — 24 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#fff8e6;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="3" width="15" height="13" rx="2"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Rides</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">24 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=beauty" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Beauty — 31 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#fdf2f8;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Beauty</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">31 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=jobs" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Jobs — 41 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#ecfdf5;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Jobs</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">41 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=mechanic" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Mechanic — 18 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#fef3c7;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Mechanic</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">18 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=airport" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Airport Rides — 16 listings">
+            <div class="w-12 h-12 rounded-xl bg-lake-50 flex items-center justify-center">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19 4c-2 0-2 .5-3.5 2L11 8 2.8 6.2c-.7-.2-1.1.5-.7 1l6.8 6.8-2.5 2.5c-.5.5-.7 1.1-.5 1.7l.5 1.5c.2.6.9.8 1.4.4l2.3-2.3 3.5 3.5c.5.5 1.5.5 2 0l.5-.5c.4-.4.4-1.2 0-1.6z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Airport</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">16 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=groceries" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Groceries — 12 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#ecfdf5;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Groceries</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">12 listings</p>
+            </div>
+          </a>
+
+          <a href="home-listings.html?cat=other" role="listitem"
+             class="cat-chip glass flex flex-col items-center gap-3 text-center rounded-[20px] p-5 flex-shrink-0 w-[130px] cursor-pointer"
+             aria-label="Other — 55 listings">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:#f1f5f9;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+              </svg>
+            </div>
+            <div>
+              <p class="font-heading font-700 text-sm text-ink-950">Other</p>
+              <p class="font-body text-xs text-ink-400 mt-0.5">55 listings</p>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- CTA below on mobile -->
+      <div class="mt-7 text-center md:hidden">
+        <a href="home-listings.html" class="btn-secondary inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm cursor-pointer">
+          Browse All Listings
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       @component: HowItWorks
+       Two audiences in a side-by-side numbered steps layout
+       (not 2 equal boxed cards)
+  ============================================================ -->
+  <section id="how-it-works" class="bg-white py-16 sm:py-24" aria-labelledby="how-heading">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+
+      <div class="text-center mb-12">
+        <p class="section-eyebrow text-amber-500 mb-2">How It Works / Cómo Funciona</p>
+        <h2 id="how-heading" class="font-heading font-800 text-ink-950 mb-3"
+          style="font-size: clamp(1.6rem, 3.5vw, 2.4rem); letter-spacing: -0.025em;">
+          Simple. Safe. Local.
+        </h2>
+        <p class="font-body text-ink-600 max-w-[46ch] mx-auto">
+          A trust-first process for everyone — clients looking for services and providers offering them.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-ink-200 rounded-[28px] overflow-hidden">
+
+        <!-- For Clients -->
+        <div class="bg-white p-8 lg:p-10">
+          <div class="inline-flex items-center gap-3 mb-7">
+            <div class="w-10 h-10 rounded-2xl bg-lake-500 flex items-center justify-center flex-shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-heading font-700 text-lg text-ink-950">For Clients</h3>
+              <p class="font-body text-xs text-ink-400">Para clientes que buscan servicios</p>
+            </div>
+          </div>
+          <ol class="flex flex-col gap-7" aria-label="Steps for clients">
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-lake-50 text-lake-600 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-lake-100" aria-hidden="true">1</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">Browse by category</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">Car rentals, housing, beauty, rides, and more — all curated by our GM team.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-lake-50 text-lake-600 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-lake-100" aria-hidden="true">2</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">Read reviews & check trust tier</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">Every provider reviewed by our GM. Verified badge = identity confirmed personally.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-lake-50 text-lake-600 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-lake-100" aria-hidden="true">3</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">Accept disclaimer → WhatsApp</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">One-tap contact. Our team receives a copy for safety. Interaction logged.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- For Providers -->
+        <div class="bg-white p-8 lg:p-10">
+          <div class="inline-flex items-center gap-3 mb-7">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500 flex items-center justify-center flex-shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-heading font-700 text-lg text-ink-950">For Providers</h3>
+              <p class="font-body text-xs text-ink-400">Para proveedores de servicios</p>
+            </div>
+          </div>
+          <ol class="flex flex-col gap-7" aria-label="Steps for providers">
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-50 text-amber-700 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-amber-100" aria-hidden="true">1</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">Submit your listing</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">Photos, description, price, category. Quick form — no long sign-up process.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-50 text-amber-700 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-amber-100" aria-hidden="true">2</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">GM review &amp; photo approval</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">Our team reviews your listing and hand-picks the best public-facing photos.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-50 text-amber-700 font-heading font-700 text-xs flex items-center justify-center mt-0.5 border border-amber-100" aria-hidden="true">3</span>
+              <div>
+                <p class="font-heading font-600 text-base text-ink-950">Get verified, unlock VIP</p>
+                <p class="font-body text-sm text-ink-600 mt-1 leading-relaxed">Phone + ID verification unlocks VIP placement. Customers trust verified providers more.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       @component: TrustSection — dark navy bento layout
+       Asymmetric: left editorial copy, right metrics grid
+  ============================================================ -->
+  <section id="trust" class="py-16 sm:py-24 overflow-hidden" style="background: #0F172A;" aria-labelledby="trust-heading">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-12 lg:gap-8 items-center">
+
+        <!-- LEFT: Editorial copy -->
+        <div>
+          <p class="section-eyebrow text-forest-200 mb-4">Verified Providers / Proveedores Verificados</p>
+          <h2 id="trust-heading" class="font-heading font-800 text-white mb-5"
+            style="font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.03em; line-height: 1.1;">
+            Every provider reviewed.<br />
+            <span class="text-lake-300">Not all are equal.</span>
+          </h2>
+          <p class="font-body text-white/60 leading-relaxed max-w-[48ch] mb-8" style="font-size: .95rem;">
+            We manually approve every listing. J1 workers trust Bulletin Dells because providers are real people with verified identities — not anonymous ads.
+          </p>
+
+          <!-- Tier rows — not boxed cards -->
+          <div class="flex flex-col gap-4" role="list" aria-label="Provider tier levels">
+            <div role="listitem" class="tier-row flex items-start gap-4">
+              <span class="badge-sdvip px-3 py-1.5 rounded-xl text-xs flex-shrink-0">Super Duper VIP</span>
+              <p class="font-body text-sm text-white/65 leading-relaxed pt-0.5">GM-managed listings. Always ranked first. Highest trust on the platform.</p>
+            </div>
+            <div class="h-px bg-white/8"></div>
+            <div role="listitem" class="tier-row flex items-start gap-4">
+              <span class="badge-vip px-3 py-1.5 rounded-xl text-xs flex-shrink-0">VIP</span>
+              <p class="font-body text-sm text-white/65 leading-relaxed pt-0.5">Identity verified (phone + ID). Premium placement. Pays for visibility, earns it with trust.</p>
+            </div>
+            <div class="h-px bg-white/8"></div>
+            <div role="listitem" class="tier-row flex items-start gap-4">
+              <span class="badge-verified px-3 py-1.5 rounded-xl text-xs flex-shrink-0">Verified</span>
+              <p class="font-body text-sm text-white/65 leading-relaxed pt-0.5">Identity confirmed. GM-approved listings. Community-rated by real contacts only.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Bento metrics — asymmetric 2-col grid -->
+        <div class="grid grid-cols-2 gap-3" aria-label="Trust statistics">
+
+          <!-- Wide tile -->
+          <div class="metric-tile col-span-2 p-6">
+            <p class="font-heading font-900 text-white mb-1" style="font-size: 2.8rem; letter-spacing: -0.04em; line-height: 1;">143</p>
+            <p class="font-body text-white/65 text-sm">Verified providers across Wisconsin Dells</p>
+            <p class="font-body text-white/35 text-xs mt-0.5">Proveedores verificados en Wisconsin Dells</p>
+          </div>
+
+          <div class="metric-tile p-6">
+            <p class="font-heading font-900 text-amber-400 mb-1" style="font-size: 2rem; letter-spacing: -0.04em; line-height: 1;">100%</p>
+            <p class="font-body text-white/55 text-xs mt-1">Listings manually approved by GM</p>
+          </div>
+
+          <div class="metric-tile p-6">
+            <p class="font-heading font-900 text-lake-300 mb-1" style="font-size: 2rem; letter-spacing: -0.04em; line-height: 1;">4.8<span class="text-amber-400 text-xl">★</span></p>
+            <p class="font-body text-white/55 text-xs mt-1">Average provider rating</p>
+          </div>
+
+          <div class="metric-tile col-span-2 p-5">
+            <div class="flex items-center gap-2 mb-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <p class="font-heading font-600 text-sm text-white">Reviews by real contacts only</p>
+            </div>
+            <p class="font-body text-xs text-white/45">Only users who contacted a provider via Bulletin Dells can leave a review. All reviews are GM-approved before publishing.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       @component: ProviderCTA — List Your Business
+  ============================================================ -->
+  <section id="list-business" class="bg-white py-16 sm:py-24" aria-labelledby="provider-cta-heading">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="rounded-[32px] overflow-hidden" style="background: linear-gradient(135deg, #0077B6 0%, #005f91 55%, #2D6A4F 100%);">
+        <div class="relative p-10 sm:p-14 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-10 items-center">
+          <!-- Decorative blobs -->
+          <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-10 pointer-events-none" style="background: radial-gradient(circle, #F59E0B, transparent);" aria-hidden="true"></div>
+          <div class="absolute -bottom-10 -left-10 w-48 h-48 rounded-full opacity-8 pointer-events-none" style="background: radial-gradient(circle, #fff, transparent);" aria-hidden="true"></div>
+
+          <div class="relative">
+            <h2 id="provider-cta-heading" class="font-heading font-900 text-white mb-3"
+              style="font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.035em; line-height: 1.05;">
+              Have a service to offer?<br />
+              <span style="color: #F59E0B;">List it today.</span>
+            </h2>
+            <p class="font-body text-white/75 leading-relaxed max-w-[44ch] mb-1" style="font-size: .95rem;">
+              Join 143 verified providers connecting with customers in Wisconsin Dells. No long sign-ups.
+            </p>
+            <p class="font-body text-white/45 text-sm mb-8">
+              ¿Tienes un servicio? Publica tu negocio en minutos.
+            </p>
+
+            <!-- Benefits — inline chips, no equal cards -->
+            <div class="flex flex-wrap gap-2 mb-8">
+              <span class="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 rounded-full px-3 py-1.5 text-xs font-body font-500">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                Free to list
+              </span>
+              <span class="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 rounded-full px-3 py-1.5 text-xs font-body font-500">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                WhatsApp contact
+              </span>
+              <span class="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 rounded-full px-3 py-1.5 text-xs font-body font-500">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                Listings never expire
+              </span>
+              <span class="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 rounded-full px-3 py-1.5 text-xs font-body font-500">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                Reach J1 workers
+              </span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+              <a href="#" class="btn-primary inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base cursor-pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                Publish My Business / Publicar
+              </a>
+              <a href="#how-it-works" class="btn-ghost-white inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base cursor-pointer">
+                How it works
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: stat highlight -->
+          <div class="relative hidden lg:block flex-shrink-0 text-center">
+            <div class="glass-dark rounded-[28px] p-8 text-white min-w-[200px]">
+              <p class="font-heading font-900 text-amber-400 mb-1" style="font-size: 3.5rem; letter-spacing: -0.04em; line-height: 1;">143</p>
+              <p class="font-body text-white/65 text-sm">providers<br />already here</p>
+              <div class="mt-4 flex justify-center -space-x-2">
+                <img src="https://ui-avatars.com/api/?name=Maria+L&background=0077B6&color=fff&bold=true&size=32" class="w-8 h-8 rounded-full border-2 border-white/20" alt="" aria-hidden="true" />
+                <img src="https://ui-avatars.com/api/?name=Carlos+R&background=2D6A4F&color=fff&bold=true&size=32" class="w-8 h-8 rounded-full border-2 border-white/20" alt="" aria-hidden="true" />
+                <img src="https://ui-avatars.com/api/?name=Ana+V&background=F59E0B&color=fff&bold=true&size=32" class="w-8 h-8 rounded-full border-2 border-white/20" alt="" aria-hidden="true" />
+                <div class="w-8 h-8 rounded-full border-2 border-white/20 bg-white/10 flex items-center justify-center text-xs font-heading font-700 text-white/80">+140</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       @component: Footer
+  ============================================================ -->
+  <footer class="bg-ink-950 text-white/70" aria-label="Site footer">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-14">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+
+        <!-- Brand -->
+        <div class="lg:col-span-2">
+          <a href="#" class="flex items-center gap-2 mb-5" aria-label="Bulletin Dells home">
+            <svg width="32" height="32" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+              <rect width="36" height="36" rx="10" fill="#0077B6"/>
+              <path d="M6 24 C10 20 14 28 18 24 C22 20 26 28 30 24" stroke="#F8FAFC" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <circle cx="18" cy="13" r="5" fill="#F59E0B"/>
+              <circle cx="18" cy="13" r="2.5" fill="#fff"/>
+              <line x1="18" y1="16" x2="18" y2="21" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="font-heading font-800 text-white text-lg">BulletinDells</span>
+          </a>
+          <p class="font-body text-sm leading-relaxed max-w-[38ch] text-white/50 mb-2">
+            Wisconsin Dells' local services marketplace. Verified providers. Curated listings. Built for the community.
+          </p>
+          <p class="font-body text-xs text-white/30">
+            Serving Wisconsin Dells, WI · The Waterpark Capital of the World
+          </p>
+        </div>
+
+        <nav aria-label="Site links">
+          <p class="font-heading font-700 text-xs text-white/30 uppercase tracking-widest mb-4">Navigate</p>
+          <ul class="flex flex-col gap-2.5 text-sm">
+            <li><a href="home-listings.html" class="hover:text-white transition-colors cursor-pointer">Browse Listings</a></li>
+            <li><a href="#categories" class="hover:text-white transition-colors cursor-pointer">Categories</a></li>
+            <li><a href="#how-it-works" class="hover:text-white transition-colors cursor-pointer">How It Works</a></li>
+            <li><a href="#trust" class="hover:text-white transition-colors cursor-pointer">Verified Providers</a></li>
+            <li><a href="#list-business" class="hover:text-white transition-colors cursor-pointer">List Your Business</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Language and legal">
+          <p class="font-heading font-700 text-xs text-white/30 uppercase tracking-widest mb-4">En Español</p>
+          <ul class="flex flex-col gap-2.5 text-sm mb-6">
+            <li><a href="#" class="hover:text-white transition-colors cursor-pointer">Ver Anuncios</a></li>
+            <li><a href="#" class="hover:text-white transition-colors cursor-pointer">Cómo Funciona</a></li>
+            <li><a href="#" class="hover:text-white transition-colors cursor-pointer">Proveedores Verificados</a></li>
+            <li><a href="#" class="hover:text-white transition-colors cursor-pointer">Publicar Negocio</a></li>
+          </ul>
+          <div class="flex gap-2" role="group" aria-label="Language selector">
+            <button class="bg-lake-500 text-white px-4 py-2 rounded-xl text-xs font-heading font-700 cursor-pointer transition-colors">EN</button>
+            <button class="border border-white/15 text-white/50 px-4 py-2 rounded-xl text-xs font-heading font-600 hover:border-white/35 hover:text-white cursor-pointer transition-colors">ES</button>
+          </div>
+        </nav>
+
+      </div>
+
+      <div class="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
+        <p>© 2026 BulletinDells · Wisconsin Dells, WI · All rights reserved.</p>
+        <div class="flex gap-5">
+          <a href="#" class="hover:text-white/60 transition-colors cursor-pointer">Privacy Policy</a>
+          <a href="#" class="hover:text-white/60 transition-colors cursor-pointer">Terms of Service</a>
+          <a href="#" class="hover:text-white/60 transition-colors cursor-pointer">Legal Disclaimer</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

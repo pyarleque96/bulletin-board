@@ -1,0 +1,120 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppTextInput — input de texto reutilizable para formularios.
+    Soporta: text, email, password, tel, url, search.
+    Incluye: label, icono SVG opcional, estado de error, toggle de visibilidad (password).
+    Estilo base: auth-input (context oscuro). CssClass para sobreescribir.
+*@
+
+<div class="@WrapperClass">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@InputId"
+               class="@LabelClass">
+            @Label
+        </label>
+    }
+
+    <div class="relative">
+
+        @* Icono leading opcional *@
+        @if (LeadingIcon is not null)
+        {
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none"
+                  aria-hidden="true">
+                @LeadingIcon
+            </span>
+        }
+
+        <input id="@InputId"
+               type="@ResolvedType"
+               value="@Value"
+               @oninput="OnInput"
+               placeholder="@Placeholder"
+               autocomplete="@AutoComplete"
+               disabled="@Disabled"
+               required="@Required"
+               class="@InputClass"
+               style="@InputStyle"
+               aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+               aria-invalid="@HasError" />
+
+        @* Trailing slot (ej: toggle de contraseña) *@
+        @if (TrailingContent is not null)
+        {
+            @TrailingContent
+        }
+    </div>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InputId { get; set; } = "";
+
+    /// <summary>Texto del label visible. Si está vacío no se renderiza el label.</summary>
+    [Parameter] public string Label { get; set; } = "";
+
+    /// <summary>type del input: text, email, password, tel, url, search.</summary>
+    [Parameter] public string Type { get; set; } = "text";
+
+    /// <summary>Cuando es true el tipo se convierte a "text" (toggle show/hide password).</summary>
+    [Parameter] public bool ShowPasswordText { get; set; } = false;
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public string AutoComplete { get; set; } = "off";
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    /// <summary>Clases extra para el wrapper externo (div).</summary>
+    [Parameter] public string WrapperClass { get; set; } = "";
+
+    /// <summary>Clases extra para el input (se añaden a la base auth-input).</summary>
+    [Parameter] public string CssClass { get; set; } = "";
+
+    /// <summary>Clases para el label. Por defecto estilo auth.</summary>
+    [Parameter] public string LabelClass { get; set; } =
+        "block text-white/60 text-xs font-medium mb-1.5 uppercase tracking-wider";
+
+    /// <summary>SVG del icono leading (slot RenderFragment).</summary>
+    [Parameter] public RenderFragment? LeadingIcon { get; set; }
+
+    /// <summary>Contenido trailing, p.ej. botón toggle de contraseña.</summary>
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+
+    // ── Computed ──────────────────────────────────────────────────────────────
+
+    private string ResolvedType =>
+        Type == "password" && ShowPasswordText ? "text" : Type;
+
+    private string InputStyle =>
+        string.Join(";", new[]
+        {
+            LeadingIcon     is not null ? "padding-left:2.5rem"  : null,
+            TrailingContent is not null ? "padding-right:2.75rem" : null
+        }.Where(s => s is not null));
+
+    private string InputClass =>
+        $"auth-input{(HasError ? " error" : "")} {CssClass}".Trim();
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(val);
+    }
+}

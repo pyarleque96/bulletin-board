@@ -1,0 +1,189 @@
+@namespace Bulletin.Board.Web.Client.Shared
+
+@*
+    PageNoticeBanner — banner contextual de página entera con animación collapse al dismiss.
+    Diferente de AlertBanner (que es para banners inline en formularios, sin collapse animation).
+
+    Parámetros:
+      IsVisible          — muestra/oculta el banner. false = no se renderiza en absoluto. Default false.
+      Variant            — "info" | "success" | "warning" | "error". Default "info".
+      Title              — texto en negrita del banner. Default "".
+      Description        — texto secundario debajo del título. Default "".
+      ShowDismissButton  — muestra el botón X. Default true.
+      OnDismiss          — callback cuando el dismiss completa (animación terminada + _dismissed=true).
+      CssClass           — clases CSS extra para el wrapper. Default "".
+      ChildContent       — si se provee, reemplaza el área Title+Description con contenido custom.
+*@
+
+@* Scoped CSS — usa clase en lugar de #id para permitir múltiples instancias en la misma página *@
+
+@if (IsVisible && !_dismissed)
+{
+    <div class="page-notice-banner @(_collapsing ? "dismissed" : "") @WrapperClasses @CssClass"
+         style="max-height: 200px;"
+         role="status"
+         aria-live="polite">
+
+        @* Icono según variant *@
+        @if (Variant == "success")
+        {
+            <svg class="w-5 h-5 @IconColorClass flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        }
+        else if (Variant == "warning")
+        {
+            <svg class="w-5 h-5 @IconColorClass flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+        }
+        else if (Variant == "error")
+        {
+            <svg class="w-5 h-5 @IconColorClass flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+        }
+        else
+        {
+            @* info (default) *@
+            <svg class="w-5 h-5 @IconColorClass flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        }
+
+        @* Área de contenido *@
+        <div class="flex-1">
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <p class="text-sm font-semibold @TitleColorClass">@Title</p>
+                }
+                @if (!string.IsNullOrEmpty(Description))
+                {
+                    <p class="text-xs @DescColorClass @(string.IsNullOrEmpty(Title) ? "" : "mt-0.5")">@Description</p>
+                }
+            }
+        </div>
+
+        @* Botón dismiss *@
+        @if (ShowDismissButton)
+        {
+            <button type="button"
+                    @onclick="HandleDismissAsync"
+                    class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-md @DismissButtonClasses transition-colors cursor-pointer ml-1"
+                    aria-label="Dismiss notice">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Controla si el banner se muestra. Cuando es false el componente no se renderiza en absoluto.</summary>
+    [Parameter] public bool IsVisible { get; set; } = false;
+
+    /// <summary>Variante visual: "info" | "success" | "warning" | "error". Default "info".</summary>
+    [Parameter] public string Variant { get; set; } = "info";
+
+    /// <summary>Texto en negrita del banner.</summary>
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>Texto secundario debajo del título.</summary>
+    [Parameter] public string Description { get; set; } = "";
+
+    /// <summary>Muestra el botón X de dismiss. Default true.</summary>
+    [Parameter] public bool ShowDismissButton { get; set; } = true;
+
+    /// <summary>Callback invocado cuando el dismiss completa (después de la animación CSS).</summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>Clases CSS extra para el wrapper del banner.</summary>
+    [Parameter] public string CssClass { get; set; } = "";
+
+    /// <summary>Contenido custom que reemplaza el área Title+Description cuando se provee.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ── Estado interno ─────────────────────────────────────────────────────────
+    private bool _collapsing = false;
+    private bool _dismissed  = false;
+
+    // ── Detectar cambio de IsVisible desde el padre ────────────────────────────
+    // Si IsVisible vuelve a true después de haber sido false externamente,
+    // reseteamos el estado interno para que el banner se muestre limpio.
+    protected override void OnParametersSet()
+    {
+        if (IsVisible && _dismissed)
+        {
+            _dismissed  = false;
+            _collapsing = false;
+        }
+    }
+
+    // ── Dismiss (animación interna) ────────────────────────────────────────────
+    private async Task HandleDismissAsync()
+    {
+        _collapsing = true;
+        StateHasChanged();
+        await Task.Delay(280);   // esperar que termine la transition CSS (0.25s)
+        _dismissed  = true;
+        _collapsing = false;
+        await OnDismiss.InvokeAsync();
+    }
+
+    // ── Clases calculadas por variant ──────────────────────────────────────────
+    private string WrapperClasses => Variant switch
+    {
+        "success" => "bg-green-50 border border-green-200 rounded-xl p-4 mb-5 flex items-start gap-3 flex-shrink-0",
+        "warning" => "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 flex items-start gap-3 flex-shrink-0",
+        "error"   => "bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-start gap-3 flex-shrink-0",
+        _         => "bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-start gap-3 flex-shrink-0",  // info
+    };
+
+    private string IconColorClass => Variant switch
+    {
+        "success" => "text-green-500",
+        "warning" => "text-amber-500",
+        "error"   => "text-red-500",
+        _         => "text-blue-500",  // info
+    };
+
+    private string TitleColorClass => Variant switch
+    {
+        "success" => "text-green-800",
+        "warning" => "text-amber-800",
+        "error"   => "text-red-800",
+        _         => "text-blue-800",  // info
+    };
+
+    private string DescColorClass => Variant switch
+    {
+        "success" => "text-green-700",
+        "warning" => "text-amber-700",
+        "error"   => "text-red-700",
+        _         => "text-blue-700",  // info
+    };
+
+    private string DismissButtonClasses => Variant switch
+    {
+        "success" => "text-green-400 hover:text-green-700 hover:bg-green-100",
+        "warning" => "text-amber-400 hover:text-amber-700 hover:bg-amber-100",
+        "error"   => "text-red-400 hover:text-red-700 hover:bg-red-100",
+        _         => "text-blue-400 hover:text-blue-700 hover:bg-blue-100",  // info
+    };
+}

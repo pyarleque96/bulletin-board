@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Beauty · Portfolio (VIP)
+     Tab "Photos" para beauty se llama "Portfolio". VIP: unlimited, antes/después pairs,
+     bulk actions, per-photo views. Regla #4: GM aprueba todo. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Beauty · Portfolio VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}[data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">L</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Luz Studio Premium</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Luz Studio Premium · Hair &amp; Color</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full">Beauty</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/services" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Services</a>
+      <a href="/manage/{id}/appointments" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Appointments</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Portfolio <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">68</span></span>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">Portfolio <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">Unlimited</span></h2>
+      <p class="text-sm text-muted mt-0.5">Before/after pairs draw 2.4× more bookings. The GM still approves every upload.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <button data-tooltip="Adding photos returns listing to Pending review" class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink inline-flex items-center gap-1.5">+ Before/after pair</button>
+      <label for="upload" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload photos
+      </label>
+      <input id="upload" type="file" multiple class="sr-only"/>
+    </div>
+  </div>
+
+  <!-- Filter pills -->
+  <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group">
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white">All <span class="ml-1 bg-white/20 px-1.5 rounded-full">68</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Before/after pairs <span class="ml-1 bg-pink-100 text-pink-700 px-1.5 rounded-full">14</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Public <span class="ml-1 bg-green-100 text-green-800 px-1.5 rounded-full">62</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Pending GM <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 rounded-full">4</span></button>
+  </div>
+
+  <!-- Before/after pair card -->
+  <section class="mb-6">
+    <h3 class="text-sm font-semibold text-ink mb-3">Before / After · Balayage transformation</h3>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+        <div class="relative aspect-[3/4] bg-slate-200"><img src="https://picsum.photos/seed/before-bal/400/533" alt="Before balayage" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-white/95 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-semibold">Before</span><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+        <div class="relative aspect-[3/4] bg-slate-200"><img src="https://picsum.photos/seed/after-bal/400/533" alt="After balayage" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">After</span><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div>
+      </div>
+    </div>
+    <p class="text-[11px] text-muted mt-2 tabular-nums">2,184 views · 13.4% CTR · added by GM as featured</p>
+  </section>
+
+  <!-- More photos grid -->
+  <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-square bg-slate-200"><img src="https://picsum.photos/seed/beauty-1/400/400" alt="" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-square bg-slate-200"><img src="https://picsum.photos/seed/beauty-2/400/400" alt="" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+    <li class="bg-white rounded-2xl border border-amber-200 shadow-soft overflow-hidden"><div class="relative aspect-square bg-slate-200"><img src="https://picsum.photos/seed/beauty-3/400/400" alt="" class="w-full h-full object-cover opacity-90"/><span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/95 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending GM</span></div></li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-square bg-slate-200"><img src="https://picsum.photos/seed/beauty-4/400/400" alt="" class="w-full h-full object-cover"/><span class="absolute top-2 left-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+  </ul>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Unlimited photos, before/after pairs, per-photo views
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+@*
+    RejectedBadge — Badge de estado "Rejected".
+    Rojo — manage/index.html .status-rejected:
+      background:#fee2e2; color:#b91c1c.
+    SVG: X (lines cruzadas) — stroke-width="2.5"
+      line x1="18" y1="6" x2="6" y2="18"
+      line x1="6" y1="6" x2="18" y2="18"
+
+    Parámetros:
+      IconOnly (bool, default false) — muestra solo el icono sin texto, padding circular.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<span class="@WrapperClass" aria-label="@_localizer["Badge_Rejected"]" role="img">
+    @* X SVG — canónico manage/index.html listing 3 .status-rejected *@
+    <svg class="@IconClass"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+    @if (!IconOnly)
+    {
+        <span>@_localizer["Badge_Rejected"]</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Cuando es true, muestra solo el icono (padding circular, sin texto).
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; } = false;
+
+    private string WrapperClass => IconOnly
+        ? "rejected-badge rejected-badge--icon-only inline-flex items-center justify-center"
+        : "rejected-badge inline-flex items-center gap-1";
+
+    private string IconClass => IconOnly ? "w-3.5 h-3.5" : "w-2.5 h-2.5";
+}

@@ -1,0 +1,127 @@
+@* NotFound — self-contained, NO @layout.
+   @layout EmptyLayout prevents MainLayout chrome (navbar/footer) from
+   wrapping this page when navigated to directly via /not-found.
+   The @layout directive wins over any LayoutView parent in Routes.razor.
+   Routes.razor <NotFound> also renders this inline for client-side nav. *@
+@page "/not-found"
+@layout EmptyLayout
+@inject NavigationManager Navigation
+
+<PageTitle>404 — Page Not Found | Bulletin Board</PageTitle>
+
+<div class="bg-surface err-dot-grid min-h-dvh flex flex-col font-sans">
+
+    @* Grain texture overlay *@
+    <div class="err-grain" aria-hidden="true"></div>
+
+    @* ── Mini nav pill ────────────────────────────────────────────────────── *@
+    <header class="w-full pt-5 px-4 flex justify-center relative z-10">
+        <nav class="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full px-5 py-3
+                    flex items-center gap-5
+                    shadow-[0_2px_16px_-4px_rgba(30,41,59,0.08)]"
+             aria-label="Site navigation">
+            <a href="/" aria-label="Bulletin Dells home" class="flex items-center gap-2">
+                <span class="font-semibold tracking-tight text-sm text-ink">Bulletin <span class="text-[#fd8c1b]">Board</span></span>
+            </a>
+            <div class="w-px h-4 bg-slate-200" aria-hidden="true"></div>
+            <a href="/"
+               class="text-sm text-slate-500 hover:text-ink transition-colors duration-200 cursor-pointer">
+                Home / Inicio
+            </a>
+        </nav>
+    </header>
+
+    @* ── Main content ─────────────────────────────────────────────────────── *@
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center relative z-10">
+
+        @* Animated map pin with pulse rings *@
+        <div class="relative flex items-center justify-center mb-8" aria-hidden="true">
+            <div class="absolute w-52 h-52 rounded-full border-2 border-[#02184f]/20 err-pulse-ring"></div>
+            <div class="absolute w-40 h-40 rounded-full border-2 border-[#02184f]/15 err-pulse-ring2"></div>
+            <div class="err-float relative">
+                <div class="p-2">
+                    <div class="h-36 flex items-center justify-center overflow-hidden" style="position: relative;">
+                        <div class="err-orbit-dot" aria-hidden="true"></div>
+                        <div class="flex items-baseline gap-[0.05em] err-numeral-404" aria-label="Error 404">
+                            <span class="err-numeral-four">4</span>
+                            <span class="err-numeral-zero">
+                                <span class="err-numeral-zero-inner">0</span>
+                            </span>
+                            <span class="err-numeral-four">4</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute inset-0 rounded-full pointer-events-none" style="background: linear-gradient(0deg, rgba(255,255,255,0.45) 0%, transparent 55%);"></div>
+            </div>
+        </div>
+
+        @* Error label + headline + subtitles *@
+        <div class="max-w-sm err-opacity-init err-fade-up err-delay-2">
+            <span class="inline-block rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] font-medium bg-[#02184f]/[0.07] text-[#02184f] mb-4">Error 404</span>
+            <h1 class="text-4xl font-black tracking-tighter text-ink leading-none mb-2">
+                Lost in the Dells
+            </h1>
+            <p class="text-base text-slate-500 leading-relaxed mb-1">
+                This page packed up and moved to a cabin on the lake.
+            </p>
+            <p class="text-sm text-slate-400 italic mb-8">
+                Esta pagina no existe. Quizas fue eliminada o el enlace es incorrecto.
+            </p>
+        </div>
+
+        @* CTA buttons *@
+        <div class="flex flex-col sm:flex-row gap-3 err-opacity-init err-fade-up err-delay-3">
+
+            @* Back to Home *@
+            <a href="/"
+               class="group inline-flex items-center gap-2 bg-[#02184f] hover:bg-[#010f30] text-white
+                      font-semibold text-sm px-5 py-3 rounded-full cursor-pointer
+                      transition-all duration-300 active:scale-[0.98]
+                      shadow-[0_4px_14px_-3px_rgba(2,24,79,0.4)]">
+                Back to Home / Inicio
+                <span class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center
+                             group-hover:translate-x-0.5 group-hover:-translate-y-0.5
+                             transition-transform duration-200" aria-hidden="true">
+                    <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none"
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <path d="M2 10l8-8M10 2H4M10 2v6"/>
+                    </svg>
+                </span>
+            </a>
+
+            @* Contact GM via WhatsApp *@
+            <a href="https://wa.me/15551234567" target="_blank" rel="noopener noreferrer"
+               class="group inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-ink
+                      font-medium text-sm px-5 py-3 rounded-full border border-slate-200
+                      transition-all duration-200 cursor-pointer active:scale-[0.98]">
+                <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Contact GM
+                <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center
+                             group-hover:translate-x-0.5 group-hover:-translate-y-0.5
+                             transition-transform duration-200" aria-hidden="true">
+                    <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none"
+                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <path d="M2 10l8-8M10 2H4M10 2v6"/>
+                    </svg>
+                </span>
+            </a>
+        </div>
+
+        <p class="mt-8 text-xs text-slate-400 err-opacity-init err-fade-up err-delay-4"
+           aria-label="Error 404 — Pagina no encontrada">
+            Error 404 &mdash; Pagina no encontrada
+        </p>
+    </main>
+
+    @* ── Footer ───────────────────────────────────────────────────────────── *@
+    <footer class="py-6 text-center relative z-10">
+        <p class="text-xs text-slate-400">
+            &copy; 2026 Bulletin Dells &mdash; Wisconsin Dells, WI
+            <span class="mx-2 text-slate-300" aria-hidden="true">|</span>
+            <a href="/" class="hover:text-brand-600 transition-colors cursor-pointer">Inicio / Home</a>
+        </p>
+    </footer>
+
+</div>

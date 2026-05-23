@@ -1,0 +1,223 @@
+@* VipConfirmModal — modal de confirmación con contraseña + opciones de vigencia.
+   Modos:
+     - Grant: radios 30/90/180/Custom + checkbox Indefinido (opaca lo demás).
+     - Revoke: solo password + razón opcional.
+   Al confirmar invoca OnConfirm con (Until, Indefinite, Reason, Password).
+   La página padre se encarga de hacer reauth + grant/revoke. *@
+
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm"
+         @onclick="HandleBackdropClick">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+             @onclick:stopPropagation="true">
+
+            @* Header *@
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full @(IsCurrentlyVip ? "bg-rose-100 text-rose-600" : "bg-amber-100 text-amber-600")">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </span>
+                <div>
+                    <h3 class="text-base font-semibold text-ink">
+                        @(IsCurrentlyVip ? $"Revoke VIP — {EntityKindLabel}" : $"Grant VIP — {EntityKindLabel}")
+                    </h3>
+                    <p class="text-xs text-muted">@EntityName</p>
+                </div>
+            </div>
+
+            @* Body *@
+            <div class="px-6 py-5 space-y-4">
+
+                @if (!IsCurrentlyVip)
+                {
+                    @* GRANT: vigencia *@
+                    <div class="@(Indefinite ? "opacity-40 pointer-events-none" : "") space-y-3 transition-opacity">
+                        <p class="text-xs font-semibold text-muted uppercase tracking-wider">Duration</p>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach (var preset in new[] { 30, 90, 180 })
+                            {
+                                var label = $"{preset} days";
+                                var isSelected = !UseCustom && PresetDays == preset;
+                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer @(isSelected ? "border-amber-400 bg-amber-50" : "border-slate-200 hover:border-slate-300")">
+                                    <input type="radio" name="vigencia" value="@preset"
+                                           checked="@isSelected"
+                                           @onchange="() => SelectPreset(preset)" />
+                                    <span class="text-sm text-ink">@label</span>
+                                </label>
+                            }
+
+                            <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer @(UseCustom ? "border-amber-400 bg-amber-50" : "border-slate-200 hover:border-slate-300")">
+                                <input type="radio" name="vigencia" value="custom"
+                                       checked="@UseCustom"
+                                       @onchange="() => SelectCustom()" />
+                                <span class="text-sm text-ink">Custom</span>
+                            </label>
+                        </div>
+
+                        @if (UseCustom)
+                        {
+                            <input type="date"
+                                   value="@CustomDateString"
+                                   min="@MinDateString"
+                                   @onchange="OnCustomDateChanged"
+                                   class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                        }
+                    </div>
+
+                    @* Indefinido — fuera del bloque opaco *@
+                    <label class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer @(Indefinite ? "border-amber-400 bg-amber-50" : "border-slate-200 hover:border-slate-300")">
+                        <input type="checkbox" checked="@Indefinite" @onchange="OnIndefiniteChanged" />
+                        <span class="text-sm font-medium text-ink">Indefinite (no expiration)</span>
+                    </label>
+                }
+                else
+                {
+                    <div class="px-3 py-2 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+                        This will revoke VIP. Cascading listings (if a provider) will also be reverted.
+                    </div>
+                }
+
+                @* Reason *@
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-muted uppercase tracking-wider">Reason (optional)</label>
+                    <textarea @bind="Reason" rows="2" maxlength="500"
+                              class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                              placeholder="Internal note for the audit log…"></textarea>
+                </div>
+
+                @* Password *@
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-muted uppercase tracking-wider">Confirm with your password</label>
+                    <input type="password" @bind="Password" autocomplete="current-password"
+                           class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="px-3 py-2 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+                        @ErrorMessage
+                    </div>
+                }
+            </div>
+
+            @* Footer *@
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button type="button"
+                        class="text-sm px-4 py-2 rounded-lg text-muted hover:bg-slate-100 cursor-pointer"
+                        disabled="@IsBusy"
+                        @onclick="HandleCancel">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="text-sm px-4 py-2 rounded-lg text-white font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed @(IsCurrentlyVip ? "bg-rose-600 hover:bg-rose-700" : "bg-amber-500 hover:bg-amber-600")"
+                        disabled="@(!CanSubmit)"
+                        @onclick="HandleConfirm">
+                    @(IsBusy ? "Working…" : (IsCurrentlyVip ? "Revoke VIP" : "Grant VIP"))
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool IsCurrentlyVip { get; set; }
+    [Parameter] public string EntityKindLabel { get; set; } = "Provider";
+    [Parameter] public string EntityName { get; set; } = "";
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<VipConfirmPayload> OnConfirm { get; set; }
+
+    private int? PresetDays { get; set; } = 30;
+    private bool UseCustom { get; set; }
+    private DateTime? CustomDate { get; set; }
+    private bool Indefinite { get; set; }
+    private string Reason { get; set; } = "";
+    private string Password { get; set; } = "";
+
+    private string CustomDateString => CustomDate?.ToString("yyyy-MM-dd") ?? "";
+    private string MinDateString => DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd");
+
+    private bool CanSubmit
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Password)) return false;
+            if (IsBusy) return false;
+            if (IsCurrentlyVip) return true;
+            if (Indefinite) return true;
+            if (UseCustom) return CustomDate.HasValue && CustomDate.Value > DateTime.UtcNow.Date;
+            return PresetDays.HasValue;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!IsOpen)
+        {
+            PresetDays = 30;
+            UseCustom = false;
+            CustomDate = null;
+            Indefinite = false;
+            Reason = "";
+            Password = "";
+        }
+    }
+
+    private void SelectPreset(int days)
+    {
+        PresetDays = days;
+        UseCustom = false;
+    }
+
+    private void SelectCustom()
+    {
+        UseCustom = true;
+        PresetDays = null;
+    }
+
+    private void OnCustomDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var d))
+            CustomDate = d;
+    }
+
+    private void OnIndefiniteChanged(ChangeEventArgs e)
+    {
+        Indefinite = e.Value is bool b && b;
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleBackdropClick()
+    {
+        if (!IsBusy) await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleConfirm()
+    {
+        DateTimeOffset? until = null;
+        var indef = false;
+
+        if (!IsCurrentlyVip)
+        {
+            if (Indefinite) indef = true;
+            else if (UseCustom && CustomDate.HasValue)
+                until = new DateTimeOffset(CustomDate.Value.Date, TimeSpan.Zero).AddDays(1).AddSeconds(-1);
+            else if (PresetDays is int days)
+                until = DateTimeOffset.UtcNow.AddDays(days);
+        }
+
+        await OnConfirm.InvokeAsync(new VipConfirmPayload(until, indef, string.IsNullOrWhiteSpace(Reason) ? null : Reason, Password));
+    }
+
+    public record VipConfirmPayload(DateTimeOffset? Until, bool Indefinite, string? Reason, string Password);
+}

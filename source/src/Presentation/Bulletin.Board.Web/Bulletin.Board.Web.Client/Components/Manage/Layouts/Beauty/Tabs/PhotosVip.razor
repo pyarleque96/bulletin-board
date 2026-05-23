@@ -1,0 +1,128 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   PhotosVip (Beauty) — Tab "Portfolio" para beauty VIP.
+   VIP: unlimited uploads, before/after pairs, per-photo views. Regla #4:
+   el GM sigue aprobando cada upload (status = Public/Pending/Hidden/Rejected).
+   Regla #5: cada edición vuelve el listing a Pending.
+
+   Datos: placeholder hasta endpoints. Ver BACKEND_AUDIT §1.4 (label = "Portfolio"
+   pero endpoint es el común §1.1).
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Beauty.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-photos"
+      role="tabpanel"
+      aria-labelledby="tab-photos"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_Beauty_Portfolio_Title"]
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">
+                    @_localizer["Manage_Beauty_Portfolio_VipUnlimited"]
+                </span>
+            </h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Beauty_Portfolio_Subtitle_Vip"]</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <PendingReviewTooltip>
+                <button type="button"
+                        class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink inline-flex items-center gap-1.5 cursor-pointer">
+                    @* TODO: API POST /api/v1/manage/listings/{id}/photos con flag pair (BACKEND_AUDIT §1.1 — campo `pair_group_id` propuesto). *@
+                    + @_localizer["Manage_Beauty_Portfolio_AddPair"]
+                </button>
+            </PendingReviewTooltip>
+            <PendingReviewTooltip>
+                <label class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors duration-150">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    @_localizer["Manage_Beauty_UploadPhoto"]
+                    @* TODO: API POST /api/v1/manage/listings/{id}/photos (BACKEND_AUDIT §1.1). Status=Pending por defecto. *@
+                    <input type="file" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" />
+                </label>
+            </PendingReviewTooltip>
+        </div>
+    </div>
+
+    @* Regla #4 banner *@
+    <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="note">
+        <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p class="text-xs text-ink leading-relaxed">@_localizer["Banner_GmDecidesPhotos"]</p>
+    </div>
+
+    @* Filter pills *@
+    <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group" aria-label="@_localizer["Manage_Photos_Filter_AriaLabel"]">
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">
+            @_localizer["Manage_Common_All"]
+            <span class="ml-1 bg-white/20 px-1.5 rounded-full tabular-nums">@(_photos.Length)</span>
+        </button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+            @_localizer["Manage_Beauty_Portfolio_Filter_Pairs"]
+            <span class="ml-1 bg-pink-100 text-pink-700 px-1.5 rounded-full tabular-nums">—</span>
+        </button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+            @_localizer["Photo_Status_Public"]
+            <span class="ml-1 bg-green-100 text-green-800 px-1.5 rounded-full tabular-nums">@(_photos.Length)</span>
+        </button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+            @_localizer["Photo_Status_Pending"]
+            <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 rounded-full tabular-nums">—</span>
+        </button>
+    </div>
+
+    @if (_photos.Length == 0)
+    {
+        <ManageEmptyState Title="@_localizer["Manage_Beauty_Portfolio_Empty"]"
+                          Description="@_localizer["Manage_Beauty_Portfolio_Empty_Description"]" />
+    }
+    else
+    {
+        @* Grid principal — las fotos de ListingDetailDto vienen pre-filtradas a Public (Regla #4). *@
+        <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
+            @foreach (var photo in _photos)
+            {
+                <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+                    <div class="relative aspect-square bg-slate-200">
+                        <img src="@photo.Url" alt="@photo.AltText" class="w-full h-full object-cover" loading="lazy" />
+                        <div class="absolute top-2 left-2">
+                            <PhotoStatusBadge Status="Public" />
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(photo.AltText))
+                    {
+                        <div class="p-2 text-[11px] text-muted truncate">@photo.AltText</div>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+    <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        @_localizer["Manage_Beauty_Portfolio_VipFooter"]
+    </div>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private ListingPhotoDto[] _photos = Array.Empty<ListingPhotoDto>();
+
+    protected override void OnParametersSet()
+    {
+        // VIP: sin límite de 5 (Regla #3 — Verified+ desbloquea VIP features).
+        _photos = Listing.Photos;
+    }
+}

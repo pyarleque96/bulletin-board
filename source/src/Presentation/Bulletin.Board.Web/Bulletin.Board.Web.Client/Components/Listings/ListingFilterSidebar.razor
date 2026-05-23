@@ -1,0 +1,253 @@
+@* ListingFilterSidebar — filtros para Browse/Listings.
+   Emite OnFiltersChanged cada vez que el usuario cambia cualquier control.
+   No rendermode propio — hereda del padre. *@
+
+@using Bulletin.Board.Web.Client.Models
+@using System.Globalization
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<aside class="w-full sticky top-24 self-start" aria-label="@_localizer["Browse_FiltersLabel"]">
+    @* sticky is on the <aside> itself — the div wrapper in BrowseListings has
+       lg:self-start which is required for sticky to work correctly inside a
+       flex row. Having sticky on the inner div instead of the aside causes
+       incorrect behavior when the parent has no explicit height.
+       w-full here means 100% of the lg:w-64 parent wrapper, so the sidebar
+       never intrinsically grows beyond the column width. The parent has
+       overflow-hidden + shrink-0 to enforce this contract. *@
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+
+        <h2 class="text-sm font-semibold text-ink mb-5 flex items-center justify-between">
+            @_localizer["Browse_Filters"]
+            <button type="button"
+                    class="text-xs text-brand-500 hover:text-brand-700 font-normal cursor-pointer transition-colors duration-150"
+                    @onclick="ResetAll"
+                    aria-label="@_localizer["Browse_ResetAll"]">
+                @_localizer["Browse_ResetAll"]
+                @* ES: Limpiar *@
+            </button>
+        </h2>
+
+        @* ── Rating filter ── *@
+        <fieldset class="mb-6">
+            <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+                @_localizer["Browse_FilterRating"]
+                @* ES: Calificación *@
+            </legend>
+            <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                    <input type="radio"
+                           name="@_ratingGroupName"
+                           class="accent-brand-500"
+                           checked="@(_ratingOption == RatingOption.Any)"
+                           @onchange="() => SetRating(RatingOption.Any)" />
+                    <span class="text-sm text-ink group-hover:text-brand-600 transition-colors duration-150">
+                        @_localizer["Browse_RatingAny"]
+                        @* ES: Cualquier calificación *@
+                    </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                    <input type="radio"
+                           name="@_ratingGroupName"
+                           class="accent-brand-500"
+                           checked="@(_ratingOption == RatingOption.FourPointFivePlus)"
+                           @onchange="() => SetRating(RatingOption.FourPointFivePlus)" />
+                    <span class="text-sm text-ink group-hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        4.5+
+                    </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                    <input type="radio"
+                           name="@_ratingGroupName"
+                           class="accent-brand-500"
+                           checked="@(_ratingOption == RatingOption.FourPlus)"
+                           @onchange="() => SetRating(RatingOption.FourPlus)" />
+                    <span class="text-sm text-ink group-hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        4.0+
+                    </span>
+                </label>
+            </div>
+        </fieldset>
+
+        @* ── Language filter ── *@
+        <fieldset class="mb-6">
+            <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+                @_localizer["Browse_FilterLanguage"]
+                @* ES: Idioma *@
+            </legend>
+            <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox"
+                           class="accent-brand-500 rounded"
+                           checked="@_langEnglish"
+                           @onchange="e => SetLang(true, (bool)e.Value!)" />
+                    <span class="text-sm text-ink">English</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox"
+                           class="accent-brand-500 rounded"
+                           checked="@_langSpanish"
+                           @onchange="e => SetLang(false, (bool)e.Value!)" />
+                    <span class="text-sm text-ink">Spanish / Español</span>
+                </label>
+            </div>
+        </fieldset>
+
+        @* ── Provider Tier filter ── *@
+        <fieldset class="mb-6">
+            <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
+                @_localizer["Browse_FilterTier"]
+                @* ES: Nivel de proveedor *@
+            </legend>
+            <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox"
+                           class="accent-brand-500 rounded"
+                           checked="@_tierVip"
+                           @onchange="e => SetTier(TierLevel.Vip, (bool)e.Value!)" />
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide badge-vip text-white px-2 py-0.5 rounded-full">
+                        VIP
+                    </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox"
+                           class="accent-brand-500 rounded"
+                           checked="@_tierVerified"
+                           @onchange="e => SetTier(TierLevel.Verified, (bool)e.Value!)" />
+                    <span class="text-sm text-ink">
+                        @_localizer["Badge_Verified"]
+                        @* ES: Verificado *@
+                    </span>
+                </label>
+            </div>
+        </fieldset>
+
+        @* ── Verified only toggle ── *@
+        <div class="border-t border-slate-100 pt-5">
+            <label class="flex items-center gap-2.5 cursor-pointer" for="@_verifiedOnlyId">
+                <button type="button"
+                        role="switch"
+                        id="@_verifiedOnlyId"
+                        aria-checked="@_verifiedOnly.ToString().ToLowerInvariant()"
+                        class="relative w-9 h-5 rounded-full transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 @(_verifiedOnly ? "bg-brand-500" : "bg-slate-300")"
+                        @onclick="ToggleVerifiedOnly">
+                    <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-soft transition-transform duration-200 @(_verifiedOnly ? "translate-x-4" : "translate-x-0")"
+                          aria-hidden="true"></span>
+                </button>
+                <span class="text-sm text-ink">
+                    @_localizer["Browse_VerifiedOnly"]
+                    @* ES: Solo verificados *@
+                </span>
+            </label>
+        </div>
+
+    </div>
+</aside>
+
+@code {
+    [Parameter] public EventCallback<ListingFilters> OnFiltersChanged { get; set; }
+    [Parameter] public ListingFilters? InitialFilters { get; set; }
+
+    // Unique group name to avoid radio conflicts on the same page
+    private readonly string _ratingGroupName  = $"rating-{Guid.NewGuid():N}";
+    private readonly string _verifiedOnlyId   = $"verified-{Guid.NewGuid():N}";
+
+    private enum RatingOption { Any, FourPlus, FourPointFivePlus }
+    private enum TierLevel    { Vip, Verified }
+
+    // State
+    private RatingOption _ratingOption = RatingOption.Any;
+    private bool _langEnglish  = true;
+    private bool _langSpanish  = true;
+    private bool _tierVip      = false;
+    private bool _tierVerified = false;
+    private bool _verifiedOnly = true;
+
+    protected override void OnParametersSet()
+    {
+        if (InitialFilters is not null)
+        {
+            _verifiedOnly = InitialFilters.VerifiedOnly;
+            _ratingOption = InitialFilters.MinRating switch
+            {
+                4.5m => RatingOption.FourPointFivePlus,
+                4.0m => RatingOption.FourPlus,
+                _    => RatingOption.Any
+            };
+            _langEnglish  = InitialFilters.EnglishOnly  != false;
+            _langSpanish  = InitialFilters.SpanishOnly  != false;
+            _tierVip      = InitialFilters.IncludeVip      == true;
+            _tierVerified = InitialFilters.IncludeVerified == true;
+        }
+    }
+
+    private void SetRating(RatingOption option)
+    {
+        _ratingOption = option;
+        Notify();
+    }
+
+    private void SetLang(bool isEnglish, bool value)
+    {
+        if (isEnglish) _langEnglish = value;
+        else           _langSpanish = value;
+        Notify();
+    }
+
+    private void SetTier(TierLevel tier, bool value)
+    {
+        switch (tier)
+        {
+            case TierLevel.Vip:      _tierVip      = value; break;
+            case TierLevel.Verified: _tierVerified = value; break;
+        }
+        Notify();
+    }
+
+    private void ToggleVerifiedOnly()
+    {
+        _verifiedOnly = !_verifiedOnly;
+        Notify();
+    }
+
+    private void ResetAll()
+    {
+        _ratingOption  = RatingOption.Any;
+        _langEnglish   = true;
+        _langSpanish   = true;
+        _tierVip       = false;
+        _tierVerified  = false;
+        _verifiedOnly  = true;
+        Notify();
+    }
+
+    private void Notify()
+    {
+        var minRating = _ratingOption switch
+        {
+            RatingOption.FourPointFivePlus => (decimal?)4.5m,
+            RatingOption.FourPlus          => 4.0m,
+            _                              => null
+        };
+
+        bool? engOnly  = _langEnglish  ? null : false;
+        bool? spanOnly = _langSpanish  ? null : false;
+
+        var filters = new ListingFilters(
+            MinRating:       minRating,
+            EnglishOnly:     _langEnglish && !_langSpanish  ? true  : engOnly,
+            SpanishOnly:     _langSpanish && !_langEnglish  ? true  : spanOnly,
+            IncludeVip:      _tierVip      ? true : null,
+            IncludeVerified: _tierVerified ? true : null,
+            VerifiedOnly:    _verifiedOnly
+        );
+
+        OnFiltersChanged.InvokeAsync(filters);
+    }
+}

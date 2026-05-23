@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Page Not Found | Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e3a8a' },
+            cta:   { 400:'#fb923c', 500:'#f97316', 600:'#ea580c' },
+            ink:   '#1e293b',
+            surface: '#f8fafc',
+          },
+          keyframes: {
+            'fade-up': { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            'slide-in-left': { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+            'shimmer': { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+          },
+          animation: {
+            'fade-up': 'fade-up 0.6s cubic-bezier(0.32,0.72,0,1) forwards',
+            'slide-in-left': 'slide-in-left 0.5s cubic-bezier(0.32,0.72,0,1) forwards',
+            'shimmer': 'shimmer 2.5s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .delay-1 { animation-delay: 0.08s; }
+    .delay-2 { animation-delay: 0.16s; }
+    .delay-3 { animation-delay: 0.28s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.52s; }
+    .opacity-0-init { opacity: 0; }
+    /* Double-bezel card */
+    .bezel-outer {
+      background: rgba(0,0,0,0.025);
+      border: 1px solid rgba(30,41,59,0.07);
+      border-radius: 1.25rem;
+      padding: 6px;
+    }
+    .bezel-inner {
+      background: #ffffff;
+      border-radius: calc(1.25rem - 6px);
+      border: 1px solid rgba(30,41,59,0.05);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 3px rgba(30,41,59,0.04);
+    }
+    /* Shimmer on the 404 digits */
+    .shimmer-text {
+      background: linear-gradient(105deg, #1d4ed8 25%, #60a5fa 45%, #1d4ed8 65%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 2.5s linear infinite;
+    }
+    .suggestion-item:hover { transform: translateX(4px); }
+    .suggestion-item { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1); }
+  </style>
+</head>
+<body class="bg-surface min-h-[100dvh] flex flex-col">
+
+  <!-- Nav -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200/80">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2" aria-label="Bulletin Dells">
+        <div class="w-7 h-7 rounded-lg bg-brand-700 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M3 3h10M3 6h7M3 9h9M3 12h5"/>
+          </svg>
+        </div>
+        <span class="font-bold text-ink tracking-tight">Bulletin Dells</span>
+      </a>
+      <div class="flex items-center gap-2">
+        <button class="text-xs text-slate-500 hover:text-brand-600 transition-colors px-2 py-1 cursor-pointer" aria-label="Switch to English">EN</button>
+        <span class="text-slate-300 text-xs" aria-hidden="true">|</span>
+        <button class="text-xs text-slate-500 hover:text-brand-600 transition-colors px-2 py-1 cursor-pointer" aria-label="Cambiar a Espanol">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main: 2-col split on desktop -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-12 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+    <!-- Left: error info -->
+    <div>
+      <!-- Eyebrow -->
+      <p class="opacity-0-init animate-fade-up text-xs uppercase tracking-[0.18em] text-brand-500 font-semibold mb-4">
+        Error 404 &mdash; Not Found
+      </p>
+
+      <!-- Big number -->
+      <div class="opacity-0-init animate-fade-up delay-1 mb-4">
+        <span class="shimmer-text text-[5rem] leading-none font-black tracking-tighter select-none" aria-hidden="true">404</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="opacity-0-init animate-fade-up delay-2 text-3xl md:text-4xl font-black tracking-tighter text-ink leading-tight mb-3">
+        Page not found.<br/>
+        <span class="text-slate-400 font-medium text-2xl">Pagina no encontrada.</span>
+      </h1>
+
+      <!-- Description -->
+      <p class="opacity-0-init animate-fade-up delay-3 text-base text-slate-500 leading-relaxed mb-8 max-w-[50ch]">
+        The page you&rsquo;re looking for doesn&rsquo;t exist or was moved.
+        Check the URL or use the options below to find what you need.
+        <br/><span class="text-slate-400 text-sm">La pagina no existe o fue movida. Verifica el enlace o usa las opciones de abajo.</span>
+      </p>
+
+      <!-- Primary CTAs -->
+      <div class="opacity-0-init animate-fade-up delay-4 flex flex-wrap gap-3 mb-10">
+        <a href="/"
+           class="group inline-flex items-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-[0_4px_14px_-3px_rgba(29,78,216,0.35)]">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 4L4 10l6 6M4 10h12"/>
+          </svg>
+          Go to Home
+          <span class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center group-hover:translate-x-0.5 transition-transform" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 10l8-8M10 2H4M10 2v6"/></svg>
+          </span>
+        </a>
+        <a href="https://wa.me/15551234567"
+           target="_blank" rel="noopener noreferrer"
+           class="group inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98]">
+          <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Ask GM via WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: suggestions panel -->
+    <div class="opacity-0-init animate-fade-up delay-5">
+      <div class="bezel-outer">
+        <div class="bezel-inner p-6">
+          <p class="text-xs uppercase tracking-[0.15em] text-slate-400 font-semibold mb-4">
+            What were you looking for? / Que buscabas?
+          </p>
+
+          <!-- Suggestion list -->
+          <ul class="space-y-2" role="list">
+            <li class="suggestion-item">
+              <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-brand-50 transition-colors duration-150 cursor-pointer group">
+                <span class="w-9 h-9 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-brand-600" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 10l7-7 7 7M5 8v9h4v-5h2v5h4V8"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-semibold text-ink group-hover:text-brand-700 transition-colors">Home — Browse listings</p>
+                  <p class="text-xs text-slate-400">Servicios locales en Wisconsin Dells</p>
+                </div>
+                <svg class="w-4 h-4 text-slate-300 group-hover:text-brand-400 ml-auto transition-colors" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li class="suggestion-item">
+              <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-brand-50 transition-colors duration-150 cursor-pointer group">
+                <span class="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-cta-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-semibold text-ink group-hover:text-brand-700 transition-colors">Car Rentals — Renta de autos</p>
+                  <p class="text-xs text-slate-400">Vehiculos disponibles en Dells</p>
+                </div>
+                <svg class="w-4 h-4 text-slate-300 group-hover:text-brand-400 ml-auto transition-colors" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li class="suggestion-item">
+              <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-brand-50 transition-colors duration-150 cursor-pointer group">
+                <span class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-green-600" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M13 5V3M7 5V3M3 9h14"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-semibold text-ink group-hover:text-brand-700 transition-colors">Jobs — Trabajos disponibles</p>
+                  <p class="text-xs text-slate-400">Oportunidades de empleo local</p>
+                </div>
+                <svg class="w-4 h-4 text-slate-300 group-hover:text-brand-400 ml-auto transition-colors" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+            <li class="suggestion-item">
+              <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-brand-50 transition-colors duration-150 cursor-pointer group">
+                <span class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-purple-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2a5 5 0 100 10A5 5 0 0010 2zM3.5 18c0-3.5 3-5 6.5-5s6.5 1.5 6.5 5"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-semibold text-ink group-hover:text-brand-700 transition-colors">List your business / Publicar servicio</p>
+                  <p class="text-xs text-slate-400">Llega a mas clientes en Dells</p>
+                </div>
+                <svg class="w-4 h-4 text-slate-300 group-hover:text-brand-400 ml-auto transition-colors" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              </a>
+            </li>
+          </ul>
+
+          <!-- Divider -->
+          <div class="my-4 border-t border-slate-100"></div>
+
+          <!-- Search hint -->
+          <div class="bg-slate-50 rounded-xl p-4">
+            <p class="text-xs text-slate-500 mb-2 font-medium">Try searching / Intenta buscar:</p>
+            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M15 15l3 3"/></svg>
+              <input
+                type="text"
+                placeholder="mechanics, housing, rides..."
+                class="flex-1 text-sm bg-transparent outline-none text-ink placeholder-slate-400"
+                aria-label="Search listings"
+                onkeydown="if(event.key==='Enter') window.location='/'"
+              />
+            </div>
+            <p class="text-xs text-slate-400 mt-1 italic">Presiona Enter para buscar</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-100 py-5">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-slate-400">&copy; 2026 Bulletin Dells &mdash; Wisconsin Dells, WI</p>
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-xs text-slate-400 hover:text-brand-600 transition-colors cursor-pointer">Home</a>
+        <a href="https://wa.me/15551234567" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-green-600 transition-colors cursor-pointer">WhatsApp GM</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

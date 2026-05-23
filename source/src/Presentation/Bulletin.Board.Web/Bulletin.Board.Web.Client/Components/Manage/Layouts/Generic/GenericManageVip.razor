@@ -1,0 +1,133 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   GenericManageVip — Fallback VIP-tier manage panel for categories without a
+   dedicated layout. Same skeleton as the regular variant + VIP analytics card.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Buttons
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@Listing.CategorySlug"
+                    ActiveTab="overview"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@Listing.CategorySlug"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")"
+                    PhotoCount="@Listing.Photos.Length" />
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_Generic_Overview_Title"]
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            </h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Generic_Vip_Subtitle"]</p>
+        </div>
+        <ManageLinkButton Href="@($"/manage/{Listing.Id}/edit")"
+                          Variant="Primary"
+                          Size="Small"
+                          data-tooltip="@_localizer["Manage_EditWarning"]">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            @_localizer["Manage_EditListing"]
+        </ManageLinkButton>
+    </div>
+
+    @* VIP Analytics row — TODO: API GetGenericAnalyticsAsync *@
+    <section aria-label="Analytics highlights" class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Generic_Stat_Views"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">— </p>
+            <p class="text-[11px] text-muted mt-1">@_localizer["Manage_Generic_Stat_Last30d"]</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Generic_Stat_WhatsApp"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+            <p class="text-[11px] text-muted mt-1">@_localizer["Manage_Generic_Stat_ViaPlatform"]</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Generic_Stat_Rating"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">@Listing.Rating.ToString("F1") <span class="text-base text-amber-400">★</span></p>
+            <p class="text-[11px] text-muted mt-1">@Listing.ReviewCount @_localizer["Manage_Generic_Reviews"]</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Generic_Stat_Photos"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">@Listing.Photos.Length</p>
+            <p class="text-[11px] text-muted mt-1">@_localizer["Manage_Generic_Stat_Approved"]</p>
+        </div>
+    </section>
+
+    @* Listing summary card *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="font-semibold text-ink">@Listing.TitleEn</h3>
+                    <VipBadge />
+                </div>
+                <p class="text-xs text-muted mt-0.5 italic">@Listing.TitleEs</p>
+                @if (!string.IsNullOrWhiteSpace(Listing.Location))
+                {
+                    <p class="text-xs text-muted mt-2 inline-flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        @Listing.Location
+                    </p>
+                }
+                <p class="text-sm text-ink mt-3 leading-relaxed">@Listing.DescriptionEn</p>
+            </div>
+        </div>
+    </section>
+
+    @* Photos preview *@
+    <section class="mb-6">
+        <h3 class="text-sm font-semibold text-ink mb-3">@_localizer["Manage_Generic_Photos"] · @Listing.Photos.Length</h3>
+        @if (Listing.Photos.Length == 0)
+        {
+            <div class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+                <p class="text-sm text-muted">@_localizer["Manage_Generic_NoPhotos"]</p>
+            </div>
+        }
+        else
+        {
+            <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" role="list">
+                @foreach (var photo in Listing.Photos.Take(12))
+                {
+                    <li class="rounded-2xl overflow-hidden border border-slate-100 shadow-soft bg-white">
+                        <div class="aspect-[4/3] bg-slate-100">
+                            <img src="@photo.Url" alt="@photo.AltText" class="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        @_localizer["Manage_Generic_VipFooter"]
+    </div>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+}

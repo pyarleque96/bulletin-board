@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background-color: #F8FAFC;
+      overflow: hidden;
+    }
+
+    /* Dot-grid background pattern */
+    .bg-dots {
+      background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* Radial vignette to fade dots near center */
+    .bg-vignette {
+      background: radial-gradient(ellipse 60% 60% at 50% 50%,
+        transparent 0%,
+        rgba(248, 250, 252, 0.6) 50%,
+        #F8FAFC 100%);
+    }
+
+    /* Orb pulse behind logo */
+    @keyframes orb-pulse {
+      0%   { transform: scale(1);   opacity: 0.18; }
+      50%  { transform: scale(1.35); opacity: 0.28; }
+      100% { transform: scale(1);   opacity: 0.18; }
+    }
+
+    @keyframes orb-pulse-2 {
+      0%   { transform: scale(1);   opacity: 0.10; }
+      50%  { transform: scale(1.6); opacity: 0.18; }
+      100% { transform: scale(1);   opacity: 0.10; }
+    }
+
+    .orb-inner {
+      animation: orb-pulse 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+
+    .orb-outer {
+      animation: orb-pulse-2 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      animation-delay: 0.3s;
+    }
+
+    /* Logo fade-in */
+    @keyframes logo-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-wrap {
+      animation: logo-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Tagline */
+    @keyframes tag-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .tagline {
+      animation: tag-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+    }
+
+    /* Progress bar shimmer (indeterminate) */
+    @keyframes progress-shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    .progress-shimmer-track::after {
+      content: '';
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.7) 40%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(255, 255, 255, 0.7) 60%,
+        transparent 100%
+      );
+      animation: progress-shimmer 1.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+
+    @keyframes progress-fill {
+      0%   { width: 0%; }
+      20%  { width: 35%; }
+      60%  { width: 72%; }
+      85%  { width: 88%; }
+      100% { width: 94%; }
+    }
+
+    .progress-fill {
+      animation: progress-fill 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Bar slide-up */
+    @keyframes bar-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bar-wrap {
+      animation: bar-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+    }
+
+    /* prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div
+  class="bg-dots relative min-h-[100dvh] flex flex-col items-center justify-center"
+  role="status"
+  aria-label="Loading Bulletin Dells — Cargando Bulletin Dells"
+  aria-busy="true"
+>
+  <!-- Vignette overlay -->
+  <div class="bg-vignette absolute inset-0 pointer-events-none"></div>
+
+  <!-- Orb system -->
+  <div class="absolute flex items-center justify-center pointer-events-none" style="width:320px;height:320px;">
+    <!-- Outer orb -->
+    <div
+      class="orb-outer absolute rounded-full"
+      style="width:320px;height:320px;
+             background: radial-gradient(ellipse, rgba(96,165,250,0.22) 0%, rgba(59,130,246,0.08) 60%, transparent 100%);"
+    ></div>
+    <!-- Inner orb -->
+    <div
+      class="orb-inner absolute rounded-full"
+      style="width:200px;height:200px;
+             background: radial-gradient(ellipse, rgba(59,130,246,0.35) 0%, rgba(96,165,250,0.12) 70%, transparent 100%);"
+    ></div>
+  </div>
+
+  <!-- Double-bezel logo card -->
+  <div class="logo-wrap relative z-10 mb-10">
+    <!-- Outer shell -->
+    <div
+      class="flex items-center justify-center"
+      style="
+        padding: 10px;
+        background: rgba(248,250,252,0.7);
+        border-radius: 2rem;
+        ring: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+        backdrop-filter: blur(8px);
+      "
+    >
+      <!-- Inner core -->
+      <div
+        style="
+          padding: 28px 36px;
+          background: white;
+          border-radius: calc(2rem - 6px);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.9), 0 4px 24px rgba(59,130,246,0.08);
+        "
+      >
+        <!-- SVG Logo -->
+        <svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Bulletin Dells">
+          <!-- Map pin mark -->
+          <circle cx="20" cy="18" r="10" fill="#3B82F6" />
+          <circle cx="20" cy="18" r="5" fill="white" />
+          <line x1="20" y1="28" x2="20" y2="40" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" />
+          <!-- Wordmark -->
+          <text x="40" y="32" font-family="DM Sans, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1E293B" letter-spacing="-0.5">Bulletin</text>
+          <text x="138" y="32" font-family="DM Sans, system-ui, sans-serif" font-size="22" font-weight="400" fill="#3B82F6" letter-spacing="-0.5">Dells</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tagline bilingue -->
+  <div class="tagline relative z-10 mb-16 text-center">
+    <p style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#64748B; letter-spacing:0.06em; text-transform:uppercase;">
+      Loading&nbsp;&nbsp;<span style="color:#CBD5E1;">·</span>&nbsp;&nbsp;Cargando
+    </p>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="bar-wrap relative z-10 w-full px-8" style="max-width:340px;">
+    <!-- Track -->
+    <div
+      class="relative overflow-hidden"
+      style="
+        height: 3px;
+        background: #E2E8F0;
+        border-radius: 999px;
+      "
+    >
+      <!-- Fill -->
+      <div
+        class="progress-fill progress-shimmer-track relative overflow-hidden h-full"
+        style="
+          background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
+          border-radius: 999px;
+          width: 0%;
+        "
+      ></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+@* Pager — wrapper around Pagination for use with PagedResultDto<T>.
+   Accepts the paged metadata directly so callers do not need to unpack
+   Page / TotalPages / HasNext / HasPrevious individually.
+   Bilingüe: uses IStringLocalizer when available; fallback strings are EN.
+   Tailwind styled; no render mode (inherits from parent). *@
+
+@using Bulletin.Board.Web.Client.Resources
+@using Microsoft.Extensions.Localization
+
+@if (TotalPages <= 1) { return; }
+
+<div class="mt-8 flex flex-col items-center gap-2">
+
+    @* Page indicator *@
+    <p class="text-sm text-slate-500">
+        @PageLabel
+    </p>
+
+    <nav class="flex items-center gap-1"
+         role="navigation"
+         aria-label="@(_localizer?["aria.pagination"] ?? "Pagination")">
+
+        @* Previous *@
+        <button type="button"
+                class="@NavClass(!HasPrevious)"
+                disabled="@(!HasPrevious)"
+                aria-label="@(_localizer?["pager.previous"] ?? "Previous page")"
+                @onclick="GoPrev">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+
+        @* Page numbers with ellipsis *@
+        @foreach (var n in PageNumbers())
+        {
+            if (n == Ellipsis)
+            {
+                <span class="w-9 h-9 flex items-center justify-center text-slate-400 text-sm select-none"
+                      aria-hidden="true">...</span>
+            }
+            else
+            {
+                <button type="button"
+                        class="@PageClass(n)"
+                        aria-label="@string.Format(_localizer?["pager.page_n"] ?? "Page {0}", n)"
+                        aria-current="@(n == Page ? "page" : null)"
+                        @onclick="() => GoTo(n)">
+                    @n
+                </button>
+            }
+        }
+
+        @* Next *@
+        <button type="button"
+                class="@NavClass(!HasNext)"
+                disabled="@(!HasNext)"
+                aria-label="@(_localizer?["pager.next"] ?? "Next page")"
+                @onclick="GoNext">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+
+    </nav>
+</div>
+
+@code {
+    // ── Parameters ─────────────────────────────────────────────────────────────
+
+    [Parameter] public int  Page        { get; set; } = 1;
+    [Parameter] public int  TotalPages  { get; set; } = 1;
+    [Parameter] public bool HasNext     { get; set; }
+    [Parameter] public bool HasPrevious { get; set; }
+
+    /// <summary>
+    /// Raised when the user clicks a page number or prev/next.
+    /// The integer argument is the requested 1-based page number.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    // ── Services ───────────────────────────────────────────────────────────────
+
+    [Inject] private IStringLocalizer<SharedResource>? _localizer { get; set; }
+
+    // ── Private constants ──────────────────────────────────────────────────────
+
+    private const int Ellipsis = -1;
+
+    // ── Computed ───────────────────────────────────────────────────────────────
+
+    private string PageLabel =>
+        string.Format(
+            _localizer?["pager.page_of"] ?? "Page {0} of {1}",
+            Page, TotalPages);
+
+    // ── Navigation helpers ─────────────────────────────────────────────────────
+
+    private Task GoPrev() => GoTo(Page - 1);
+    private Task GoNext() => GoTo(Page + 1);
+
+    private async Task GoTo(int target)
+    {
+        if (target < 1 || target > TotalPages || target == Page) return;
+        await OnPageChanged.InvokeAsync(target);
+    }
+
+    // ── Page number generation ─────────────────────────────────────────────────
+
+    private List<int> PageNumbers()
+    {
+        var list = new List<int>();
+
+        if (TotalPages <= 7)
+        {
+            for (int i = 1; i <= TotalPages; i++) list.Add(i);
+            return list;
+        }
+
+        const int Window = 2;
+        list.Add(1);
+
+        int start = Math.Max(2, Page - Window);
+        int end   = Math.Min(TotalPages - 1, Page + Window);
+
+        if (start > 2)  list.Add(Ellipsis);
+        for (int i = start; i <= end; i++) list.Add(i);
+        if (end < TotalPages - 1) list.Add(Ellipsis);
+
+        list.Add(TotalPages);
+        return list;
+    }
+
+    // ── CSS helpers ────────────────────────────────────────────────────────────
+
+    private static string NavClass(bool disabled) =>
+        disabled
+            ? "w-9 h-9 rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed flex items-center justify-center"
+            : "w-9 h-9 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center justify-center transition-colors duration-200 cursor-pointer";
+
+    private string PageClass(int n) =>
+        n == Page
+            ? "w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm font-medium cursor-pointer"
+            : "w-9 h-9 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center justify-center text-sm font-medium transition-colors duration-200 cursor-pointer";
+}

@@ -1,0 +1,136 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   RoutesVip (Transportation) — Tabla VIP de rutas con bulk pricing, peak surcharge
+   y night surcharge. Regla #5: edición regresa listing a Pending review.
+
+   Datos: placeholder (single row construida del listing actual + filas vacías).
+   TODO: API GET /api/v1/manage/listings/{id}/routes (BACKEND_AUDIT §1.1).
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Transportation.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-routes"
+      role="tabpanel"
+      aria-labelledby="tab-routes"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_Transport_Routes_Title"]
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">@_localizer["Manage_Transport_Routes_BulkBadge"]</span>
+            </h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Transport_Routes_Subtitle_Vip"]</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <PendingReviewTooltip>
+                <button type="button" class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink inline-flex items-center gap-1.5 cursor-pointer">
+                    @_localizer["Manage_Transport_Routes_ApplyPeakRule"]
+                </button>
+            </PendingReviewTooltip>
+            <PendingReviewTooltip>
+                <button type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    @_localizer["Manage_Transportation_AddRoute"]
+                </button>
+            </PendingReviewTooltip>
+        </div>
+    </div>
+
+    @if (_routes.Count == 0)
+    {
+        <ManageEmptyState Title="@_localizer["Manage_Transport_Routes_Empty_Title"]"
+                          Description="@_localizer["Manage_Transport_Routes_Empty_Description"]" />
+    }
+    else
+    {
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
+                        <tr>
+                            <th class="text-left px-4 py-3">@_localizer["Manage_Transport_Routes_Col_Route"]</th>
+                            <th class="text-left px-4 py-3">@_localizer["Manage_Transport_Routes_Col_Capacity"]</th>
+                            <th class="text-right px-4 py-3">@_localizer["Manage_Transport_Routes_Col_BaseFare"]</th>
+                            <th class="text-right px-4 py-3">@_localizer["Manage_Transport_Routes_Col_PeakPct"]</th>
+                            <th class="text-right px-4 py-3">@_localizer["Manage_Transport_Routes_Col_NightPct"]</th>
+                            <th class="text-right px-4 py-3">@_localizer["Manage_Transport_Routes_Col_Trips30d"]</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach (var r in _routes)
+                        {
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3">
+                                    <p class="font-semibold text-ink">@r.Name</p>
+                                    @if (!string.IsNullOrWhiteSpace(r.Hint))
+                                    {
+                                        <p class="text-[11px] text-muted">@r.Hint</p>
+                                    }
+                                </td>
+                                <td class="px-4 py-3">@r.Capacity</td>
+                                <td class="px-4 py-3 text-right font-semibold tabular-nums">@r.BaseFare</td>
+                                <td class="px-4 py-3 text-right tabular-nums">@r.PeakPct</td>
+                                <td class="px-4 py-3 text-right tabular-nums">@r.NightPct</td>
+                                <td class="px-4 py-3 text-right tabular-nums font-semibold">@r.Trips30d</td>
+                                <td class="px-4 py-3 text-right">
+                                    <PendingReviewTooltip>
+                                        <button type="button" class="text-[11px] text-brand-600 hover:underline cursor-pointer">@_localizer["Manage_Common_Edit"]</button>
+                                    </PendingReviewTooltip>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-muted mt-3">@_localizer["Manage_Transport_Routes_PeakHoursFootnote"]</p>
+    }
+
+    <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        @_localizer["Manage_Transport_Routes_VipFooter"]
+    </div>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private List<RouteRow> _routes = new();
+
+    protected override void OnParametersSet()
+    {
+        // Single seed row from the listing — TODO: replace with API GET /routes.
+        _routes = new List<RouteRow>
+        {
+            new(
+                Name: Listing.TitleEn,
+                Hint: Listing.Location,
+                Capacity: "—",
+                BaseFare: Listing.DailyRate?.ToString("C0") ?? "—",
+                PeakPct: "—",
+                NightPct: "—",
+                Trips30d: "—")
+        };
+    }
+
+    private sealed record RouteRow(
+        string Name,
+        string? Hint,
+        string Capacity,
+        string BaseFare,
+        string PeakPct,
+        string NightPct,
+        string Trips30d);
+}

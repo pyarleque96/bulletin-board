@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Reviews (Regular)
+  =====================================================
+  REGLA #7: Sólo aparecen reviews de usuarios que contactaron por la plataforma y
+  fueron MODERADOS por el GM. Mostramos dos secciones:
+    - Pending GM moderation (visibles sólo al proveedor, no al público)
+    - Published reviews (visibles al público)
+  El proveedor puede responder (su respuesta también va a moderación GM).
+  BINDING:
+    - ReviewDto[]: { Id, AuthorName, Rating(1-5), Comment, CreatedAt, Status: 'PendingGm'|'Published'|'Rejected', GmNote, ProviderReply, ProviderReplyStatus }
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Car Rental · Reviews — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>
+    .manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}
+    .manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}
+    .manage-tab{position:relative}
+    [data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3" aria-label="Breadcrumb"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium" aria-current="page">Dells Auto Rentals</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Auto Rentals · Compact Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist">
+      <div class="flex items-center gap-0">
+        <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+        <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Vehicles</a>
+        <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+        <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+        <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm cursor-pointer">Reviews <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">2</span></span>
+        <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- Rating summary -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center gap-6 flex-wrap">
+      <div>
+        <p class="text-[11px] uppercase tracking-wider text-muted">Public rating<!-- ES: Calificación pública --></p>
+        <div class="flex items-baseline gap-2 mt-1">
+          <span class="text-4xl font-bold text-ink tabular-nums">4.7</span>
+          <span class="text-sm text-muted">/ 5</span>
+        </div>
+        <div class="flex items-center gap-0.5 text-amber-500 mt-1" aria-label="Average rating 4.7 out of 5">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="w-4 h-4 fill-current text-amber-300" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <p class="text-[11px] text-muted mt-1">Based on 23 published reviews</p>
+      </div>
+      <div class="flex-1 min-w-[240px] space-y-1.5" aria-label="Rating distribution">
+        <div class="flex items-center gap-2 text-xs"><span class="w-4 text-muted">5★</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:74%"></div></div><span class="w-6 text-right text-muted tabular-nums">17</span></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-4 text-muted">4★</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:17%"></div></div><span class="w-6 text-right text-muted tabular-nums">4</span></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-4 text-muted">3★</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:8%"></div></div><span class="w-6 text-right text-muted tabular-nums">2</span></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-4 text-muted">2★</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:0%"></div></div><span class="w-6 text-right text-muted tabular-nums">0</span></div>
+        <div class="flex items-center gap-2 text-xs"><span class="w-4 text-muted">1★</span><div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:0%"></div></div><span class="w-6 text-right text-muted tabular-nums">0</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GM moderation rule -->
+  <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200" role="note">
+    <svg class="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <p class="text-xs text-ink leading-relaxed">
+      Only users who actually contacted you through Bulletin Dells can leave a review.
+      <strong>Every review is moderated by the GM</strong> before going public — and so is your reply.
+      <!-- ES: Solo los usuarios que te contactaron por Bulletin Dells pueden dejar una reseña. Cada reseña es moderada por el GM antes de hacerse pública — y tu respuesta también. -->
+    </p>
+  </div>
+
+  <!-- Filter pills -->
+  <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group">
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white" aria-pressed="true">All</button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Pending GM moderation <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 py-0 rounded-full">2</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Published <span class="ml-1 bg-green-100 text-green-800 px-1.5 py-0 rounded-full">23</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">Rejected by GM</button>
+  </div>
+
+  <!-- ===== Pending GM moderation section ===== -->
+  <section class="mb-8">
+    <h2 class="text-sm font-semibold text-ink mb-3 inline-flex items-center gap-2">
+      Pending GM moderation
+      <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Not yet public</span>
+    </h2>
+    <ul class="space-y-3" role="list">
+
+      <li class="bg-white rounded-3xl border border-amber-200 shadow-soft p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">Tarell Quincey</h3>
+              <div class="flex items-center gap-0.5 text-amber-500" aria-label="5 stars">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending GM</span>
+              <span class="text-[11px] text-muted">May 11, 20:47</span>
+            </div>
+            <p class="text-[11px] text-muted mt-1">Rented Honda CR-V · May 3 → May 8</p>
+            <p class="text-sm text-ink mt-2 leading-relaxed">
+              Excellent service! The car was spotless, and pickup at the Dells visitor center was super smooth. Would rent again.
+            </p>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+          <button type="button" class="text-xs text-brand-600 hover:underline font-medium cursor-pointer">+ Reply to this review</button>
+          <p class="text-[11px] text-muted mt-1">Your reply will also be reviewed by the GM before publishing.</p>
+        </div>
+      </li>
+
+      <li class="bg-white rounded-3xl border border-amber-200 shadow-soft p-5">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">Camila Espinoza-Reyes</h3>
+              <div class="flex items-center gap-0.5 text-amber-500" aria-label="3 stars">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current text-slate-200" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg class="w-3.5 h-3.5 fill-current text-slate-200" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending GM</span>
+              <span class="text-[11px] text-muted">May 10, 14:02</span>
+            </div>
+            <p class="text-[11px] text-muted mt-1">Rented Toyota Corolla · Apr 27 → Apr 30</p>
+            <p class="text-sm text-ink mt-2 leading-relaxed">
+              Car worked fine but the AC was weak on the highway. Pickup was 25 min late which made us miss a reservation.
+            </p>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+          <button type="button" class="text-xs text-brand-600 hover:underline font-medium cursor-pointer">+ Reply to this review</button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ===== Published reviews ===== -->
+  <section>
+    <h2 class="text-sm font-semibold text-ink mb-3">Published reviews<!-- ES: Reseñas publicadas --></h2>
+    <ul class="space-y-3" role="list">
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-semibold text-ink">Marcus T. Halverson</h3>
+          <div class="flex items-center gap-0.5 text-amber-500" aria-label="5 stars">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Published</span>
+          <span class="text-[11px] text-muted">Apr 28</span>
+        </div>
+        <p class="text-sm text-ink mt-2 leading-relaxed">Great experience, smooth pickup at Mirror Lake. Honda was newer than expected. Will rent again.</p>
+        <div class="mt-3 pt-3 border-t border-slate-100 bg-slate-50/60 -mx-5 -mb-5 px-5 py-3 rounded-b-3xl">
+          <p class="text-[11px] uppercase tracking-wider text-muted font-semibold">Your reply · published</p>
+          <p class="text-sm text-ink mt-1">Thanks Marcus! Glad to host you next time you visit the Dells.</p>
+        </div>
+      </li>
+
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-semibold text-ink">Esperanza Núñez</h3>
+          <div class="flex items-center gap-0.5 text-amber-500" aria-label="4 stars">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg class="w-3.5 h-3.5 fill-current text-slate-200" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Published</span>
+          <span class="text-[11px] text-muted">Apr 20</span>
+        </div>
+        <p class="text-sm text-ink mt-2 leading-relaxed">Buen servicio, el carro estaba limpio. Tuve que esperar 15 minutos pero todo lo demás muy bien.</p>
+        <button type="button" class="mt-3 text-xs text-brand-600 hover:underline font-medium cursor-pointer">+ Reply</button>
+      </li>
+    </ul>
+  </section>
+
+</main>
+</body>
+</html>

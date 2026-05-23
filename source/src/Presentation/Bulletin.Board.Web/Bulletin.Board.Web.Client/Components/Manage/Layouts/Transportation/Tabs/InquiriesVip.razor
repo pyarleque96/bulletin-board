@@ -1,0 +1,10 @@
+@* Transportation · InquiriesVip — delega en el InquiriesTab compartido (VIP). *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Transportation.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+<InquiriesTab Listing="Listing" IsVip="true" />
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

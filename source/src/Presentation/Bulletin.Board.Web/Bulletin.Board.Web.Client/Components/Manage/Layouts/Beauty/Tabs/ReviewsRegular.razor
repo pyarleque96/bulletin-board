@@ -1,0 +1,63 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ReviewsRegular (Beauty) — Tab Reviews para beauty Regular/Verified.
+   Regla #7: review + reply pasan por moderación del GM. Cada review menciona
+   el servicio específico que el cliente recibió.
+
+   Datos: placeholder hasta los endpoints. Ver BACKEND_AUDIT §1.1.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Beauty.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-reviews"
+      role="tabpanel"
+      aria-labelledby="tab-reviews"
+      tabindex="0">
+
+    @* Summary — TODO: API GET /api/v1/manage/listings/{id}/reviews/summary (BACKEND_AUDIT §1.1). *@
+    <div class="mb-6">
+        <RatingSummaryCard Average="0"
+                           TotalReviews="0"
+                           Distribution="@_emptyDistribution" />
+    </div>
+
+    @* Regla #7 banner — beauty wording (clientes que reservaron). *@
+    <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200" role="note">
+        <svg class="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <p class="text-xs text-ink">@_localizer["Manage_Beauty_Reviews_Banner"]</p>
+    </div>
+
+    @* Pending GM — TODO: API GET /reviews?status=PendingGm (BACKEND_AUDIT §1.1). *@
+    <section class="mb-8">
+        <h2 class="text-sm font-semibold text-ink mb-3 inline-flex items-center gap-2">
+            @_localizer["Manage_Reviews_PendingGm_Title"]
+            <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                @_localizer["Manage_Reviews_NotYetPublic"]
+            </span>
+        </h2>
+        <ManageEmptyState Title="@_localizer["Manage_Reviews_PendingGm_Empty_Title"]"
+                          Description="@_localizer["Manage_Reviews_PendingGm_Empty_Description"]" />
+    </section>
+
+    @* Published — TODO: API GET /reviews?status=Published (BACKEND_AUDIT §1.1). *@
+    <section>
+        <h2 class="text-sm font-semibold text-ink mb-3">@_localizer["Manage_Reviews_Published_Title"]</h2>
+        <ManageEmptyState Title="@_localizer["Manage_Reviews_Published_Empty_Title"]"
+                          Description="@_localizer["Manage_Reviews_Published_Empty_Description"]" />
+
+        @* TODO: API POST /api/v1/manage/listings/{id}/reviews/{reviewId}/reply (BACKEND_AUDIT §1.1).
+           Reply queda en Status=PendingGm hasta moderación (regla #7). *@
+    </section>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private static readonly IReadOnlyDictionary<int, int> _emptyDistribution =
+        new Dictionary<int, int> { [5] = 0, [4] = 0, [3] = 0, [2] = 0, [1] = 0 };
+}

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Bulletin Board – Wisconsin Dells local marketplace">
+  <title>Bulletin Board – Social Share (Dark ink on light surface, 1200x630)</title>
+  <rect width="1200" height="630" fill="#F8FAFC"/>
+  <!-- Dot grid (corkboard whisper) -->
+  <defs>
+    <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#101A3D" opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  <!-- Monogram block on left -->
+  <g transform="translate(120 130) scale(0.7)">
+    <rect x="242" y="86" width="28" height="340" fill="#101A3D"/>
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 242 86 L 156 86 C 100 86, 70 116, 70 166 C 70 216, 100 246, 156 246 L 242 246 Z
+      M 242 120 L 168 120 C 130 120, 110 138, 110 166 C 110 194, 130 212, 168 212 L 242 212 Z
+    "/>
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 242 266 L 146 266 C 86 266, 54 298, 54 346 C 54 394, 86 426, 146 426 L 242 426 Z
+      M 242 300 L 158 300 C 122 300, 100 320, 100 346 C 100 372, 122 392, 158 392 L 242 392 Z
+    "/>
+    <path fill="#F39323" fill-rule="evenodd" d="
+      M 270 86 L 356 86 C 412 86, 442 116, 442 166 C 442 216, 412 246, 356 246 L 270 246 Z
+      M 270 120 L 344 120 C 382 120, 402 138, 402 166 C 402 194, 382 212, 344 212 L 270 212 Z
+    "/>
+    <path fill="#F39323" fill-rule="evenodd" d="
+      M 270 266 L 366 266 C 426 266, 458 298, 458 346 C 458 394, 426 426, 366 426 L 270 426 Z
+      M 270 300 L 354 300 C 390 300, 412 320, 412 346 C 412 372, 390 392, 354 392 L 270 392 Z
+    "/>
+    <circle cx="256" cy="60" r="22" fill="#F39323"/>
+    <circle cx="256" cy="60" r="9" fill="#101A3D" opacity="0.22"/>
+  </g>
+  <!-- Wordmark + tagline on right -->
+  <g transform="translate(540 220)">
+    <text x="0" y="0" font-family="'DM Sans','Inter',system-ui,sans-serif"
+          font-size="72" font-weight="800" fill="#101A3D" letter-spacing="-2">Bulletin Board</text>
+    <text x="0" y="50" font-family="'DM Sans','Inter',system-ui,sans-serif"
+          font-size="22" font-weight="500" fill="#475569" letter-spacing="3">WISCONSIN DELLS · EST. 2024</text>
+    <line x1="0" y1="84" x2="100" y2="84" stroke="#F39323" stroke-width="4"/>
+    <text x="0" y="130" font-family="'DM Sans','Inter',system-ui,sans-serif"
+          font-size="28" font-weight="500" fill="#0F172A">Bilingual · Moderated · Local-first</text>
+    <text x="0" y="166" font-family="'DM Sans','Inter',system-ui,sans-serif"
+          font-size="22" font-weight="400" fill="#64748B">A trust-first marketplace for the Dells</text>
+  </g>
+</svg>

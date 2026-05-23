@@ -1,0 +1,206 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   TransportationManageVip — multi-route VIP panel: KPIs, dynamic pricing
+   widget. Dispatcher tabs vía DynamicComponent. Default tab = "routes": el
+   contenido VIP completo (RoutesVip Tab) reusa la tabla. Mantenemos contenido
+   v2 (KPIs+pricing+lista) inline como default, y Tabs/RoutesVip queda para
+   la sub-ruta /routes explícita.
+
+   Tabs:
+     - routes (default — inline v2 con KPIs + dynamic pricing + lista).
+     - reservations → Tabs/ReservationsRegular (reuso)
+     - reviews      → Tabs/ReviewsRegular      (reuso)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Layouts.Transportation.Tabs
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@HeaderCategorySlug"
+                    ActiveTab="@ResolvedActiveTab"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@(_localizer["Manage_Transportation_CategoryLabel"])"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")" />
+
+@{
+    var (tabType, tabParams) = ResolveTab(ResolvedActiveTab);
+}
+@if (tabType is not null)
+{
+    <DynamicComponent Type="tabType" Parameters="tabParams" />
+}
+else
+{
+    @* Default tab = Routes (v2 VIP content kept inline). *@
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full"
+          id="panel-routes"
+          role="tabpanel"
+          aria-labelledby="tab-routes"
+          tabindex="0">
+
+        @* VIP KPI cards — TODO: API GET /api/v1/listings/{id}/transport-analytics *@
+        <section aria-label="Performance metrics" class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Transportation_Kpi_Occupancy"]</p>
+                <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                <p class="text-[11px] text-muted mt-1">vs prev</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Transportation_Kpi_AvgRevenue"]</p>
+                <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                <p class="text-[11px] text-muted mt-1">incl. surge</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Transportation_Kpi_ActiveRoutes"]</p>
+                <p class="text-2xl font-bold text-ink mt-1 tabular-nums">1</p>
+                <p class="text-[11px] text-muted mt-1">@Listing.TitleEn</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Transportation_Kpi_Rides30d"]</p>
+                <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+                <p class="text-[11px] text-muted mt-1">@_localizer["Manage_Transportation_Kpi_Rides30dHint"]</p>
+            </div>
+        </section>
+
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div>
+                <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Transportation_Routes_Title"]</h2>
+                <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Transportation_Routes_Subtitle_Vip"]</p>
+            </div>
+            <PendingReviewTooltip>
+                <button type="button"
+                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    @_localizer["Manage_Transportation_AddRoute"]
+                </button>
+            </PendingReviewTooltip>
+        </div>
+
+        @* Dynamic pricing widget — TODO: API GET /api/v1/listings/{id}/pricing-bands *@
+        <div class="mb-6 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-ink inline-flex items-center gap-2">
+                        @_localizer["Manage_Transportation_DynamicPricing_Title"]
+                        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+                    </h3>
+                    <p class="text-xs text-muted mt-0.5">@_localizer["Manage_Transportation_DynamicPricing_Subtitle"]</p>
+                </div>
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" aria-label="@_localizer["Manage_Transportation_DynamicPricing_Enable"]" />
+                    <span class="w-10 h-6 bg-slate-200 peer-checked:bg-brand-500 rounded-full relative transition-colors duration-200">
+                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-4"></span>
+                    </span>
+                    <span class="text-xs font-medium text-ink">@_localizer["Manage_Common_Disabled"]</span>
+                </label>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                @foreach (var band in _pricingBands)
+                {
+                    <div class="rounded-2xl border border-slate-100 px-4 py-3">
+                        <p class="text-[11px] uppercase tracking-wider text-muted">@band.Label</p>
+                        <p class="text-lg font-bold text-ink mt-0.5 tabular-nums">×@band.Multiplier.ToString("0.00")</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Routes list *@
+        <ul class="space-y-4" role="list" aria-label="Routes">
+            <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="font-semibold text-ink">@Listing.TitleEn</h3>
+                            @if (Listing.Status == "Approved")
+                            {
+                                <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+                            }
+                        </div>
+                        <p class="text-muted text-xs mt-0.5">@Listing.Location</p>
+                        @if (Listing.DailyRate.HasValue)
+                        {
+                            <p class="text-ink text-sm mt-1 font-medium">@_localizer["Manage_Transportation_Base"] @Listing.DailyRate.Value.ToString("C0")</p>
+                        }
+                    </div>
+                    <div class="flex items-center gap-1 flex-wrap">
+                        <PendingReviewTooltip>
+                            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">@_localizer["Manage_Common_Edit"]</button>
+                        </PendingReviewTooltip>
+                        <PendingReviewTooltip>
+                            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">@_localizer["Manage_Transportation_Deactivate"]</button>
+                        </PendingReviewTooltip>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_Transportation_VipFooter"]
+        </div>
+    </main>
+}
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    /// <summary>
+    /// Default transport VIP = "overview" (contrato canónico). El contenido inline
+    /// (routes KPIs + dynamic pricing) actúa como vista overview hasta que el
+    /// UI/UX entregue un OverviewVip dedicado.
+    /// </summary>
+    private string ResolvedActiveTab => string.IsNullOrEmpty(ActiveTab) ? "overview" : ActiveTab;
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+
+    private string HeaderCategorySlug =>
+        string.Equals(Listing.CategorySlug, "transportation", StringComparison.OrdinalIgnoreCase)
+            ? "transport"
+            : Listing.CategorySlug;
+
+    private readonly PricingBand[] _pricingBands = new[]
+    {
+        new PricingBand("Early (4–7am)",  1.25m),
+        new PricingBand("Day (7am–6pm)",  1.00m),
+        new PricingBand("Evening (6–10pm)", 1.15m),
+        new PricingBand("Night (10pm–4am)", 1.40m),
+    };
+
+    private sealed record PricingBand(string Label, decimal Multiplier);
+
+    private (Type? Type, IDictionary<string, object>? Params) ResolveTab(string tab)
+    {
+        var p = new Dictionary<string, object> { ["Listing"] = Listing };
+
+        return tab switch
+        {
+            "reservations" => (typeof(ReservationsRegular), p),
+            "reviews"      => (typeof(ReviewsRegular),      p),
+            "settings"     => (typeof(SettingsVip),         p),
+            "inquiries"    => (typeof(InquiriesVip),        p),
+            "photos"       => (typeof(Photos),              p),
+            "analytics"    => (typeof(AnalyticsTab),        p),
+
+            // "overview" / "routes" → null (renders inline VIP default with KPIs + dynamic pricing).
+            // For the explicit Tabs/RoutesVip table view, that component is available
+            // for use via direct invocation when bulk pricing UI is needed.
+            _              => (null, null),
+        };
+    }
+}

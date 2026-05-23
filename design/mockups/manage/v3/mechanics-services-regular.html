@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Mechanics · Services (Regular)
+     Tab Services: catálogo de servicios con precio "from" o rango. Regla #5 aplica. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Mechanics · Services — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}[data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">R</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Ramirez Auto Shop</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Ramirez Auto Shop</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Mechanics</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Services <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">12</span></span>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Services offered</h2>
+      <p class="text-sm text-muted mt-0.5">Customers see these in your public listing. Editing any service returns the listing to Pending review.</p>
+    </div>
+    <button data-tooltip="Adding services returns listing to Pending review" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add service
+    </button>
+  </div>
+
+  <!-- Services grid grouped by category -->
+  <section class="mb-6">
+    <h3 class="text-[11px] uppercase tracking-wider text-muted font-semibold mb-3">Routine maintenance</h3>
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3" role="list">
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0"><h4 class="font-semibold text-ink">Oil change + filter</h4><p class="text-[11px] text-muted mt-0.5">Synthetic blend · ~30 min</p></div>
+          <p class="text-sm font-bold text-ink tabular-nums">from $49</p>
+        </div>
+        <div class="flex items-center gap-2 mt-3"><button data-tooltip="Editing returns listing to Pending" class="text-[11px] text-brand-600 hover:underline">Edit</button><button class="text-[11px] text-red-600 hover:underline">Delete</button></div>
+      </li>
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4">
+        <div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><h4 class="font-semibold text-ink">Tire rotation</h4><p class="text-[11px] text-muted mt-0.5">Includes pressure check · ~20 min</p></div><p class="text-sm font-bold text-ink tabular-nums">$28</p></div>
+        <div class="flex items-center gap-2 mt-3"><button data-tooltip="Editing returns listing to Pending" class="text-[11px] text-brand-600 hover:underline">Edit</button><button class="text-[11px] text-red-600 hover:underline">Delete</button></div>
+      </li>
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4">
+        <div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><h4 class="font-semibold text-ink">Battery test + replacement</h4></div><p class="text-sm font-bold text-ink tabular-nums">$95–$180</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="mb-6">
+    <h3 class="text-[11px] uppercase tracking-wider text-muted font-semibold mb-3">Brakes &amp; suspension</h3>
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3" role="list">
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4"><div class="flex items-start justify-between gap-3"><div><h4 class="font-semibold text-ink">Brake pad replacement</h4><p class="text-[11px] text-muted mt-0.5">Front or rear · 1.5h</p></div><p class="text-sm font-bold text-ink tabular-nums">from $185</p></div></li>
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4"><div class="flex items-start justify-between gap-3"><div><h4 class="font-semibold text-ink">Brake fluid flush</h4></div><p class="text-sm font-bold text-ink tabular-nums">$72</p></div></li>
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4"><div class="flex items-start justify-between gap-3"><div><h4 class="font-semibold text-ink">Shock absorber inspection</h4></div><p class="text-sm font-bold text-ink tabular-nums">Free quote</p></div></li>
+    </ul>
+  </section>
+
+  <section>
+    <h3 class="text-[11px] uppercase tracking-wider text-muted font-semibold mb-3">Diagnostics</h3>
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3" role="list">
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4"><div class="flex items-start justify-between gap-3"><div><h4 class="font-semibold text-ink">Pre-purchase inspection</h4><p class="text-[11px] text-muted mt-0.5">120-point check · 2h</p></div><p class="text-sm font-bold text-ink tabular-nums">$140</p></div></li>
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4"><div class="flex items-start justify-between gap-3"><div><h4 class="font-semibold text-ink">Check engine light diagnosis</h4></div><p class="text-sm font-bold text-ink tabular-nums">$85</p></div></li>
+    </ul>
+  </section>
+
+  <p class="text-[11px] text-muted mt-5">Editing any service price returns the listing to Pending review by the GM.</p>
+</main>
+</body>
+</html>

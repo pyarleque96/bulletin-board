@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Transportation · Reviews (Regular) -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Transportation · Reviews — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">J</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Northwoods Rides</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Northwoods Rides · Airport Shuttle</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">Transport</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/routes" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Routes</a>
+      <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Reviews <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">1</span></span>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center gap-6 flex-wrap">
+      <div><p class="text-[11px] uppercase tracking-wider text-muted">Public rating</p><div class="flex items-baseline gap-2 mt-1"><span class="text-4xl font-bold text-ink tabular-nums">4.9</span><span class="text-sm text-muted">/ 5</span></div><p class="text-[11px] text-muted mt-1">Based on 38 reviews</p></div>
+    </div>
+  </section>
+
+  <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200" role="note">
+    <svg class="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <p class="text-xs text-ink">Only riders who booked through Bulletin Dells can review. <strong>Every review and reply is moderated by the GM.</strong></p>
+  </div>
+
+  <section class="mb-8">
+    <h2 class="text-sm font-semibold text-ink mb-3 inline-flex items-center gap-2">Pending GM moderation <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Not yet public</span></h2>
+    <ul class="space-y-3">
+      <li class="bg-white rounded-3xl border border-amber-200 shadow-soft p-5">
+        <div class="flex items-center gap-2 flex-wrap"><h3 class="font-semibold text-ink">Sophia Lindqvist-Park</h3><span class="text-amber-500 text-sm">★★★★★</span><span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending GM</span></div>
+        <p class="text-[11px] text-muted mt-1">Route: <strong>MSN → Dells</strong> · 19:40 pickup · May 13</p>
+        <p class="text-sm text-ink mt-2">Driver was waiting with my name on a sign. Car was clean, conversation in Spanish was a plus.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="text-sm font-semibold text-ink mb-3">Published</h2>
+    <ul class="space-y-3">
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+        <div class="flex items-center gap-2 flex-wrap"><h3 class="font-semibold text-ink">Hiroshi Tanaka-Vega</h3><span class="text-amber-500 text-sm">★★★★★</span><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Published</span><span class="text-[11px] text-muted">Apr 28</span></div>
+        <p class="text-[11px] text-muted mt-1">Route: <strong>Dells → MKE</strong></p>
+        <p class="text-sm text-ink mt-2">On time even at 4am pickup. Driver helped with bags. Made the flight with ease.</p>
+      </li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

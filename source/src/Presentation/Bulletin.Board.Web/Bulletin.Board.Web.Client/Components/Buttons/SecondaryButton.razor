@@ -1,0 +1,56 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+<button
+    type="@Type"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@(Disabled || IsLoading)"
+    aria-disabled="@(Disabled || IsLoading)"
+    aria-busy="@IsLoading">
+    @if (IsLoading)
+    {
+        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>
+    /// "pill" uses rounded-full (default for nav/listing cards).
+    /// "rounded" uses rounded-xl (compact cards inside listings).
+    /// </summary>
+    [Parameter] public string Shape { get; set; } = "pill";
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string RadiusClass => Shape == "rounded" ? "rounded-xl" : "rounded-full";
+
+    private string ComputedClass =>
+        $"flex items-center justify-center gap-1.5 text-brand-600 border border-brand-200 font-medium px-4 py-2 {RadiusClass} " +
+        "transition-colors duration-200 " +
+        "hover:text-brand-800 hover:border-brand-400 " +
+        "active:scale-[0.98] " +
+        "disabled:opacity-50 disabled:cursor-not-allowed " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

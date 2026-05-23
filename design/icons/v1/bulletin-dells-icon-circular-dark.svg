@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Dells">
+  <title>Bulletin Dells – Circular (Dark)</title>
+  <circle cx="256" cy="256" r="256" fill="#0F172A"/>
+  <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-8">
+    <text x="120" y="262" font-size="190" fill="#FFFFFF">B</text>
+    <text x="240" y="412" font-size="190" fill="#F39323">D</text>
+  </g>
+  <circle cx="222" cy="138" r="18" fill="#F39323"/>
+</svg>

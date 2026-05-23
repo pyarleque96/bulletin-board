@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Favicon Ligature (Dark ink, light surface, 16px optimized)</title>
+  <!-- 16px-safe geometry. Only one B is fully rendered + orange dot accent.
+       Stem on the right, bowls open to the left = the navy 'B'.
+       Orange pushpin dot on top = anchor + brand color. -->
+  <rect width="32" height="32" rx="6" ry="6" fill="#FFFFFF"/>
+  <g>
+    <!-- Navy B occupies center -->
+    <rect x="18" y="7" width="2.5" height="20" fill="#101A3D"/>
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 18 7 L 12 7 C 8 7, 6 9, 6 12 C 6 15, 8 17, 12 17 L 18 17 Z
+      M 18 9.5 L 13 9.5 C 10.5 9.5, 9 10.5, 9 12 C 9 13.5, 10.5 14.5, 13 14.5 L 18 14.5 Z
+    "/>
+    <path fill="#101A3D" fill-rule="evenodd" d="
+      M 18 18 L 11 18 C 7 18, 5 20, 5 23 C 5 26, 7 28, 11 28 L 18 28 Z
+      M 18 20.5 L 12 20.5 C 9.5 20.5, 8 21.5, 8 23 C 8 24.5, 9.5 25.5, 12 25.5 L 18 25.5 Z
+    "/>
+    <!-- Orange micro-B suggestion: just the bowls on the right (compressed), preserves BB read -->
+    <path fill="#F39323" d="M 20.5 11 C 24 11, 26 12.5, 26 14.5 C 26 16, 24.5 17, 22 17 L 20.5 17 Z"/>
+    <path fill="#F39323" d="M 20.5 21 C 25 21, 27 22.5, 27 24.5 C 27 26.5, 25 28, 21 28 L 20.5 28 Z"/>
+    <!-- Pushpin -->
+    <circle cx="19" cy="5" r="2" fill="#F39323"/>
+  </g>
+</svg>

@@ -1,0 +1,70 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppTextArea — textarea reutilizable.
+    Soporta: two-way binding, label, placeholder, rows, estado de error.
+    Estilo base: auth-input (mismo look que AppTextInput).
+*@
+
+<div class="@WrapperClass">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@InputId" class="@LabelClass">
+            @Label
+        </label>
+    }
+
+    <textarea id="@InputId"
+              value="@Value"
+              @oninput="OnInput"
+              placeholder="@Placeholder"
+              rows="@Rows"
+              disabled="@Disabled"
+              required="@Required"
+              class="@TextAreaClass"
+              aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+              aria-invalid="@HasError">
+    </textarea>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InputId { get; set; } = "";
+
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public int Rows { get; set; } = 4;
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    [Parameter] public string WrapperClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+
+    [Parameter] public string LabelClass { get; set; } =
+        "block text-white/60 text-xs font-medium mb-1.5 uppercase tracking-wider";
+
+    private string TextAreaClass =>
+        $"auth-input px-4 py-3 resize-y{(HasError ? " error" : "")} {CssClass}".Trim();
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(val);
+    }
+}

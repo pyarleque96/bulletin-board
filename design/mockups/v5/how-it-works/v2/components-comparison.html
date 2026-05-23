@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Components Comparison — Home vs HowItWorks (color / gradient / effect only)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* =========================================================
+     SCOPE: only paint / gradient / shadow / animation deltas.
+     Typography intentionally NOT compared — out of scope per
+     user feedback 2026-05-23.
+     ========================================================= */
+  :root { color-scheme: dark; }
+  body { margin:0; font-family:'DM Sans',system-ui,sans-serif;
+         background:#0b1220; color:#fff; }
+
+  /* ── Dell-landing tokens (canonical / Home) ────────────────── */
+  .dell-landing { background:#050B14; color:#fff; position:relative; isolation:isolate; }
+
+  .dell-landing .glass {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .dell-landing .glass-vip {
+    background: linear-gradient(135deg, rgba(249,115,22,.10), rgba(255,255,255,.04));
+    border: 1px solid rgba(249,115,22,.30);
+    box-shadow: 0 0 0 1px rgba(249,115,22,.10),
+                0 24px 64px -16px rgba(249,115,22,.30);
+    animation: vipBreath 4s ease-in-out infinite;
+  }
+  @keyframes vipBreath {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(249,115,22,.10),
+                           0 24px 64px -16px rgba(249,115,22,.30); }
+    50%      { box-shadow: 0 0 0 1px rgba(249,115,22,.20),
+                           0 28px 72px -14px rgba(249,115,22,.45); }
+  }
+
+  /* ── Buttons (the gradient the user pointed to) ────────────── */
+  .dell-landing .btn-primary,
+  .dell-landing .btn-vip,
+  .dell-landing .btn-ghost {
+    position:relative; overflow:hidden; isolation:isolate;
+    transition: transform 260ms cubic-bezier(0.32,0.72,0,1),
+                box-shadow 260ms ease, filter 260ms ease;
+  }
+  .dell-landing .btn-primary::after,
+  .dell-landing .btn-vip::after {
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background: linear-gradient(120deg, transparent 30%,
+                rgba(255,255,255,0.25) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 700ms cubic-bezier(0.16,1,0.3,1);
+    pointer-events:none;
+  }
+  .dell-landing .btn-primary:hover::after,
+  .dell-landing .btn-vip:hover::after { transform: translateX(120%); }
+  .dell-landing .btn-primary:hover,
+  .dell-landing .btn-vip:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08) saturate(1.10);
+  }
+
+  /* CANONICAL btn-primary: amber → orange */
+  .dell-landing .btn-primary {
+    background: linear-gradient(135deg, #F59E0B, #F97316);
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.30),
+                0 10px 28px -8px rgba(249,115,22,0.45);
+    color:#fff;
+  }
+  .dell-landing .btn-primary:hover {
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.55),
+                0 2px 44px -10px rgba(249,115,22,0.70),
+                0 0 18px rgba(249,115,22,0.40);
+  }
+
+  /* CANONICAL btn-vip: blue → lavender → orange */
+  .dell-landing .btn-vip {
+    background: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%,
+                                 #fb923c 60%, #F97316 100%);
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.40),
+                0 10px 28px -8px rgba(249,115,22,0.50),
+                0 0 22px -4px rgba(96,165,250,0.30);
+    color:#fff;
+  }
+  .dell-landing .btn-vip:hover {
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.60),
+                1px 0px 17px 0px rgba(249,115,22,0.75),
+                0 0 14px rgba(249,115,22,0.45),
+                0 0 20px -8px rgba(96,165,250,0.45);
+  }
+
+  .dell-landing .btn-arrow { transition: transform 260ms cubic-bezier(0.32,0.72,0,1); }
+  .dell-landing .btn-primary:hover .btn-arrow,
+  .dell-landing .btn-vip:hover .btn-arrow { transform: translateX(3px); }
+
+  /* ── Legacy HowItWorks (BEFORE) buttons ───────────────────── */
+  .hiw-btn-primary-old {
+    background:#F97316; color:#fff;
+    box-shadow: 0 6px 18px -6px rgba(249,115,22,.45);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .hiw-btn-primary-old:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -4px rgba(249,115,22,.35);
+  }
+
+  .tier-vip-old {
+    background:#fff;
+    border:1px solid #e2e8f0;
+    box-shadow: 0 0 0 2px rgba(249,115,22,0.30),
+                0 16px 48px -8px rgba(249,115,22,0.12);
+    color:#0F172A;
+  }
+
+  /* Frame chrome */
+  .frame { border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:24px; }
+  .frame-old { background:#F8FAFC; color:#0F172A; }
+  .frame-old-label { background:#fde68a; color:#92400e; }
+  .frame-new-label { background:rgba(249,115,22,.18); color:#fdba74; border:1px solid rgba(249,115,22,.3); }
+  .tag {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 10px; border-radius:9999px;
+    font-size:10px; font-weight:700; letter-spacing:.18em;
+    text-transform:uppercase;
+  }
+  .swatch { width:48px; height:48px; border-radius:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
+  code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size:11px; }
+</style>
+</head>
+<body class="min-h-screen p-6 md:p-12">
+
+<div class="max-w-6xl mx-auto space-y-12">
+
+  <!-- HEADER -->
+  <header class="text-center">
+    <span class="tag frame-new-label">Color · Gradient · Effects only</span>
+    <h1 class="text-3xl md:text-4xl font-black mt-4 tracking-tight">
+      What changes between Home and HowItWorks
+    </h1>
+    <p class="text-white/55 mt-3 max-w-[60ch] mx-auto text-sm leading-relaxed">
+      Typography, spacing and layout stay <strong>identical</strong> to the
+      original HowItWorks page. Only the paint moves: dark OLED palette,
+      the signature <strong>amber-to-orange gradient</strong> on primary CTAs,
+      the multi-stop blue-lavender-orange VIP gradient, plus shimmer sweeps,
+      arrow nudges and the VIP glow aura.
+    </p>
+  </header>
+
+  <!-- 1. btn-primary GRADIENT -->
+  <section>
+    <span class="tag frame-new-label">1 · Primary CTA gradient</span>
+    <h2 class="text-2xl font-bold mt-3 mb-6 tracking-tight">
+      The amber → orange that the user explicitly called out
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- BEFORE -->
+      <div class="frame frame-old">
+        <span class="tag frame-old-label">Before · flat orange</span>
+        <div class="mt-6 flex flex-col items-start gap-4">
+          <button class="hiw-btn-primary-old inline-flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold">
+            Start as a provider
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="swatch" style="background:#F97316"></div>
+            <code>background: #F97316;<br/>box-shadow: 0 6px 18px -6px rgba(249,115,22,.45);</code>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Single flat hue. No shimmer. No hairline border. Reads as "default tailwind orange".</p>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="dell-landing frame">
+        <span class="tag frame-new-label">After · canonical Home gradient</span>
+        <div class="mt-6 flex flex-col items-start gap-4">
+          <a href="#" class="btn-primary inline-flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-bold text-white">
+            Start as a provider
+            <span class="btn-arrow w-6 h-6 rounded-full bg-black/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </a>
+          <div class="flex items-center gap-3">
+            <div class="swatch" style="background:linear-gradient(135deg,#F59E0B,#F97316)"></div>
+            <code class="text-white/80">background: linear-gradient(135deg, #F59E0B, #F97316);<br/>shadow: hairline + diffuse + glow on hover<br/>::after shimmer sweep (700ms)</code>
+          </div>
+          <p class="text-xs text-white/55 mt-2">
+            Amber <code class="text-amber-300">#F59E0B</code> at 0% melts into orange
+            <code class="text-orange-300">#F97316</code> at 100%, with a 1px hairline ring and a
+            soft 28px halo. <em>Hover the button</em> to see the shimmer sweep and
+            the arrow nudge.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. btn-vip multistop -->
+  <section>
+    <span class="tag frame-new-label">2 · VIP CTA · multi-stop gradient</span>
+    <h2 class="text-2xl font-bold mt-3 mb-6 tracking-tight">
+      Reserved for "Apply for VIP" — the premium signal
+    </h2>
+
+    <div class="dell-landing frame">
+      <div class="grid md:grid-cols-[1fr_auto] gap-6 items-center">
+        <div>
+          <a href="#" class="btn-vip inline-flex items-center gap-3 px-7 py-3.5 rounded-full text-sm font-black text-white">
+            Apply for VIP
+            <span class="btn-arrow w-7 h-7 rounded-full bg-black/15 flex items-center justify-center">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+          </a>
+          <p class="text-xs text-white/55 mt-4 max-w-[52ch]">
+            Four-stop gradient: sky blue → lavender → light orange → deep orange.
+            Triple shadow with a sky-blue halo bleeding in from the cool stop.
+            This is the only place in the entire product where blue and lavender appear in a CTA.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="swatch" style="background:linear-gradient(135deg,#60a5fa 0%,#c4b5fd 25%,#fb923c 60%,#F97316 100%)"></div>
+        </div>
+      </div>
+      <div class="mt-6 text-xs text-white/45 leading-relaxed">
+        <code>linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%)</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. VIP tier card glow -->
+  <section>
+    <span class="tag frame-new-label">3 · VIP tier card · breathing glow</span>
+    <h2 class="text-2xl font-bold mt-3 mb-6 tracking-tight">
+      Premium feel comes from the aura, not the border
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- BEFORE -->
+      <div class="frame frame-old">
+        <span class="tag frame-old-label">Before · flat outline glow</span>
+        <div class="tier-vip-old rounded-2xl p-6 mt-5">
+          <span class="tag" style="background:#FFEDD5;color:#9A3412;border:1px solid #FED7AA;">VIP</span>
+          <h3 class="font-black text-xl tracking-tight mt-4">Be unmissable</h3>
+          <p class="text-slate-500 text-xs mt-1">Monthly subscription</p>
+          <ul class="space-y-2 text-xs text-slate-700 mt-4">
+            <li>&#10003; Top of all results</li>
+            <li>&#10003; Premium VIP badge</li>
+            <li>&#10003; Carousel on homepage</li>
+          </ul>
+        </div>
+        <p class="text-xs text-slate-500 mt-3">Static 2px ring + small drop shadow. No animation.</p>
+      </div>
+
+      <!-- AFTER -->
+      <div class="dell-landing frame">
+        <span class="tag frame-new-label">After · breathing OLED halo</span>
+        <div class="glass glass-vip rounded-[2rem] p-6 mt-5">
+          <span class="tag" style="background:rgba(249,115,22,.15);color:#F97316;border:1px solid rgba(249,115,22,.25);">VIP</span>
+          <h3 class="font-black text-white text-xl tracking-tight mt-4">Be unmissable</h3>
+          <p class="text-white/45 text-xs mt-1">Monthly subscription</p>
+          <ul class="space-y-2 text-xs text-white/70 mt-4">
+            <li><span style="color:#F97316;font-weight:700;">&#10003;</span> Top of all results</li>
+            <li><span style="color:#F97316;font-weight:700;">&#10003;</span> Premium VIP badge</li>
+            <li><span style="color:#F97316;font-weight:700;">&#10003;</span> Carousel on homepage</li>
+          </ul>
+          <a href="#" class="btn-vip block text-center w-full text-sm font-black py-3 rounded-full mt-5 text-white">Apply for VIP</a>
+        </div>
+        <p class="text-xs text-white/55 mt-3">
+          Glass surface + 24px 64px halo that breathes (4s loop, opacity 30% → 45%).
+          The orange light is felt before the badge is read.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Animations summary -->
+  <section>
+    <span class="tag frame-new-label">4 · Animations imported from Home</span>
+    <h2 class="text-2xl font-bold mt-3 mb-6 tracking-tight">
+      What moves now in HowItWorks
+    </h2>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="dell-landing frame">
+        <h3 class="font-bold text-white mb-2">Shimmer sweep on hover</h3>
+        <p class="text-xs text-white/60">A diagonal white-25% highlight crosses the button in 700ms with <code>cubic-bezier(0.16,1,0.3,1)</code>. Applies to <code>.btn-primary</code> and <code>.btn-vip</code>.</p>
+      </div>
+      <div class="dell-landing frame">
+        <h3 class="font-bold text-white mb-2">Arrow nudge</h3>
+        <p class="text-xs text-white/60"><code>.btn-arrow</code> inside CTAs translates 3px to the right on hover (260ms spring). Subtle but every CTA in the product does it consistently.</p>
+      </div>
+      <div class="dell-landing frame">
+        <h3 class="font-bold text-white mb-2">VIP halo breathing</h3>
+        <p class="text-xs text-white/60">The <code>.glass-vip</code> card pulses its outer shadow opacity from 30% to 45% on a 4s infinite ease loop. Reduced-motion users see it static.</p>
+      </div>
+      <div class="dell-landing frame">
+        <h3 class="font-bold text-white mb-2">fade-up on scroll</h3>
+        <p class="text-xs text-white/60">Section headers and grids enter with <code>opacity + translateY(24px) + blur(6px)</code> resolving over 800ms when they hit the viewport (IntersectionObserver).</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-xs text-white/40 text-center pt-10 border-t border-white/5">
+    Typography, layout and spacing intentionally not shown. Out of scope.
+  </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Car Rental · Reservations (VIP)
+     Diferencias: vista calendar/list toggle, analytics row, auto-confirm rules, export CSV.
+     Regla #8 igual: WhatsApp + GM copy. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Car Rental · Reservations VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Dells Premium Auto</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Premium Auto · Full Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Vehicles</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Reservations <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">6</span></span>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/analytics" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Analytics <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Active</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">6</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Pending confirmation</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">2</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Avg duration</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">3.4d</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Revenue 30d</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">$14,820</p></div>
+  </section>
+
+  <!-- View toggle + filters + actions -->
+  <div class="flex items-center justify-between gap-3 flex-wrap mb-5">
+    <div class="flex items-center gap-2">
+      <div class="inline-flex rounded-xl bg-slate-100 p-1">
+        <button class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white shadow-sm text-ink">List</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-ink">Calendar</button>
+      </div>
+      <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink">All vehicles</button>
+    </div>
+    <button class="text-xs px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 text-ink inline-flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+  </div>
+
+  <!-- VIP auto-confirm rule card -->
+  <div class="mb-5 bg-white rounded-3xl border border-slate-100 shadow-soft p-4 flex items-start gap-3 flex-wrap">
+    <div class="flex-1 min-w-[240px]">
+      <h3 class="text-sm font-semibold text-ink inline-flex items-center gap-2">Auto-confirm rules <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></h3>
+      <p class="text-[11px] text-muted mt-1">Auto-confirm reservations from customers with at least <strong>2 completed</strong> trips and valid contact info.</p>
+    </div>
+    <label class="inline-flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" checked class="sr-only peer"/>
+      <span class="w-10 h-6 bg-slate-200 peer-checked:bg-brand-500 rounded-full relative transition-colors"><span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span></span>
+      <span class="text-xs font-medium text-ink">Enabled</span>
+    </label>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden">
+    <div class="overflow-x-auto"><table class="w-full text-sm">
+      <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted"><tr>
+        <th class="text-left px-4 py-3">Renter</th><th class="text-left px-4 py-3">Vehicle</th><th class="text-left px-4 py-3">Dates</th><th class="text-left px-4 py-3">Status</th><th class="text-right px-4 py-3">Total</th><th></th>
+      </tr></thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr class="hover:bg-slate-50"><td class="px-4 py-3"><p class="font-semibold text-ink">Camila Espinoza-Reyes</p><p class="text-[11px] text-muted">+1 (608) 555-7204</p></td><td class="px-4 py-3"><p class="text-ink">Tesla Model 3 LR</p></td><td class="px-4 py-3"><p class="text-ink">Jun 12 → Jun 16</p><p class="text-[11px] text-muted">4 days</p></td><td class="px-4 py-3"><span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending</span></td><td class="px-4 py-3 text-right font-bold tabular-nums">$568</td><td class="px-4 py-3"><a href="https://wa.me/16085557204" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></td></tr>
+        <tr class="hover:bg-slate-50"><td class="px-4 py-3"><p class="font-semibold text-ink">Andrés Ruiz-Olvera</p><p class="text-[11px] text-muted">+1 (608) 555-0427</p></td><td class="px-4 py-3"><p class="text-ink">Honda CR-V EX</p></td><td class="px-4 py-3"><p class="text-ink">Jun 1 → Jun 4</p></td><td class="px-4 py-3"><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmed</span></td><td class="px-4 py-3 text-right font-bold tabular-nums">$234</td><td class="px-4 py-3"><a href="https://wa.me/16085550427" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></td></tr>
+        <tr class="hover:bg-slate-50"><td class="px-4 py-3"><p class="font-semibold text-ink">Jaylin Okonkwo</p><p class="text-[11px] text-muted">+1 (414) 209-3781</p></td><td class="px-4 py-3"><p class="text-ink">Ford Escape Hybrid</p></td><td class="px-4 py-3"><p class="text-ink">May 22 → May 25</p></td><td class="px-4 py-3"><span class="text-[10px] uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">In progress</span></td><td class="px-4 py-3 text-right font-bold tabular-nums">$276</td><td class="px-4 py-3"><a href="https://wa.me/14142093781" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></td></tr>
+        <tr class="hover:bg-slate-50"><td class="px-4 py-3"><p class="font-semibold text-ink">Yolanda Ortega-Reyes</p></td><td class="px-4 py-3"><p class="text-ink">Honda CR-V EX</p></td><td class="px-4 py-3"><p class="text-ink">Jun 18 → Jun 22</p></td><td class="px-4 py-3"><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmed</span></td><td class="px-4 py-3 text-right font-bold tabular-nums">$312</td><td class="px-4 py-3"><a href="#" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <p class="text-[11px] text-muted mt-3">GM is copied on every reservation conversation — a safety net for both sides.</p>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Auto-confirm rules, calendar view, CSV export
+  </div>
+</main>
+</body>
+</html>

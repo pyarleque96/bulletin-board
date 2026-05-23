@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manage · Analytics (VIP) — Bulletin Dells</title>
+
+<!--
+─────────────────────────────────────────────────────────────────────────────
+  ANALYTICS TAB (VIP) — Reusable across all categories (housing, beauty,
+  mechanics, transportation, car-rental, jobs).
+
+  Backend (already implemented):
+    GET  /api/v1/manage/listings/{id}/analytics
+         → ListingService.GetAnalyticsAsync
+         Expected DTO (confirm with backend agent):
+           {
+             period:        { from: ISO, to: ISO, label: "Last 30 days" },
+             previousPeriod:{ from: ISO, to: ISO },
+             views:         { total: int, deltaPct: number },          // +/- vs previous period
+             whatsappContacts: { total: int, deltaPct: number },
+             ratings:       { avg: number, count: int,
+                              distribution: { "1": int, "2": int, "3": int, "4": int, "5": int } },
+             funnel:        { views: int, whatsappClicks: int, contactsClosed: int }
+           }
+
+  Visual tokens (consistent with OverviewTab/InquiriesVip):
+    Card surface       → bg-white rounded-3xl border border-slate-100 shadow-soft p-5
+    KPI surface        → bg-white rounded-2xl border border-slate-100 shadow-soft p-4 + .vip-glow
+    Delta positive     → text-emerald-600  with ▲ arrow
+    Delta negative     → text-red-600      with ▼ arrow
+    Delta neutral      → text-muted        with – arrow
+    VIP badge          → .badge-vip (linear-gradient #fb923c → #f97316)
+
+  Blazor port path suggestion:
+    Components/Manage/Layouts/Generic/Tabs/AnalyticsVip.razor
+    (single shared file, parameter ListingDetailDto Listing; no IsVip switch — tab only rendered when tier == VIP)
+
+  Localization keys (EN/ES) marked as {{ Manage_Analytics_<Key> }}.
+─────────────────────────────────────────────────────────────────────────────
+-->
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['"DM Sans"', 'system-ui', 'sans-serif'] },
+        colors: {
+          ink:    '#1E293B',
+          muted:  '#64748B',
+          brand:  { 50:'#EFF6FF', 100:'#DBEAFE', 200:'#BFDBFE', 300:'#93C5FD',
+                    400:'#60A5FA', 500:'#3B82F6', 600:'#2563EB', 700:'#1D4ED8' },
+          accent: { 50:'#FFF7ED', 500:'#F97316', 600:'#EA580C' },
+          surface:'#F8FAFC',
+        },
+        boxShadow: {
+          soft:  '0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.04)',
+          lift:  '0 8px 24px -8px rgba(15,23,42,0.08), 0 2px 6px -2px rgba(15,23,42,0.04)',
+        },
+      }
+    }
+  };
+</script>
+
+<style>
+  html, body { background: #F8FAFC; font-family: 'DM Sans', system-ui, sans-serif; color: #1E293B; }
+
+  /* Brand-consistent VIP gradient (matches OverviewTab) */
+  .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+  .vip-glow  { box-shadow: 0 4px 24px -4px rgba(249,115,22,0.16); }
+
+  /* Bar shimmer for chart loading / empty preview */
+  @keyframes barPulse {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1;   }
+  }
+  .bar-anim { animation: barPulse 2.4s ease-in-out infinite; }
+
+  /* Skeleton shimmer (loading state, hidden by default) */
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .sk {
+    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+    border-radius: 8px;
+  }
+
+  /* Funnel step transition (visual hint, replaced by deterministic widths from API) */
+  .funnel-bar { transition: width .6s cubic-bezier(0.32,0.72,0,1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-anim, .sk { animation: none; }
+    .funnel-bar { transition: none; }
+  }
+</style>
+</head>
+<body class="min-h-[100dvh]">
+
+<!--
+═════════════════════════════════════════════════════════════════════════════
+  Standalone shell — mimics the ManageDetailHeader sticky banner so the
+  designer can preview the tab in context. In Blazor, the tab content
+  starts at <main role="tabpanel" id="panel-analytics"> below.
+═════════════════════════════════════════════════════════════════════════════
+-->
+
+<!-- Sticky breadcrumb + tablist (visual stub, NOT part of the deliverable) -->
+<header class="bg-white border-b border-slate-100 px-4 py-5 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto">
+    <nav class="text-xs text-muted flex items-center gap-1.5">
+      <a href="#" class="hover:text-ink">Manage</a>
+      <span>/</span>
+      <span class="text-ink font-medium truncate">Acme Beauty Salon — Wisconsin Dells</span>
+    </nav>
+    <div class="mt-3 flex items-center gap-3 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Acme Beauty Salon</h1>
+      <span class="badge-vip text-white text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">VIP</span>
+      <span class="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Approved</span>
+    </div>
+    <div class="mt-4 -mb-2 flex items-center gap-1 overflow-x-auto" role="tablist" aria-label="Manage tabs">
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Overview</button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Inquiries</button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Reviews</button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Photos</button>
+      <button class="px-3 py-2 text-sm font-semibold text-ink border-b-2 border-accent-500"
+              role="tab" aria-selected="true" aria-controls="panel-analytics" id="tab-analytics">
+        Analytics
+      </button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Settings</button>
+    </div>
+  </div>
+</header>
+
+<!--
+═════════════════════════════════════════════════════════════════════════════
+  BEGIN TAB CONTENT (port from here)
+═════════════════════════════════════════════════════════════════════════════
+-->
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-analytics"
+      role="tabpanel"
+      aria-labelledby="tab-analytics"
+      tabindex="0">
+
+  <!-- Section header + period selector -->
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+    <div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <h2 class="text-base font-semibold text-ink">
+          <!-- EN: "Performance analytics" / ES: "Analítica de desempeño" -->
+          {{ Manage_Analytics_Title }}
+        </h2>
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+      </div>
+      <p class="text-sm text-muted mt-0.5">
+        <!-- EN: "How your listing is performing in the marketplace." -->
+        <!-- ES: "Cómo se está desempeñando tu anuncio en el mercado." -->
+        {{ Manage_Analytics_Subtitle }}
+      </p>
+    </div>
+
+    <!-- Period selector (deterministic options) -->
+    <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="{{ Manage_Analytics_Period_AriaLabel }}">
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer"
+              data-period="7">
+        <!-- EN: "Last 7 days" / ES: "Últimos 7 días" -->
+        {{ Manage_Analytics_Period_7d }}
+      </button>
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer"
+              aria-pressed="true"
+              data-period="30">
+        <!-- EN: "Last 30 days" / ES: "Últimos 30 días" -->
+        {{ Manage_Analytics_Period_30d }}
+      </button>
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer"
+              data-period="90">
+        <!-- EN: "Last 90 days" / ES: "Últimos 90 días" -->
+        {{ Manage_Analytics_Period_90d }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗
+       ║ 1. PRIMARY KPIs                                                      ║
+       ║   Views total + delta  |  WhatsApp contacts total + delta            ║
+       ║   Avg rating           |  Total contacts closed                      ║
+       ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-label="{{ Manage_Analytics_PrimaryKpis_AriaLabel }}" class="mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+      <!-- KPI: Views -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-[11px] uppercase tracking-wider text-muted font-medium">
+            <!-- EN: "Total views" / ES: "Vistas totales" -->
+            {{ Manage_Analytics_Kpi_Views }}
+          </p>
+          <!-- icon (eye) -->
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <p class="text-2xl font-bold text-ink mt-2 tabular-nums">2,847</p>
+        <p class="text-[11px] mt-1 flex items-center gap-1 text-emerald-600 font-medium">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+          <span class="tabular-nums">+18.4%</span>
+          <span class="text-muted font-normal">
+            <!-- EN: "vs previous period" / ES: "vs período anterior" -->
+            {{ Manage_Analytics_VsPrev }}
+          </span>
+        </p>
+      </div>
+
+      <!-- KPI: WhatsApp contacts -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-[11px] uppercase tracking-wider text-muted font-medium">
+            <!-- EN: "WhatsApp contacts" / ES: "Contactos WhatsApp" -->
+            {{ Manage_Analytics_Kpi_WhatsApp }}
+          </p>
+          <!-- icon (chat bubble) -->
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+        <p class="text-2xl font-bold text-ink mt-2 tabular-nums">142</p>
+        <p class="text-[11px] mt-1 flex items-center gap-1 text-emerald-600 font-medium">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+          <span class="tabular-nums">+9.2%</span>
+          <span class="text-muted font-normal">{{ Manage_Analytics_VsPrev }}</span>
+        </p>
+      </div>
+
+      <!-- KPI: Avg rating -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-[11px] uppercase tracking-wider text-muted font-medium">
+            <!-- EN: "Avg rating" / ES: "Calificación promedio" -->
+            {{ Manage_Analytics_Kpi_AvgRating }}
+          </p>
+          <svg class="w-4 h-4 text-amber-500 fill-amber-500" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <p class="text-2xl font-bold text-ink mt-2 tabular-nums">4.7
+          <span class="text-muted text-sm font-medium">/ 5</span>
+        </p>
+        <p class="text-[11px] text-muted mt-1">
+          <!-- EN: "from 38 approved reviews" / ES: "de 38 reseñas aprobadas" -->
+          {{ Manage_Analytics_Kpi_AvgRating_From }}
+        </p>
+      </div>
+
+      <!-- KPI: Closed contacts (funnel end) -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-[11px] uppercase tracking-wider text-muted font-medium">
+            <!-- EN: "Closed contacts" / ES: "Contactos cerrados" -->
+            {{ Manage_Analytics_Kpi_Closed }}
+          </p>
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <p class="text-2xl font-bold text-ink mt-2 tabular-nums">63</p>
+        <p class="text-[11px] mt-1 flex items-center gap-1 text-red-600 font-medium">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <span class="tabular-nums">-3.1%</span>
+          <span class="text-muted font-normal">{{ Manage_Analytics_VsPrev }}</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗
+       ║ 2. TWO-COLUMN ROW: Rating breakdown   |   Conversion funnel         ║
+       ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+    <!-- ─── 2A. Rating breakdown ────────────────────────────────────────── -->
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
+        <div>
+          <h3 class="text-base font-semibold text-ink">
+            <!-- EN: "Rating distribution" / ES: "Distribución de calificaciones" -->
+            {{ Manage_Analytics_Ratings_Title }}
+          </h3>
+          <p class="text-[11px] text-muted mt-0.5">
+            <!-- EN: "Approved reviews only (Rule #7)" -->
+            <!-- ES: "Solo reseñas aprobadas (Regla #7)" -->
+            {{ Manage_Analytics_Ratings_Subtitle }}
+          </p>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-bold text-ink tabular-nums">4.7</p>
+          <div class="flex items-center gap-0.5" aria-label="4.7 out of 5">
+            <!-- 5 stars filled to 4.7 -->
+            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </div>
+          <p class="text-[11px] text-muted mt-0.5 tabular-nums">38 {{ Manage_Analytics_Ratings_Reviews }}</p>
+        </div>
+      </div>
+
+      <!-- Distribution bars: 5 → 1 stars -->
+      <ul class="space-y-2.5" role="list" aria-label="{{ Manage_Analytics_Ratings_AriaList }}">
+        <!-- 5 stars · 28 -->
+        <li class="flex items-center gap-3">
+          <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">5
+            <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </span>
+          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full bg-amber-400 rounded-full" style="width: 73.7%"></div>
+          </div>
+          <span class="text-xs text-muted tabular-nums w-10 text-right">28</span>
+        </li>
+        <!-- 4 stars · 7 -->
+        <li class="flex items-center gap-3">
+          <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">4
+            <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </span>
+          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full bg-amber-300 rounded-full" style="width: 18.4%"></div>
+          </div>
+          <span class="text-xs text-muted tabular-nums w-10 text-right">7</span>
+        </li>
+        <!-- 3 stars · 2 -->
+        <li class="flex items-center gap-3">
+          <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">3
+            <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </span>
+          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full bg-amber-200 rounded-full" style="width: 5.2%"></div>
+          </div>
+          <span class="text-xs text-muted tabular-nums w-10 text-right">2</span>
+        </li>
+        <!-- 2 stars · 1 -->
+        <li class="flex items-center gap-3">
+          <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">2
+            <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </span>
+          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full bg-slate-300 rounded-full" style="width: 2.6%"></div>
+          </div>
+          <span class="text-xs text-muted tabular-nums w-10 text-right">1</span>
+        </li>
+        <!-- 1 star · 0 -->
+        <li class="flex items-center gap-3">
+          <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">1
+            <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          </span>
+          <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full bg-slate-200 rounded-full" style="width: 0%"></div>
+          </div>
+          <span class="text-xs text-muted tabular-nums w-10 text-right">0</span>
+        </li>
+      </ul>
+
+      <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+        <span class="text-muted">{{ Manage_Analytics_Ratings_Note }}</span>
+        <a href="#" class="text-brand-600 hover:text-brand-700 font-medium">
+          <!-- EN: "View all reviews →" / ES: "Ver todas las reseñas →" -->
+          {{ Manage_Analytics_Ratings_ViewAll }}
+        </a>
+      </div>
+    </section>
+
+    <!-- ─── 2B. Conversion funnel ────────────────────────────────────────── -->
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-ink">
+          <!-- EN: "Conversion funnel" / ES: "Embudo de conversión" -->
+          {{ Manage_Analytics_Funnel_Title }}
+        </h3>
+        <p class="text-[11px] text-muted mt-0.5">
+          <!-- EN: "How visitors turn into contacts" / ES: "Cómo los visitantes se convierten en contactos" -->
+          {{ Manage_Analytics_Funnel_Subtitle }}
+        </p>
+      </div>
+
+      <!-- 3 stages — width % comes from API (computed against stage 1) -->
+      <ol class="space-y-3" role="list">
+        <!-- Stage 1: Views (100%) -->
+        <li>
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-medium text-ink inline-flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+              <!-- EN: "Listing views" / ES: "Vistas del anuncio" -->
+              {{ Manage_Analytics_Funnel_Step1 }}
+            </span>
+            <span class="tabular-nums text-ink font-semibold">2,847</span>
+          </div>
+          <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full rounded-full" style="width: 100%; background: linear-gradient(90deg,#60A5FA,#3B82F6);"></div>
+          </div>
+          <p class="text-[10px] text-muted mt-1">100%</p>
+        </li>
+
+        <!-- Stage 2: WhatsApp clicks (4.99%) -->
+        <li>
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-medium text-ink inline-flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <!-- EN: "WhatsApp clicks" / ES: "Clics en WhatsApp" -->
+              {{ Manage_Analytics_Funnel_Step2 }}
+            </span>
+            <span class="tabular-nums text-ink font-semibold">142</span>
+          </div>
+          <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full rounded-full" style="width: 4.99%; background: linear-gradient(90deg,#34D399,#10B981);"></div>
+          </div>
+          <p class="text-[10px] text-muted mt-1 inline-flex items-center gap-2">
+            <span class="tabular-nums">4.99%</span>
+            <span class="text-emerald-600">·
+              <!-- EN: "of views" / ES: "de las vistas" -->
+              {{ Manage_Analytics_Funnel_OfViews }}
+            </span>
+          </p>
+        </li>
+
+        <!-- Stage 3: Closed contacts (2.21%) -->
+        <li>
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-medium text-ink inline-flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-accent-500"></span>
+              <!-- EN: "Closed contacts" / ES: "Contactos cerrados" -->
+              {{ Manage_Analytics_Funnel_Step3 }}
+            </span>
+            <span class="tabular-nums text-ink font-semibold">63</span>
+          </div>
+          <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+            <div class="funnel-bar h-full rounded-full" style="width: 2.21%; background: linear-gradient(90deg,#FB923C,#F97316);"></div>
+          </div>
+          <p class="text-[10px] text-muted mt-1 inline-flex items-center gap-2">
+            <span class="tabular-nums">2.21%</span>
+            <span class="text-accent-600">·
+              <!-- EN: "44.4% of WhatsApp clicks" / ES: "44.4% de los clics WhatsApp" -->
+              {{ Manage_Analytics_Funnel_OfClicks }}
+            </span>
+          </p>
+        </li>
+      </ol>
+
+      <div class="mt-5 pt-4 border-t border-slate-100">
+        <p class="text-[11px] text-muted leading-relaxed">
+          <!-- EN: "ContactLog and WhatsApp click tracking power this funnel (Rule #8). GM receives an email copy of every interaction." -->
+          <!-- ES: "ContactLog y el tracking de clics WhatsApp alimentan este embudo (Regla #8). El GM recibe copia email de toda interacción." -->
+          {{ Manage_Analytics_Funnel_FooterNote }}
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗
+       ║ 3. SECONDARY CONTEXT CARD (trend hint, full-width)                  ║
+       ║   When backend ships timeseries data, this becomes a real chart.    ║
+       ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
+      <div>
+        <h3 class="text-base font-semibold text-ink">
+          <!-- EN: "Daily activity (preview)" / ES: "Actividad diaria (vista previa)" -->
+          {{ Manage_Analytics_Trend_Title }}
+        </h3>
+        <p class="text-[11px] text-muted mt-0.5">
+          <!-- EN: "Views and contacts over the selected period." -->
+          <!-- ES: "Vistas y contactos durante el período seleccionado." -->
+          {{ Manage_Analytics_Trend_Subtitle }}
+        </p>
+      </div>
+      <!-- Legend -->
+      <div class="flex items-center gap-3 text-[11px] text-muted">
+        <span class="inline-flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-sm bg-brand-500"></span>{{ Manage_Analytics_Trend_Views }}
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-sm bg-accent-500"></span>{{ Manage_Analytics_Trend_Contacts }}
+        </span>
+      </div>
+    </div>
+
+    <!--
+      Visual placeholder bars (pure CSS, not real data).
+      Replace with Chart.js / ApexCharts component or pure-SVG sparkline once
+      backend exposes `analytics?series=views,whatsapp` daily buckets.
+    -->
+    <div class="h-44 flex items-end gap-1 sm:gap-1.5" aria-hidden="true">
+      <!-- 30 bars; heights are visual only -->
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:42%"></div><div class="bg-accent-400 rounded-b" style="height:8%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:58%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:36%"></div><div class="bg-accent-400 rounded-b" style="height:6%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:64%"></div><div class="bg-accent-400 rounded-b" style="height:14%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:48%"></div><div class="bg-accent-400 rounded-b" style="height:10%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:72%"></div><div class="bg-accent-400 rounded-b" style="height:18%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:54%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:38%"></div><div class="bg-accent-400 rounded-b" style="height:8%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:62%"></div><div class="bg-accent-400 rounded-b" style="height:14%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:80%"></div><div class="bg-accent-400 rounded-b" style="height:20%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:46%"></div><div class="bg-accent-400 rounded-b" style="height:10%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:60%"></div><div class="bg-accent-400 rounded-b" style="height:14%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:50%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:34%"></div><div class="bg-accent-400 rounded-b" style="height:6%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:68%"></div><div class="bg-accent-400 rounded-b" style="height:16%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:54%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:42%"></div><div class="bg-accent-400 rounded-b" style="height:8%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:76%"></div><div class="bg-accent-400 rounded-b" style="height:18%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:58%"></div><div class="bg-accent-400 rounded-b" style="height:14%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:88%"></div><div class="bg-accent-400 rounded-b" style="height:24%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:66%"></div><div class="bg-accent-400 rounded-b" style="height:16%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:52%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:48%"></div><div class="bg-accent-400 rounded-b" style="height:10%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:62%"></div><div class="bg-accent-400 rounded-b" style="height:14%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:74%"></div><div class="bg-accent-400 rounded-b" style="height:18%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:56%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:84%"></div><div class="bg-accent-400 rounded-b" style="height:20%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:68%"></div><div class="bg-accent-400 rounded-b" style="height:16%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:50%"></div><div class="bg-accent-400 rounded-b" style="height:12%"></div></div>
+      <div class="flex-1 flex flex-col items-stretch gap-0.5 justify-end"><div class="bar-anim bg-brand-300 rounded-t" style="height:78%"></div><div class="bg-accent-400 rounded-b" style="height:18%"></div></div>
+    </div>
+    <div class="mt-2 flex items-center justify-between text-[10px] text-muted tabular-nums">
+      <span>Apr 16</span>
+      <span>Apr 30</span>
+      <span>May 15</span>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗
+       ║ STATES — Hidden by default. Toggle these classes for QA review.     ║
+       ║   Empty / Loading / Error                                            ║
+       ║   In Blazor: switch on (analytics is null && loading) || error etc. ║
+       ╚══════════════════════════════════════════════════════════════════════╝ -->
+
+  <!-- 4A. EMPTY STATE (no data in selected period) -->
+  <template id="state-empty">
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-8 text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+        <svg class="w-6 h-6 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <h3 class="text-sm font-semibold text-ink">{{ Manage_Analytics_Empty_Title }}</h3>
+      <p class="text-xs text-muted mt-1 max-w-sm mx-auto">
+        <!-- EN: "No analytics data for this period yet. Once visitors view your listing and click WhatsApp, metrics appear here." -->
+        <!-- ES: "Aún no hay datos para este período. Cuando los visitantes vean tu anuncio y hagan clic en WhatsApp, las métricas aparecerán aquí." -->
+        {{ Manage_Analytics_Empty_Description }}
+      </p>
+    </section>
+  </template>
+
+  <!-- 4B. LOADING STATE (skeleton — replace whole panel) -->
+  <template id="state-loading">
+    <section aria-busy="true" role="status" aria-label="{{ Manage_Analytics_Loading_AriaLabel }}">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+          <div class="sk h-3 w-20 mb-3"></div><div class="sk h-7 w-16 mb-2"></div><div class="sk h-3 w-24"></div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+          <div class="sk h-3 w-20 mb-3"></div><div class="sk h-7 w-16 mb-2"></div><div class="sk h-3 w-24"></div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+          <div class="sk h-3 w-20 mb-3"></div><div class="sk h-7 w-16 mb-2"></div><div class="sk h-3 w-24"></div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+          <div class="sk h-3 w-20 mb-3"></div><div class="sk h-7 w-16 mb-2"></div><div class="sk h-3 w-24"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+          <div class="sk h-4 w-40 mb-4"></div>
+          <div class="space-y-3"><div class="sk h-3 w-full"></div><div class="sk h-3 w-5/6"></div><div class="sk h-3 w-3/4"></div><div class="sk h-3 w-2/3"></div></div>
+        </div>
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+          <div class="sk h-4 w-40 mb-4"></div>
+          <div class="space-y-4"><div class="sk h-4 w-full"></div><div class="sk h-4 w-3/4"></div><div class="sk h-4 w-1/2"></div></div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <!-- 4C. ERROR STATE -->
+  <template id="state-error">
+    <section class="bg-red-50 rounded-3xl border border-red-200 p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-white border border-red-200 flex items-center justify-center">
+        <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h3 class="text-sm font-semibold text-ink">{{ Manage_Analytics_Error_Title }}</h3>
+      <p class="text-xs text-muted mt-1 mb-3">{{ Manage_Analytics_Error_Description }}</p>
+      <button type="button" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors">
+        {{ Manage_Common_Retry }}
+      </button>
+    </section>
+  </template>
+
+  <!-- VIP footer note -->
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    <!-- EN: "Analytics is a VIP-only feature. Upgrade other listings to access it." -->
+    <!-- ES: "Analítica es exclusiva VIP. Mejora otros anuncios para acceder." -->
+    {{ Manage_Analytics_VipFooter }}
+  </div>
+</main>
+
+<!--
+═════════════════════════════════════════════════════════════════════════════
+  END TAB CONTENT
+═════════════════════════════════════════════════════════════════════════════
+
+  PORTING NOTES (for Frontend agent):
+
+  1. KPI delta colors are deterministic from API value sign:
+       deltaPct  >  0  → text-emerald-600 + ▲ chevron
+       deltaPct  <  0  → text-red-600     + ▼ chevron
+       deltaPct === 0  → text-muted       + – em-dash
+     In Blazor, extract a <KpiDelta Value="@x" /> helper component.
+
+  2. Rating distribution bar widths come from:
+       widthPct = (count[star] / max(totalCount, 1)) * 100
+     Star colors gradient: 5=amber-400, 4=amber-300, 3=amber-200,
+                          2=slate-300,  1=slate-200 (perceptual hierarchy).
+
+  3. Funnel stage widths are relative to stage 1 (views = 100%).
+     For visual readability, set a minimum width of 4px when count > 0 but
+     percentage is < 0.5% (avoid invisible bars).
+
+  4. Period selector is client-state; on change, refetch
+     /api/v1/manage/listings/{id}/analytics?from=...&to=...
+
+  5. The 30-bar trend chart is a visual placeholder. When backend ships
+     timeseries data, replace with a real component. Keep the same
+     color tokens (brand-500 = views, accent-500 = contacts) for consistency.
+
+  6. Locale: all strings are placeholders {{ Manage_Analytics_<Key> }}.
+     Map them to SharedResource.resx (EN) and SharedResource.es.resx (ES).
+     Spanish strings will run ~30% longer — the layout has been tested with
+     "Distribución de calificaciones" (longer than "Rating distribution")
+     and does not overflow.
+-->
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Category / tab filter pill button from the home-listings page.
+    Supports active/inactive visual states.
+    Used in: category navigation bar, tab lists (role="tab").
+*@
+
+<button
+    type="@Type"
+    role="@Role"
+    aria-selected="@(Role == "tab" ? IsActive.ToString().ToLowerInvariant() : null)"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@Disabled"
+    @attributes="AdditionalAttributes">
+    @if (Icon != null)
+    {
+        <span class="flex-shrink-0" aria-hidden="true">@Icon</span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool IsActive { get; set; } = false;
+
+    /// <summary>ARIA role: "tab" for tablist pills, "button" for filter chips.</summary>
+    [Parameter] public string Role { get; set; } = "button";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string ActiveClass => IsActive
+        ? "bg-ink text-white border-transparent"
+        : "bg-white border-slate-200 text-muted hover:text-ink";
+
+    private string ComputedClass =>
+        $"flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border " +
+        $"transition-[transform,background-color,color,border-color] duration-200 [transition-timing-function:cubic-bezier(0.32,0.72,0,1)] " +
+        $"hover:-translate-y-px " +
+        $"disabled:opacity-50 disabled:cursor-not-allowed " +
+        $"cursor-pointer {ActiveClass} " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled) return;
+        await OnClick.InvokeAsync();
+    }
+}

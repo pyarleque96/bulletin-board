@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>500 — Server Error | Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e3a8a' },
+            cta:   { 400:'#fb923c', 500:'#f97316', 600:'#ea580c' },
+            error: { 50:'#fef2f2', 100:'#fee2e2', 400:'#f87171', 500:'#ef4444', 600:'#dc2626', 700:'#b91c1c' },
+            ink:   '#1e293b',
+            surface: '#f8fafc',
+          },
+          keyframes: {
+            'float': { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+            'fade-up': { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            'spin-slow': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } },
+            'blink': { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.3' } },
+          },
+          animation: {
+            'float': 'float 4s ease-in-out infinite',
+            'fade-up': 'fade-up 0.6s cubic-bezier(0.32,0.72,0,1) forwards',
+            'spin-slow': 'spin-slow 8s linear infinite',
+            'blink': 'blink 1.6s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.22s; }
+    .delay-3 { animation-delay: 0.36s; }
+    .delay-4 { animation-delay: 0.5s; }
+    .opacity-0-init { opacity: 0; }
+
+    /* status indicator dot */
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    /* circuit lines in bg */
+    .circuit-bg {
+      background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+  </style>
+</head>
+<body class="bg-surface circuit-bg min-h-[100dvh] flex flex-col">
+
+  <!-- Nav pill -->
+  <header class="w-full pt-5 px-4 flex justify-center">
+    <nav class="bg-white/92 backdrop-blur-md border border-slate-200/80 rounded-full px-5 py-3 flex items-center gap-5 shadow-[0_2px_16px_-4px_rgba(30,41,59,0.08)]">
+      <a href="/" class="flex items-center gap-2" aria-label="Bulletin Dells home">
+        <div class="w-7 h-7 rounded-lg bg-brand-700 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M3 3h10M3 6h7M3 9h9M3 12h5"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-ink tracking-tight text-sm">Bulletin Dells</span>
+      </a>
+      <div class="w-px h-4 bg-slate-200" aria-hidden="true"></div>
+      <!-- Live status indicator -->
+      <div class="flex items-center gap-1.5">
+        <span class="status-dot bg-error-500 animate-blink" aria-hidden="true"></span>
+        <span class="text-xs text-slate-500">Service disruption</span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main: centered, minimal -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
+
+    <!-- Floating server illustration -->
+    <div class="opacity-0-init animate-fade-up flex justify-center mb-8">
+      <div class="animate-float">
+        <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
+          <!-- Outer circle -->
+          <circle cx="70" cy="70" r="66" fill="#FEF2F2" stroke="#FEE2E2" stroke-width="1.5"/>
+
+          <!-- Server rack body -->
+          <rect x="32" y="35" width="76" height="70" rx="6" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+
+          <!-- Server unit 1 -->
+          <rect x="40" y="44" width="60" height="16" rx="3" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+          <circle cx="48" cy="52" r="3" fill="#EF4444"/>
+          <circle cx="58" cy="52" r="3" fill="#FBBF24"/>
+          <rect x="68" y="48" width="24" height="2.5" rx="1.25" fill="#CBD5E1"/>
+          <rect x="68" y="53" width="16" height="2.5" rx="1.25" fill="#CBD5E1"/>
+
+          <!-- Server unit 2 -->
+          <rect x="40" y="66" width="60" height="16" rx="3" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+          <circle cx="48" cy="74" r="3" fill="#EF4444"/>
+          <circle cx="58" cy="74" r="3" fill="#EF4444"/>
+          <rect x="68" y="70" width="24" height="2.5" rx="1.25" fill="#CBD5E1"/>
+          <rect x="68" y="75" width="18" height="2.5" rx="1.25" fill="#CBD5E1"/>
+
+          <!-- Server unit 3 -->
+          <rect x="40" y="88" width="60" height="10" rx="3" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1"/>
+          <circle cx="48" cy="93" r="2.5" fill="#DC2626"/>
+          <rect x="56" y="90.5" width="36" height="2" rx="1" fill="#FCA5A5"/>
+          <rect x="56" y="94" width="24" height="2" rx="1" fill="#FCA5A5"/>
+
+          <!-- Spinning warning gear -->
+          <g transform="translate(95, 35)">
+            <circle cx="0" cy="0" r="12" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1.5" class="animate-spin-slow" style="transform-origin:95px 35px"/>
+            <text x="0" y="4" font-family="DM Sans,sans-serif" font-size="10" font-weight="700" fill="#D97706" text-anchor="middle">!</text>
+          </g>
+
+          <!-- Error label -->
+          <rect x="30" y="112" width="80" height="14" rx="4" fill="#FEE2E2"/>
+          <text x="70" y="122" font-family="DM Sans,sans-serif" font-size="8" font-weight="700" fill="#DC2626" text-anchor="middle">INTERNAL SERVER ERROR</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Error code -->
+    <p class="opacity-0-init animate-fade-up delay-1 text-xs uppercase tracking-[0.18em] text-error-500 font-semibold mb-3">Error 500</p>
+
+    <!-- Headline -->
+    <h1 class="opacity-0-init animate-fade-up delay-2 text-4xl font-black tracking-tighter text-ink leading-none mb-3">
+      Something broke on our end.
+    </h1>
+    <p class="opacity-0-init animate-fade-up delay-2 text-xl font-medium text-slate-400 mb-5">
+      Algo fallo de nuestro lado.
+    </p>
+
+    <!-- Description -->
+    <p class="opacity-0-init animate-fade-up delay-3 text-base text-slate-500 leading-relaxed max-w-xs mb-2">
+      Our servers hit an unexpected snag. We&rsquo;re on it &mdash; please try again in a moment.
+    </p>
+    <p class="opacity-0-init animate-fade-up delay-3 text-sm text-slate-400 italic mb-8">
+      Nuestros servidores tuvieron un problema. Intentalo de nuevo en un momento.
+    </p>
+
+    <!-- CTAs -->
+    <div class="opacity-0-init animate-fade-up delay-4 flex flex-col sm:flex-row gap-3 mb-8">
+      <!-- Retry -->
+      <button
+        onclick="window.location.reload()"
+        class="group inline-flex items-center gap-2 bg-ink hover:bg-slate-700 text-white font-semibold text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98]">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 10a6 6 0 1 0 1.2-3.6M4 6V10h4"/>
+        </svg>
+        Try again / Reintentar
+      </button>
+      <!-- Go home -->
+      <a href="/"
+         class="group inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98]">
+        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4L4 10l6 6M4 10h12"/></svg>
+        Back to Home
+      </a>
+      <!-- WhatsApp -->
+      <a href="https://wa.me/15551234567"
+         target="_blank" rel="noopener noreferrer"
+         class="group inline-flex items-center gap-2 bg-white hover:bg-green-50 border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98]">
+        <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Report to GM
+      </a>
+    </div>
+
+    <!-- Status note -->
+    <div class="opacity-0-init animate-fade-up delay-4 inline-flex items-center gap-2 bg-error-50 border border-error-100 rounded-full px-4 py-2">
+      <span class="status-dot bg-error-500 animate-blink flex-shrink-0" aria-hidden="true"></span>
+      <span class="text-xs text-error-700 font-medium">Service disruption detected &mdash; our team is aware</span>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-6 text-center">
+    <p class="text-xs text-slate-400">
+      &copy; 2026 Bulletin Dells &mdash; Wisconsin Dells, WI
+      <span class="mx-2 text-slate-300" aria-hidden="true">|</span>
+      Error 500 &mdash; Error interno del servidor
+    </p>
+  </footer>
+
+</body>
+</html>

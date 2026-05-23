@@ -1,0 +1,20 @@
+@* ListingTierDivider — separador visual entre secciones de tier en Browse.
+   Renderiza una línea decorativa que divide visualmente las secciones. *@
+
+<div class="mb-4" role="separator" aria-label="@GetAriaLabel()">
+    <div class="h-px bg-slate-100" aria-hidden="true"></div>
+</div>
+
+@code {
+    /// <summary>
+    /// "SuperDuperVip" | "Vip" | "Verified"
+    /// </summary>
+    [Parameter, EditorRequired] public string TierName { get; set; } = "Verified";
+
+    private string GetAriaLabel() => TierName switch
+    {
+        "SuperDuperVip" => "Super Duper VIP section",
+        "Vip"           => "VIP Providers section",
+        _               => "Verified Providers section"
+    };
+}

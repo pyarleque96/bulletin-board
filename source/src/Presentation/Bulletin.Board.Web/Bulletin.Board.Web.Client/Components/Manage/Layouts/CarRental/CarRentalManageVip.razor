@@ -1,0 +1,75 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   CarRentalManageVip — Container VIP para car-rental. Dispatcher tabs vía
+   DynamicComponent. Reusa los mismos componentes que Regular pero con
+   IsVip=true (KPIs con deltas, tablas densas, analytics, bulk actions).
+
+   Tabs disponibles:
+     - overview     → Tabs/OverviewTab     (IsVip=true)
+     - vehicles     → Tabs/VehiclesTab     (IsVip=true)
+     - reservations → Tabs/ReservationsTab (IsVip=true)
+     - photos       → Tabs/PhotosTab       (IsVip=true)
+     - reviews      → Tabs/ReviewsTab      (IsVip=true)
+     - analytics    (TODO Fase E: page placeholder)
+     - settings     → Tabs/SettingsRegular (mismo layout — VIP no añade campos
+                     adicionales en v3 según mockups)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@Listing.CategorySlug"
+                    ActiveTab="@ResolvedActiveTab"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@(_localizer["Manage_CarRental_CategoryLabel"])"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")"
+                    PhotoCount="@Listing.Photos.Length" />
+
+@{
+    var (tabType, tabParams) = ResolveTab(ResolvedActiveTab);
+}
+<DynamicComponent Type="tabType" Parameters="tabParams" />
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    /// <summary>Default car-rental VIP = "overview".</summary>
+    private string ResolvedActiveTab => string.IsNullOrEmpty(ActiveTab) ? "overview" : ActiveTab;
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+
+    private (Type Type, IDictionary<string, object> Params) ResolveTab(string tab)
+    {
+        var p = new Dictionary<string, object>
+        {
+            ["Listing"] = Listing,
+            ["IsVip"]   = true,
+        };
+
+        return tab switch
+        {
+            "vehicles"     => (typeof(VehiclesTab),       p),
+            "reservations" => (typeof(ReservationsTab),   p),
+            "photos"       => (typeof(PhotosTab),         p),
+            "reviews"      => (typeof(ReviewsTab),        p),
+            "settings"     => (typeof(SettingsVip),
+                                new Dictionary<string, object> { ["Listing"] = Listing }),
+            "analytics"    => (typeof(AnalyticsTab),
+                                new Dictionary<string, object> { ["Listing"] = Listing }),
+
+            _              => (typeof(OverviewTab),       p),
+        };
+    }
+}

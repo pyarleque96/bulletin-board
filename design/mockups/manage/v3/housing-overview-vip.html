@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Housing · Overview (VIP)
+     v3 standalone overview for housing VIP. Complementa housing-manage-vip.html (que en v2
+     mezcla Calendar/Availability). Aquí es overview puro con analytics + recent activity. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Housing · Overview VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}.vip-glow{box-shadow:0 0 0 1px rgba(249,115,22,0.15),0 8px 24px -8px rgba(249,115,22,0.25)}.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">M</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Northwoods Premier Stays</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Northwoods Premier Stays</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">Housing</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+      <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Top Host</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Overview</span>
+      <a href="/manage/{id}/availability" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Availability</a>
+      <a href="/manage/{id}/inquiries" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Inquiries <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span></a>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/analytics" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Analytics <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow"><p class="text-[11px] uppercase tracking-wider text-muted">Views · 30d</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">4,287</p><p class="text-[11px] text-green-700 mt-1">+18.4% vs prev</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow"><p class="text-[11px] uppercase tracking-wider text-muted">Conversion</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">7.2%</p><p class="text-[11px] text-muted mt-1">View → Inquiry</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow"><p class="text-[11px] uppercase tracking-wider text-muted">Avg response</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">1.8h</p><p class="text-[11px] text-muted mt-1">Auto-reply on</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow"><p class="text-[11px] uppercase tracking-wider text-muted">Occupancy</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">82%</p><p class="text-[11px] text-muted mt-1">May 2026</p></div>
+  </section>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <section class="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <h2 class="text-base font-semibold text-ink mb-4">Properties at a glance</h2>
+      <ul class="divide-y divide-slate-100" role="list">
+        <li class="py-3 flex items-center gap-3"><img src="https://picsum.photos/seed/lakefront/120/80" alt="" class="w-16 h-12 rounded-lg object-cover"/><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Lakefront Lodge · 4BR</p><p class="text-[11px] text-muted">Mirror Lake area · $315/night</p></div><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">94% occ.</span></li>
+        <li class="py-3 flex items-center gap-3"><img src="https://picsum.photos/seed/downtown/120/80" alt="" class="w-16 h-12 rounded-lg object-cover"/><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Downtown Loft on Broadway</p><p class="text-[11px] text-muted">Downtown · $148/night</p></div><span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">73% occ.</span></li>
+        <li class="py-3 flex items-center gap-3"><img src="https://picsum.photos/seed/cabin/120/80" alt="" class="w-16 h-12 rounded-lg object-cover"/><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Cabin near Mirror Lake · 2BR</p><p class="text-[11px] text-muted">Mirror Lake · $182/night</p></div><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">88% occ.</span></li>
+      </ul>
+    </section>
+    <aside class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <h2 class="text-base font-semibold text-ink mb-4">Recent activity</h2>
+      <ul class="space-y-3 text-sm" role="list">
+        <li class="flex items-start gap-2.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2"></span><div><p class="text-ink"><strong>7 inquiries</strong> today</p><p class="text-[11px] text-muted">GM copied on all</p></div></li>
+        <li class="flex items-start gap-2.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-2"></span><div><p class="text-ink"><strong>Booking confirmed</strong> · Lakefront Lodge · Jun 14-18</p><p class="text-[11px] text-muted">May 13</p></div></li>
+        <li class="flex items-start gap-2.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2"></span><div><p class="text-ink"><strong>3 photos approved</strong> by GM</p><p class="text-[11px] text-muted">May 12</p></div></li>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Unlimited photos, calendar sync, auto-reply, analytics
+  </div>
+</main>
+</body>
+</html>

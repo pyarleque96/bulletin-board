@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dells Premier Car Rentals — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            soft: '0 4px 24px -4px rgba(30,41,59,0.08)',
+            lift: '0 12px 40px -8px rgba(30,41,59,0.14)',
+            float: '0 24px 64px -12px rgba(30,41,59,0.18)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    .nav-pill {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+    .badge-sdvip { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .sdvip-ring { box-shadow: 0 0 0 2px rgba(234,179,8,0.4), 0 8px 32px -4px rgba(234,179,8,0.2); }
+    .gallery-thumb { transition: opacity 0.2s ease, transform 0.2s ease; cursor: pointer; }
+    .gallery-thumb:hover { opacity: 1 !important; transform: scale(1.02); }
+    .gallery-thumb.active { opacity: 1; box-shadow: 0 0 0 2px #3B82F6; }
+    .btn-wa {
+      background: #22c55e;
+      transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .btn-wa:hover { background: #16a34a; transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(34,197,94,0.4); }
+    .btn-wa:active { transform: scale(0.98); }
+    .sticky-cta {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.96);
+      border-top: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 -8px 32px -4px rgba(30,41,59,0.08);
+    }
+    .rating-fill { background: #f59e0b; }
+    .review-card { transition: box-shadow 0.2s ease; }
+    .review-card:hover { box-shadow: 0 8px 24px -4px rgba(30,41,59,0.10); }
+    .tab-btn { transition: color 0.15s ease, border-color 0.15s ease; }
+    .tab-btn.active { color: #1E293B; border-bottom: 2px solid #3B82F6; font-weight: 600; }
+    /* Waiver modal */
+    .modal-bg { background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <!-- NAVBAR -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center gap-4" aria-label="Main navigation">
+      <a href="landing.html" class="flex items-center gap-2 cursor-pointer flex-shrink-0" aria-label="Bulletin Dells home">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="font-semibold text-ink tracking-tight text-sm hidden sm:block">Bulletin Dells</span>
+      </a>
+      <!-- Breadcrumb nav -->
+      <nav class="hidden md:flex items-center gap-1.5 text-xs text-muted flex-1" aria-label="Breadcrumb">
+        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <a href="home-listings.html" class="hover:text-ink transition-colors duration-150 cursor-pointer">Car Rentals</a>
+        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="text-ink font-medium truncate max-w-[180px]" aria-current="page">Dells Premier Car Rentals</span>
+      </nav>
+      <div class="flex items-center gap-2 ml-auto flex-shrink-0">
+        <button class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="pt-24 pb-32">
+    <div class="max-w-6xl mx-auto px-4">
+
+      <!-- ============================================================
+           HERO: Gallery + Identity
+           ============================================================ -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Gallery (left, spans 2 cols) -->
+        <div class="lg:col-span-2 space-y-3">
+          <!-- Main image -->
+          <div id="gallery-main" class="rounded-3xl overflow-hidden h-72 md:h-96 relative sdvip-ring" role="img" aria-label="Main gallery image: fleet exterior">
+            <img id="gallery-main-img" src="https://picsum.photos/seed/dp-car-main/1200/768" alt="Dells Premier Car Rentals — fleet exterior" class="w-full h-full object-cover" />
+            <div class="absolute top-4 left-4">
+              <span class="inline-flex items-center gap-1.5 badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-soft">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Super Duper VIP
+              </span>
+            </div>
+            <!-- GM-approved photo badge -->
+            <div class="absolute bottom-4 right-4 bg-white/90 text-green-700 text-[10px] font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-soft" aria-label="Photos approved by GM">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Photos approved by GM
+              <!-- ES: Fotos aprobadas por GM -->
+            </div>
+          </div>
+          <!-- Thumbnails -->
+          <div class="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Gallery thumbnails">
+            <button onclick="switchGallery(this, 'dp-car-main', 'fleet exterior')" class="gallery-thumb active flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View fleet exterior photo">
+              <img src="https://picsum.photos/seed/dp-car-main/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this, 'dp-car-2', 'vehicle interior')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View vehicle interior photo">
+              <img src="https://picsum.photos/seed/dp-car-2/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this, 'dp-car-3', 'pickup location')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View pickup location photo">
+              <img src="https://picsum.photos/seed/dp-car-3/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this, 'dp-car-4', 'SUV option')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View SUV option photo">
+              <img src="https://picsum.photos/seed/dp-car-4/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this, 'dp-car-5', 'customer pickup')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View customer pickup photo">
+              <img src="https://picsum.photos/seed/dp-car-5/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Provider identity card (right) -->
+        <div class="flex flex-col gap-4">
+          <!-- Identity -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 flex-1">
+            <!-- Name + rating -->
+            <div class="mb-4">
+              <h1 class="text-2xl font-bold text-ink tracking-tight leading-tight">Dells Premier Car Rentals</h1>
+              <!-- ES: Same name, no translation needed -->
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <div class="flex items-center gap-1" aria-label="Rating: 4.9 out of 5">
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <span class="font-bold text-ink">4.9</span>
+                </div>
+                <a href="#reviews" class="text-xs text-brand-500 hover:text-brand-700 cursor-pointer">127 reviews</a>
+                <!-- ES: 127 opiniones -->
+              </div>
+            </div>
+
+            <!-- Meta row -->
+            <div class="space-y-2.5 mb-5">
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Wisconsin Dells, WI
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                Car Rental
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                English &amp; Spanish / Ingles y Espanol
+              </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 mb-5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Phone Verified
+                <!-- ES: Telefono verificado -->
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                ID / Passport Verified
+                <!-- ES: ID/Pasaporte verificado -->
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2H3v16h5l4 4 4-4h5V2z"/></svg>
+                Social Verified
+              </span>
+            </div>
+
+            <!-- Price range -->
+            <div class="border border-slate-100 rounded-2xl p-4 bg-surface mb-5">
+              <p class="text-xs text-muted uppercase tracking-wider font-semibold mb-2">Starting rates</p>
+              <!-- ES: Tarifas desde -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="text-center">
+                  <p class="text-lg font-bold text-ink">$39</p>
+                  <p class="text-[10px] text-muted">Daily</p>
+                  <!-- ES: Diario -->
+                </div>
+                <div class="text-center border-x border-slate-200">
+                  <p class="text-lg font-bold text-ink">$219</p>
+                  <p class="text-[10px] text-muted">Weekly</p>
+                  <!-- ES: Semanal -->
+                </div>
+                <div class="text-center">
+                  <p class="text-lg font-bold text-ink">$599</p>
+                  <p class="text-[10px] text-muted">Monthly</p>
+                  <!-- ES: Mensual -->
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA — WhatsApp primary -->
+            <button onclick="openWaiverModal()" class="btn-wa w-full flex items-center justify-center gap-2.5 text-white font-semibold py-3.5 rounded-2xl text-sm cursor-pointer" aria-label="Contact provider via WhatsApp">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+              Contact via WhatsApp
+              <!-- ES: Contactar por WhatsApp -->
+              <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </span>
+            </button>
+            <p class="text-center text-[10px] text-muted mt-2">You'll see a quick disclaimer before connecting.</p>
+            <!-- ES: Veras un aviso rapido antes de conectar. -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           TABS: About / Vehicles / Reviews
+           ============================================================ -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main content (left, 2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Tab navigation -->
+          <div class="flex items-center gap-0 border-b border-slate-200 -mx-px" role="tablist">
+            <button id="tab-about" role="tab" aria-selected="true" aria-controls="panel-about" class="tab-btn active px-5 py-3 text-sm cursor-pointer -mb-px" onclick="switchTab('about')">
+              About
+              <!-- ES: Acerca de -->
+            </button>
+            <button id="tab-vehicles" role="tab" aria-selected="false" aria-controls="panel-vehicles" class="tab-btn px-5 py-3 text-sm text-muted cursor-pointer -mb-px" onclick="switchTab('vehicles')">
+              Vehicles
+              <!-- ES: Vehiculos -->
+            </button>
+            <button id="tab-reviews" role="tab" aria-selected="false" aria-controls="panel-reviews" class="tab-btn px-5 py-3 text-sm text-muted cursor-pointer -mb-px flex items-center gap-1.5" onclick="switchTab('reviews')">
+              Reviews
+              <!-- ES: Opiniones -->
+              <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">127</span>
+            </button>
+          </div>
+
+          <!-- PANEL: About -->
+          <div id="panel-about" role="tabpanel" aria-labelledby="tab-about">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 space-y-6">
+              <div>
+                <h2 class="text-base font-semibold text-ink mb-3">About this provider</h2>
+                <!-- ES: Sobre este proveedor -->
+                <p class="text-muted leading-relaxed text-sm">
+                  Dells Premier Car Rentals has been serving Wisconsin Dells and the surrounding area for over 5 years. We specialize in affordable, reliable vehicle rentals for residents, J1 students, seasonal workers, and tourists.
+                </p>
+                <!-- ES: Dells Premier Car Rentals lleva mas de 5 anos sirviendo a Wisconsin Dells y sus alrededores. Nos especializamos en rentas de vehiculos asequibles y confiables para residentes, estudiantes J1, trabajadores de temporada y turistas. -->
+                <p class="text-muted leading-relaxed text-sm mt-3">
+                  Our bilingual team speaks English and Spanish. We offer flexible pick-up options — come to our lot downtown, or we bring the car to you anywhere in Dells. No credit card required — cash and most forms of ID accepted.
+                </p>
+                <!-- ES: Nuestro equipo bilingue habla ingles y espanol. Ofrecemos opciones flexibles de recogida — ven a nuestro lote en el centro, o llevamos el auto hasta ti. No se requiere tarjeta de credito — se acepta efectivo y la mayoria de documentos de identidad. -->
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-ink mb-3">What we offer</h3>
+                <!-- ES: Lo que ofrecemos -->
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm" role="list">
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Daily, weekly &amp; monthly rates
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Free delivery in Dells area
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Compact, sedan, SUV options
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    No credit card required
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Seasonal worker specials
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    EN / ES bilingual support
+                  </li>
+                </ul>
+              </div>
+              <!-- Disclaimer note -->
+              <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                  <strong>Platform disclaimer:</strong> Bulletin Dells connects you with this provider but does not guarantee, endorse, or provide any service. Always confirm terms directly with the provider before payment.
+                  <!-- ES: Aviso de plataforma: Bulletin Dells te conecta con este proveedor pero no garantiza, avala ni presta ningun servicio. Siempre confirma los terminos directamente con el proveedor antes de pagar. -->
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL: Vehicles (hidden by default) -->
+          <div id="panel-vehicles" role="tabpanel" aria-labelledby="tab-vehicles" class="hidden">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+              <h2 class="text-base font-semibold text-ink mb-5">Available vehicles</h2>
+              <!-- ES: Vehiculos disponibles -->
+              <div class="space-y-4">
+                <!-- Vehicle item -->
+                <div class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-brand-200 transition-colors duration-200">
+                  <div class="w-24 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src="https://picsum.photos/seed/vehicle-compact/192/128" alt="Compact car" class="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-ink text-sm">Economy Compact</h3>
+                    <p class="text-muted text-xs mt-0.5">2-4 passengers · Manual / Automatic</p>
+                    <!-- ES: 2-4 pasajeros -->
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="font-bold text-ink">$39<span class="text-xs font-normal text-muted">/day</span></p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-brand-200 transition-colors duration-200">
+                  <div class="w-24 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src="https://picsum.photos/seed/vehicle-sedan/192/128" alt="Full-size sedan" class="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-ink text-sm">Full-Size Sedan</h3>
+                    <p class="text-muted text-xs mt-0.5">4-5 passengers · Automatic · A/C</p>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="font-bold text-ink">$54<span class="text-xs font-normal text-muted">/day</span></p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:border-brand-200 transition-colors duration-200">
+                  <div class="w-24 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src="https://picsum.photos/seed/vehicle-suv/192/128" alt="SUV" class="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-ink text-sm">SUV / Minivan</h3>
+                    <p class="text-muted text-xs mt-0.5">6-7 passengers · Automatic · A/C</p>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="font-bold text-ink">$79<span class="text-xs font-normal text-muted">/day</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL: Reviews -->
+          <div id="panel-reviews" role="tabpanel" aria-labelledby="tab-reviews" class="hidden">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6" id="reviews">
+              <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+                <div>
+                  <h2 class="text-base font-semibold text-ink">Reviews</h2>
+                  <!-- ES: Opiniones -->
+                  <p class="text-xs text-muted mt-0.5">Only from users who contacted this provider via Bulletin Dells.</p>
+                  <!-- ES: Solo de usuarios que contactaron a este proveedor via Bulletin Dells. -->
+                </div>
+                <!-- Rating summary -->
+                <div class="flex items-center gap-4">
+                  <div class="text-center">
+                    <p class="text-3xl font-bold text-ink">4.9</p>
+                    <div class="flex mt-1" aria-label="Average 4.9 stars">
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <p class="text-[10px] text-muted mt-0.5">127 reviews</p>
+                  </div>
+                  <!-- Bar chart -->
+                  <div class="space-y-1 text-[10px] text-muted w-24">
+                    <div class="flex items-center gap-1.5"><span class="w-3">5</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rating-fill rounded-full" style="width:88%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">4</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rating-fill rounded-full" style="width:8%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">3</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rating-fill rounded-full" style="width:2%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">2</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rating-fill rounded-full" style="width:1%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">1</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rating-fill rounded-full" style="width:1%"></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <!-- Review 1 -->
+                <div class="review-card rounded-2xl border border-slate-100 p-4">
+                  <div class="flex items-start gap-3">
+                    <img src="https://picsum.photos/seed/reviewer-castillo/80/80" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="font-semibold text-ink text-sm">Alejandro Castillo</span>
+                        <div class="flex items-center gap-1" aria-label="5 stars">
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                      </div>
+                      <p class="text-[11px] text-muted mt-0.5">J1 Student · June 2025</p>
+                      <p class="text-sm text-muted mt-2 leading-relaxed">Excellent service! They delivered the car right to my dorm. Super easy, no credit card needed. Hablan español, muy recomendado para estudiantes J1.</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- Review 2 -->
+                <div class="review-card rounded-2xl border border-slate-100 p-4">
+                  <div class="flex items-start gap-3">
+                    <img src="https://picsum.photos/seed/reviewer-walsh/80/80" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="font-semibold text-ink text-sm">Brigid Walsh</span>
+                        <div class="flex items-center gap-1" aria-label="5 stars">
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                      </div>
+                      <p class="text-[11px] text-muted mt-0.5">Local resident · March 2025</p>
+                      <p class="text-sm text-muted mt-2 leading-relaxed">Rented an SUV for a family trip. Clean car, fair price, and they were so helpful. Will rent again for sure.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right sidebar: similar / trust -->
+        <div class="space-y-4">
+          <!-- Verification status card -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <h3 class="text-sm font-semibold text-ink mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Verified provider
+              <!-- ES: Proveedor verificado -->
+            </h3>
+            <div class="space-y-3 text-xs text-muted">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                Phone number verified
+                <!-- ES: Numero de telefono verificado -->
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                Government ID verified
+                <!-- ES: ID de gobierno verificado -->
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                Social media verified
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-amber-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                Super Duper VIP status
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 text-[11px] text-muted">
+              Listing approved by GM on Jan 3, 2025
+              <!-- ES: Listing aprobado por el GM el 3 de enero de 2025 -->
+            </div>
+          </div>
+
+          <!-- Similar providers -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <h3 class="text-sm font-semibold text-ink mb-4">Similar providers</h3>
+            <!-- ES: Proveedores similares -->
+            <div class="space-y-3">
+              <a href="#" class="flex items-center gap-3 group cursor-pointer">
+                <div class="w-12 h-9 rounded-lg overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/similar1/96/72" alt="" class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink group-hover:text-brand-600 transition-colors duration-150 truncate">Riverside Auto Rentals</p>
+                  <p class="text-xs text-muted flex items-center gap-1">
+                    <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.7 (49)
+                  </p>
+                </div>
+                <span class="badge-vip text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full flex-shrink-0">VIP</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 group cursor-pointer">
+                <div class="w-12 h-9 rounded-lg overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/similar2/96/72" alt="" class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink group-hover:text-brand-600 transition-colors duration-150 truncate">Lakeview Wheels</p>
+                  <p class="text-xs text-muted flex items-center gap-1">
+                    <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.6 (31)
+                  </p>
+                </div>
+                <span class="badge-vip text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full flex-shrink-0">VIP</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- STICKY CTA mobile (shown only on mobile) -->
+  <div class="sticky-cta fixed bottom-0 left-0 right-0 z-30 px-4 py-4 lg:hidden" role="region" aria-label="Contact action">
+    <button onclick="openWaiverModal()" class="btn-wa w-full flex items-center justify-center gap-2.5 text-white font-semibold py-4 rounded-2xl text-sm cursor-pointer" aria-label="Contact provider via WhatsApp">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+      Contact via WhatsApp
+      <!-- ES: Contactar por WhatsApp -->
+    </button>
+  </div>
+
+  <!-- ============================================================
+       WAIVER MODAL — triggered on first contact attempt
+       ============================================================ -->
+  <div id="waiver-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg px-4" role="dialog" aria-modal="true" aria-labelledby="waiver-title">
+    <div class="bg-white rounded-3xl shadow-float max-w-md w-full p-8">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h2 id="waiver-title" class="text-lg font-bold text-ink">Before you connect</h2>
+        <!-- ES: Antes de conectar -->
+      </div>
+      <p class="text-sm text-muted leading-relaxed mb-4">
+        Bulletin Dells is a <strong class="text-ink">connection platform only</strong>. We connect you with local providers but we do not provide, guarantee, or endorse any service, product, or pricing offered by providers listed on this platform.
+      </p>
+      <!-- ES: Bulletin Dells es una plataforma de conexion unicamente. Te conectamos con proveedores locales pero no prestamos, garantizamos ni avalamos ningun servicio, producto o precio ofrecido por los proveedores en esta plataforma. -->
+      <p class="text-sm text-muted leading-relaxed mb-6">
+        By continuing, you agree to contact the provider directly and confirm all terms before any payment or agreement.
+      </p>
+      <!-- ES: Al continuar, aceptas contactar al proveedor directamente y confirmar todos los terminos antes de cualquier pago o acuerdo. -->
+      <div class="flex flex-col gap-3">
+        <a href="https://wa.me/15715550194?text=Hi%2C+I+found+your+listing+on+Bulletin+Dells." target="_blank" rel="noopener noreferrer" class="btn-wa flex items-center justify-center gap-2.5 text-white font-semibold py-3.5 rounded-2xl text-sm cursor-pointer" onclick="closeWaiverModal()">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+          I understand — open WhatsApp
+          <!-- ES: Entiendo — abrir WhatsApp -->
+        </a>
+        <button onclick="closeWaiverModal()" class="text-sm text-muted hover:text-ink text-center py-2 cursor-pointer transition-colors duration-200">Go back</button>
+        <!-- ES: Volver -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER (compact) -->
+  <footer class="bg-ink text-white/50 py-10 px-4" role="contentinfo">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-brand-500 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="text-white/70 font-medium">Bulletin Dells</span>
+      </div>
+      <p>Platform connects clients with providers. Does not provide services.</p>
+      <!-- ES: La plataforma conecta clientes con proveedores. No presta servicios. -->
+      <div class="flex gap-3">
+        <button class="hover:text-white/80 cursor-pointer">EN</button>
+        <span class="text-white/20">|</span>
+        <button class="hover:text-white/80 cursor-pointer">ES</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      ['about','vehicles','reviews'].forEach(t => {
+        document.getElementById('panel-' + t).classList.add('hidden');
+        const btn = document.getElementById('tab-' + t);
+        btn.classList.remove('active');
+        btn.classList.add('text-muted');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      document.getElementById('panel-' + tab).classList.remove('hidden');
+      const active = document.getElementById('tab-' + tab);
+      active.classList.add('active');
+      active.classList.remove('text-muted');
+      active.setAttribute('aria-selected', 'true');
+    }
+
+    // Gallery switching
+    function switchGallery(btn, seed, alt) {
+      document.querySelectorAll('.gallery-thumb').forEach(t => {
+        t.classList.remove('active');
+        t.classList.add('opacity-70');
+      });
+      btn.classList.add('active');
+      btn.classList.remove('opacity-70');
+      const main = document.getElementById('gallery-main-img');
+      main.src = 'https://picsum.photos/seed/' + seed + '/1200/768';
+      main.alt = 'Dells Premier Car Rentals — ' + alt;
+    }
+
+    // Waiver modal
+    function openWaiverModal() {
+      const m = document.getElementById('waiver-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      // Focus trap
+      m.querySelector('h2').focus();
+    }
+    function closeWaiverModal() {
+      const m = document.getElementById('waiver-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    // Close on backdrop click
+    document.getElementById('waiver-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeWaiverModal();
+    });
+    // Close on Esc
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeWaiverModal();
+    });
+
+    /* NOTE FOR BLAZOR:
+      - Replace tab switching with Blazor component state + conditional @if blocks
+      - Replace gallery switching with @bind:SelectedImageSeed + @onclick callbacks
+      - Replace waiver modal with Blazor modal component; trigger on first contact click per user session
+      - WhatsApp link: generate wa.me deep link from ProviderDto.WhatsAppNumber + pre-filled message
+      - Replace all picsum URLs with actual photos from ListingPhotoDto (GM-approved only: IsPublic = true)
+      - data-binding points: ListingDto.Name, ListingDto.Rating, ListingDto.ReviewCount, ListingDto.Tier,
+        ProviderDto.PhoneVerified, ProviderDto.IdVerified, ProviderDto.SocialVerified
+    */
+  </script>
+</body>
+</html>

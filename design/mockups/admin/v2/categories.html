@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Categories v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 50:'#fff7ed', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc',
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.06)',
+            lift: '0 4px 16px rgba(0,0,0,0.10)',
+            float: '0 8px 32px rgba(0,0,0,0.14)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #f8fafc; }
+    .nav-link { border-bottom: 2px solid transparent; }
+    #cat-modal:not(.hidden) { display: flex; }
+  </style>
+</head>
+<body class="text-ink min-h-screen">
+
+  <!-- TOP NAV -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 flex items-center gap-8 h-16">
+      <a href="dashboard.html" class="flex items-center gap-2.5 flex-shrink-0 cursor-pointer">
+        <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+        </div>
+        <span class="text-sm font-700 text-ink">Bulletin Dells <span class="text-muted font-400">Admin</span></span>
+      </a>
+      <div class="flex items-center gap-6 flex-1">
+        <a href="dashboard.html" class="nav-link text-sm font-500 text-muted cursor-pointer hover:text-brand-600 py-5">Dashboard</a>
+        <a href="listings-queue.html" class="nav-link text-sm font-500 text-muted cursor-pointer hover:text-brand-600 py-5 flex items-center gap-1.5">Listings <span class="bg-yellow-400 text-yellow-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">12</span></a>
+        <a href="reviews-queue.html" class="nav-link text-sm font-500 text-muted cursor-pointer hover:text-brand-600 py-5 flex items-center gap-1.5">Reviews <span class="bg-orange-400 text-orange-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">5</span></a>
+        <a href="providers.html" class="nav-link text-sm font-500 text-muted cursor-pointer hover:text-brand-600 py-5">Providers</a>
+        <a href="categories.html" class="nav-link text-sm font-500 cursor-pointer py-5 text-brand-600 border-b-2 border-brand-600">Categories</a>
+      </div>
+      <div class="w-8 h-8 rounded-full bg-brand-700 flex items-center justify-center text-xs font-700 text-white cursor-pointer">GM</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-700 text-ink tracking-tight">Categories</h1>
+        <p class="text-sm text-muted mt-1">9 predefined categories · Providers cannot suggest or create categories</p>
+      </div>
+      <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="flex items-center gap-2 bg-brand-600 text-white text-sm font-600 px-5 py-2.5 rounded-xl cursor-pointer hover:bg-brand-700 transition-colors shadow-lift active:scale-95">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        New Category
+      </button>
+    </div>
+
+    <!-- Info card -->
+    <div class="bg-brand-50 border border-brand-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
+      <svg class="w-5 h-5 text-brand-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <p class="text-sm text-brand-800">Categories control how listings are organized across the marketplace. They appear in the top navigation, search filters, and listing creation forms.</p>
+    </div>
+
+    <!-- Table view for v2 -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-lift overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="text-left text-xs font-600 text-muted uppercase tracking-wider px-6 py-3.5 w-12"></th>
+            <th class="text-left text-xs font-600 text-muted uppercase tracking-wider px-4 py-3.5">Name (EN)</th>
+            <th class="text-left text-xs font-600 text-muted uppercase tracking-wider px-4 py-3.5">Name (ES)</th>
+            <th class="text-left text-xs font-600 text-muted uppercase tracking-wider px-4 py-3.5">Slug</th>
+            <th class="text-left text-xs font-600 text-muted uppercase tracking-wider px-4 py-3.5">Active Listings</th>
+            <th class="text-right text-xs font-600 text-muted uppercase tracking-wider px-6 py-3.5">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-brand-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Car Rental</td>
+            <td class="px-4 py-4 text-sm text-muted">Renta de Autos</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">car-rental</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">8</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors" aria-label="Edit">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors" aria-label="Delete">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Housing</td>
+            <td class="px-4 py-4 text-sm text-muted">Vivienda / Cuartos</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">housing</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">14</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-pink-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Beauty</td>
+            <td class="px-4 py-4 text-sm text-muted">Belleza / Estética</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">beauty</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">11</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Car Repair</td>
+            <td class="px-4 py-4 text-sm text-muted">Mecánicos / Talleres</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">car-repair</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">6</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Rides to Airport</td>
+            <td class="px-4 py-4 text-sm text-muted">Transporte al Aeropuerto</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">rides-airport</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">5</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Jobs</td>
+            <td class="px-4 py-4 text-sm text-muted">Empleos / Trabajos</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">jobs</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">9</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50 transition-colors group">
+            <td class="px-6 py-4"><div class="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center"><svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div></td>
+            <td class="px-4 py-4 text-sm font-600 text-ink">Food</td>
+            <td class="px-4 py-4 text-sm text-muted">Comida / Restaurantes</td>
+            <td class="px-4 py-4 text-xs font-mono text-slate-500 bg-slate-50 rounded-lg px-3 py-1 inline-block">food</td>
+            <td class="px-4 py-4"><span class="text-sm font-600 text-ink">7</span></td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="text-xs font-500 text-brand-600 border border-brand-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-brand-50 transition-colors">Edit</button>
+                <button class="text-xs font-500 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- Add row -->
+      <div class="border-t border-dashed border-slate-200 px-6 py-3">
+        <button onclick="document.getElementById('cat-modal').classList.remove('hidden')" class="flex items-center gap-2 text-sm text-brand-600 font-500 hover:text-brand-700 cursor-pointer transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Add new category
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL -->
+  <div id="cat-modal" class="hidden fixed inset-0 bg-ink/50 z-50 items-center justify-center" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-float p-6 w-full max-w-md mx-4">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-700 text-ink">New Category</h3>
+        <button onclick="document.getElementById('cat-modal').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 cursor-pointer" aria-label="Close">
+          <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-500 text-ink mb-1.5 block" for="v2-cat-en">Name (English) *</label>
+            <input id="v2-cat-en" type="text" placeholder="e.g. Car Rental" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+          <div>
+            <label class="text-xs font-500 text-ink mb-1.5 block" for="v2-cat-es">Name (Spanish) *</label>
+            <input id="v2-cat-es" type="text" placeholder="e.g. Renta de Autos" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-500 text-ink mb-1.5 block" for="v2-slug">Slug *</label>
+          <input id="v2-slug" type="text" placeholder="car-rental" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          <p class="text-[11px] text-muted mt-1">Lowercase, hyphens only. Auto-filled from English name.</p>
+        </div>
+        <div>
+          <label class="text-xs font-500 text-ink mb-1.5 block" for="v2-icon">Icon name (optional)</label>
+          <input id="v2-icon" type="text" placeholder="truck, home, scissors..." class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="document.getElementById('cat-modal').classList.add('hidden')" class="flex-1 border border-slate-200 text-sm font-500 text-muted py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">Cancel</button>
+        <button class="flex-1 bg-brand-600 text-white text-sm font-700 py-2.5 rounded-xl cursor-pointer hover:bg-brand-700 transition-colors">Create Category</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

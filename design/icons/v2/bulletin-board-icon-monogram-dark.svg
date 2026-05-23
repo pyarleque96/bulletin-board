@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Monogram BB (Dark)</title>
+  <rect width="512" height="512" fill="#0F172A"/>
+  <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-8">
+    <text x="48" y="370" font-size="340" fill="#FFFFFF">B</text>
+    <text x="272" y="370" font-size="340" fill="#F39323">B</text>
+  </g>
+  <rect x="260" y="160" width="4" height="200" rx="2" fill="#FFFFFF" opacity="0.22"/>
+  <circle cx="262" cy="130" r="14" fill="#F39323"/>
+</svg>

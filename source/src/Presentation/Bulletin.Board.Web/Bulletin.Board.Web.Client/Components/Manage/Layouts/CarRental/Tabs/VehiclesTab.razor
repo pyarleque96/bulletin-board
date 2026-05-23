@@ -1,0 +1,110 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   VehiclesTab (CarRental) — Tab Vehicles compartido Regular/VIP.
+     - Regular: card grid (slots limitados, "X slots remaining"), VIP upsell.
+     - VIP:     tabla con columnas Vehicle / Status / Price/day / Utilization /
+                Revenue 30d / Actions. "Bulk pricing", "Unlimited fleet".
+
+   Datos vienen del VehicleService que ya consume la página /vehicles.
+   Aquí el contenido es presentacional — placeholder hasta que el padre o el
+   resolver delegue datos reales (ver TODO).
+
+   Reglas:
+     #5 — PendingReviewTooltip en CTA Edit (Editing returns listing to Pending).
+   TODO: API GET /api/v1/listings/{id}/vehicles (paged) — ya implementado en VehicleService.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-vehicles"
+      role="tabpanel"
+      aria-labelledby="tab-vehicles"
+      tabindex="0">
+
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_CarRental_Vehicles_Title"]
+                @if (IsVip)
+                {
+                    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+                }
+            </h2>
+            <p class="text-sm text-muted mt-0.5">
+                @(IsVip
+                    ? _localizer["Manage_CarRental_Vehicles_Subtitle_Vip"]
+                    : _localizer["Manage_CarRental_Vehicles_Subtitle_Regular"])
+            </p>
+        </div>
+        <PendingReviewTooltip>
+            <a href="@($"/manage/{Listing.Id}/vehicles?new")"
+               class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold cursor-pointer no-underline transition-colors duration-150">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                @_localizer["Manage_CarRental_AddVehicle"]
+            </a>
+        </PendingReviewTooltip>
+    </div>
+
+    @if (IsVip)
+    {
+        @* VIP: table view with utilization + revenue. *@
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-muted">
+                        <tr>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_VehiclesTable_Col_Vehicle"]</th>
+                            <th class="px-4 py-3 text-left">@_localizer["Manage_CarRental_VehiclesTable_Col_Status"]</th>
+                            <th class="px-4 py-3 text-right">@_localizer["Manage_CarRental_VehiclesTable_Col_PricePerDay"]</th>
+                            <th class="px-4 py-3 text-right">@_localizer["Manage_CarRental_VehiclesTable_Col_Utilization"]</th>
+                            <th class="px-4 py-3 text-right">@_localizer["Manage_CarRental_VehiclesTable_Col_Revenue30d"]</th>
+                            <th class="px-4 py-3 text-right">@_localizer["Manage_Common_Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-muted text-xs">
+                                @_localizer["Manage_CarRental_Vehicles_TableEmpty"]
+                                @* TODO: API GET /api/v1/listings/{id}/vehicles?withAnalytics=true *@
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <p class="text-[11px] text-muted mt-3 leading-relaxed">@_localizer["Manage_CarRental_Vehicles_VipFootnote"]</p>
+
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_CarRental_VipFooter_Vehicles"]
+        </div>
+    }
+    else
+    {
+        @* Regular: card grid placeholder. *@
+        <ManageEmptyState Title="@_localizer["Manage_CarRental_Vehicles_Empty_Title"]"
+                          Description="@_localizer["Manage_CarRental_Vehicles_Empty_Description"]" />
+
+        <div class="mt-8">
+            <VipUpsellBanner Tier="@Listing.Tier"
+                             Title="@(_localizer["Manage_CarRental_Vehicles_VipUpsell_Title"])">
+                <p class="text-sm text-white/90 mt-1">@_localizer["Manage_CarRental_Vehicles_VipUpsell_Body"]</p>
+            </VipUpsellBanner>
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public bool IsVip { get; set; }
+}

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Overview (Regular)
+  =====================================================
+  Tier: Regular  ·  Active tab: Overview
+  BINDING:
+    - ListingSummaryDto: TitleEn, TitleEs, Status, Tier, CreatedAt, Slug
+    - QuickStatsDto: VehicleCount, ActiveReservations, OpenInquiries, PhotoPublicCount, PhotoPendingCount
+    - LatestActivityDto[]: { Type: 'inquiry'|'reservation'|'gm_note', Title, At }
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Car Rental · Overview — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c'}, ink:'#0f172a', muted:'#64748b' },
+      fontFamily: { sans:['"DM Sans"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+    } } };
+  </script>
+  <style>
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    [data-tooltip]{position:relative}
+    [data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s ease;z-index:50}
+    [data-tooltip]:hover::after{opacity:1}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3" aria-label="Breadcrumb">
+      <a href="/manage" class="hover:text-ink cursor-pointer">My Listings<!-- ES: Mis Anuncios --></a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium truncate max-w-[260px]" aria-current="page">Dells Auto Rentals · Compact Fleet</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-lg font-bold text-ink leading-tight">Dells Auto Rentals · Compact Fleet</h1>
+            <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+            <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+          </div>
+          <p class="text-xs text-muted mt-0.5">Car rental <span class="text-slate-300 mx-1">·</span> Listed since Jan 2026</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="/listing/dells-auto-rentals" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs text-ink hover:border-slate-300 cursor-pointer no-underline">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Public view<!-- ES: Ver público -->
+        </a>
+        <a href="/manage/{id}/edit" data-tooltip="Editing sends listing back to Pending review" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer no-underline">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit listing<!-- ES: Editar -->
+        </a>
+      </div>
+    </div>
+
+    <!-- TABS (car-rental) -->
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections">
+      <div class="flex items-center gap-0">
+        <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview<!-- ES: Resumen -->
+        </span>
+        <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          Vehicles <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">5</span>
+        </a>
+        <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Reservations <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Photos <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">12</span>
+        </a>
+        <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Reviews <!-- ES: Reseñas -->
+        </a>
+        <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/></svg>
+          Settings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- Quick stats — sin deltas (Regular no tiene histórico) -->
+  <section aria-label="Quick stats" class="mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Vehicles<!-- ES: Vehículos --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">5</p>
+        <p class="text-[11px] text-muted mt-1">2 available now</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Active reservations<!-- ES: Reservas activas --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">3</p>
+        <p class="text-[11px] text-amber-700 mt-1">1 needs your confirmation</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Open inquiries<!-- ES: Consultas abiertas --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">2</p>
+        <p class="text-[11px] text-muted mt-1">Reply within 24h</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Public photos<!-- ES: Fotos públicas --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">8 <span class="text-muted text-sm font-medium">/ 12</span></p>
+        <p class="text-[11px] text-muted mt-1">4 pending GM review</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIP upsell -->
+  <section class="mb-8 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-5 flex items-start gap-4 flex-wrap">
+    <div class="flex-1 min-w-[240px]">
+      <p class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold inline-block" style="background:linear-gradient(135deg,#fb923c,#f97316);">VIP</p>
+      <h3 class="text-base font-semibold text-ink mt-2">Unlock analytics, unlimited photos & top placement</h3>
+      <!-- ES: Desbloquea analytics, fotos ilimitadas y posición destacada -->
+      <p class="text-sm text-muted mt-1">VIP listings rank higher and receive on average 3.2× more inquiries.</p>
+    </div>
+    <a href="/account/upgrade" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink text-white text-xs font-semibold no-underline cursor-pointer hover:bg-slate-800">
+      Upgrade to VIP<!-- ES: Pasar a VIP -->
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </section>
+
+  <!-- Two-column: Recent activity + Quick actions -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <section class="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-ink">Recent activity<!-- ES: Actividad reciente --></h2>
+        <span class="text-[11px] text-muted">Last 7 days</span>
+      </div>
+      <ul class="space-y-3" role="list">
+        <li class="flex items-start gap-3 pb-3 border-b border-slate-100">
+          <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink"><strong>New inquiry</strong> · Marisol Cabrera asked about Toyota Corolla 2023</p>
+            <p class="text-[11px] text-muted mt-0.5">May 14, 11:08 · Reply via WhatsApp — GM is copied</p>
+          </div>
+        </li>
+        <li class="flex items-start gap-3 pb-3 border-b border-slate-100">
+          <span class="w-8 h-8 rounded-xl bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink"><strong>Reservation confirmed</strong> · Honda CR-V · Jun 1 → Jun 4</p>
+            <p class="text-[11px] text-muted mt-0.5">May 13, 16:22 · Holder: Andrés Ruiz-Olvera</p>
+          </div>
+        </li>
+        <li class="flex items-start gap-3 pb-3 border-b border-slate-100">
+          <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink"><strong>2 photos approved by GM</strong> · Now public on your listing</p>
+            <p class="text-[11px] text-muted mt-0.5">May 12, 09:14</p>
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-ink"><strong>Review pending GM moderation</strong> · 5★ from Tarell Quincey</p>
+            <p class="text-[11px] text-muted mt-0.5">May 11, 20:47 · Will be visible once approved</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <aside class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <h2 class="text-base font-semibold text-ink mb-4">Quick actions<!-- ES: Acciones rápidas --></h2>
+      <div class="space-y-2">
+        <a href="/manage/{id}/vehicles?new" class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink">
+          <span class="text-sm font-medium">Add a vehicle</span>
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <a href="/manage/{id}/photos" class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink">
+          <span class="text-sm font-medium">Upload photos</span>
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+        <a href="/manage/{id}/edit" data-tooltip="Editing sends listing back to Pending review" class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 hover:border-brand-300 hover:bg-brand-50 transition-colors cursor-pointer no-underline text-ink">
+          <span class="text-sm font-medium">Edit listing details</span>
+          <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+      <p class="text-[11px] text-muted mt-4 leading-relaxed">
+        Any edit to the listing returns it to Pending review by the GM.
+        <!-- ES: Cualquier edición regresa el anuncio a revisión Pendiente por el GM. -->
+      </p>
+    </aside>
+
+  </div>
+</main>
+
+</body>
+</html>

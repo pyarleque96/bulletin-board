@@ -1,0 +1,106 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppSelect — select / dropdown reutilizable.
+    Soporta: lista de opciones tipada, two-way binding, estado de error.
+    Variante "phone-prefix" para el selector de código de país (clase phone-prefix).
+    Por defecto usa la clase "auth-select" para contexto oscuro.
+    Use Variant="phone" para el estilo compacto de prefijo telefónico.
+*@
+
+<div class="@WrapperClass">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@InputId" class="@LabelClass">
+            @Label
+        </label>
+    }
+
+    <select id="@InputId"
+            value="@Value"
+            @onchange="OnChange"
+            disabled="@Disabled"
+            required="@Required"
+            class="@SelectClass"
+            aria-label="@AriaLabel"
+            aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+            aria-invalid="@HasError">
+
+        @if (!string.IsNullOrEmpty(Placeholder))
+        {
+            <option value="" disabled selected>@Placeholder</option>
+        }
+
+        @if (Options is not null)
+        {
+            @foreach (var opt in Options)
+            {
+                <option value="@opt.Value">@opt.Text</option>
+            }
+        }
+
+        @* Slot para options personalizadas (con flags u HTML especial) *@
+        @ChildContent
+
+    </select>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InputId { get; set; } = "";
+
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string AriaLabel { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Lista de opciones simples. Alternativa: usar ChildContent con &lt;option&gt; directamente.
+    /// </summary>
+    [Parameter] public IEnumerable<SelectOption>? Options { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    [Parameter] public string WrapperClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+
+    /// <summary>
+    /// "default" → clase auth-select (contexto oscuro, ancho completo)
+    /// "phone"   → clase phone-prefix (compacto, unido a input de teléfono)
+    /// </summary>
+    [Parameter] public string Variant { get; set; } = "default";
+
+    [Parameter] public string LabelClass { get; set; } =
+        "block text-white/55 text-xs font-medium mb-1.5 uppercase tracking-wider";
+
+    private string SelectClass => Variant switch
+    {
+        "phone" => $"phone-prefix {CssClass}".Trim(),
+        _       => $"auth-select {CssClass}".Trim(),
+    };
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(val);
+    }
+
+    public record SelectOption(string Value, string Text);
+}

@@ -1,0 +1,837 @@
+@page "/browse"
+@page "/browse/{Category}"
+
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.States
+@using System.Globalization
+
+@inject IStringLocalizer<SharedResource> _localizer
+@inject NavigationManager Navigation
+@inject NavBarState NavBarState
+@inject FooterState FooterState
+
+@implements IDisposable
+
+<PageTitle>@GetPageTitle()</PageTitle>
+
+@* ── Search header band ── *@
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+    <div class="max-w-6xl mx-auto">
+
+        @* Breadcrumb *@
+        <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="@_localizer["Browse_Breadcrumb"]">
+            <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">
+                @_localizer["Nav_Home"]
+                @* ES: Inicio *@
+            </a>
+            <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <span class="text-ink font-medium" aria-current="page">
+                @GetActiveCategoryName()
+            </span>
+        </nav>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-ink tracking-tight">
+                    @GetActiveCategoryName() in Wisconsin Dells
+                    @* ES: @GetActiveCategoryName() en Wisconsin Dells *@
+                </h1>
+                <div class="mt-1 h-5 flex items-center">
+                    @if (_isLoading && _isInitialLoad)
+                    {
+                        <div class="skeleton h-3.5 w-36 rounded-full" aria-hidden="true"></div>
+                    }
+                    else if (_pagedResult is not null)
+                    {
+                        <p class="text-sm text-muted">
+                            <strong class="text-ink">@_pagedResult.TotalCount</strong>
+                            @_localizer["Browse_VerifiedListings"]
+                            @* ES: listings verificados *@
+                        </p>
+                    }
+                </div>
+            </div>
+
+            @* Sort control *@
+            <div class="flex items-center gap-2">
+                <label for="sort-select" class="text-sm text-muted flex-shrink-0">
+                    @_localizer["Browse_SortBy"]
+                    @* ES: Ordenar por: *@
+                </label>
+                <select id="sort-select"
+                        class="text-sm text-ink bg-slate-100 border-none rounded-xl px-3 py-2 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500"
+                        @bind="_sortOrder"
+                        @bind:after="ApplyFiltersAsync">
+                    <option value="recommended">@_localizer["Browse_SortRecommended"]</option>
+                    @* ES: Recomendados *@
+                    <option value="rating">@_localizer["Browse_SortRating"]</option>
+                    @* ES: Mejor calificados *@
+                    <option value="newest">@_localizer["Browse_SortNewest"]</option>
+                    @* ES: Más recientes *@
+                </select>
+            </div>
+        </div>
+
+        @* Category pills row *@
+        <div class="flex flex-wrap gap-2 mt-5"
+             role="tablist"
+             aria-label="@_localizer["Browse_CategoryTabsLabel"]">
+
+            @* All categories pill *@
+            <FilterPillButton Text="@_localizer["Browse_AllCategories"]"
+                              IsActive="@(string.IsNullOrEmpty(_activeCategory))"
+                              Role="tab"
+                              OnClick="() => SelectCategory(null)" />
+            @* ES: Todas las categorías *@
+
+            @foreach (var cat in _categories)
+            {
+                <FilterPillButton Text="@GetCategoryName(cat)"
+                                  IsActive="@(_activeCategory == cat.Slug)"
+                                  Role="tab"
+                                  OnClick="() => SelectCategory(cat.Slug)" />
+            }
+        </div>
+    </div>
+</div>
+
+@* ── Main layout: sidebar + listings ── *@
+@* items-start is critical: prevents the flex container from stretching children to
+   full height, which causes the sticky sidebar to re-center on short states (loading,
+   empty, error). Without items-start, when <main> collapses, the sidebar loses its
+   top anchor and shifts to the center of the available space. *@
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-[256px_minmax(0,1fr)] gap-8 items-start w-full">
+
+        @* Sidebar filters — always in DOM, never conditionally removed.
+           w-full lg:w-64: explicit fixed width at lg+ that never changes regardless
+           of what the main column contains.
+           shrink-0: prevents the flex algorithm from compressing this column when
+           the main content is wide (e.g. VIP hero card, wide grid).
+           lg:self-start: CRITICAL — forces align-self:flex-start so the sidebar
+           does not stretch to the height of <main>. Without this, when <main>
+           is short (no VIP results, empty state, error), the flex container
+           distributes the remaining cross-axis space and the sidebar drifts
+           toward the center. self-start pins the sidebar to the top-left corner
+           of the flex row regardless of how tall <main> is.
+           overflow-hidden: clips any internal content that might accidentally
+           overflow and push the wrapper wider than w-64. *@
+        <aside class="w-full lg:w-[256px] min-w-0">
+            <ListingFilterSidebar OnFiltersChanged="OnFiltersChanged"
+                                  InitialFilters="_filters" />
+        </aside>
+
+        @* ── Results area ── *@
+        @* flex-1: fills all remaining horizontal space after the sidebar.
+           min-w-0: CRITICAL — overrides the default flex min-width:auto that would
+           allow this column to grow beyond its allocated space when children
+           (VIP hero card, grid) have wide intrinsic content. Without min-w-0,
+           a wide VIP card can push the flex item past its flex-1 boundary,
+           which shifts the sidebar left.
+           min-h-[600px]: keeps the column tall enough in all states (loading,
+           empty, error) so the sidebar never shifts position vertically. *@
+        <main class="relative w-full min-w-0 min-h-[620px]"
+              aria-label="@_localizer["Browse_SearchResults"]"
+              aria-live="polite"
+              aria-busy="@_isLoading">
+
+            @if (_isLoading && !_isInitialLoad)
+            {
+                <div class="absolute inset-0 z-10 flex items-start justify-center pt-16 pointer-events-none"
+                     aria-hidden="true">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-soft flex items-center gap-2.5">
+                        <svg class="w-5 h-5 text-brand-500 animate-spin" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                    stroke="currentColor" stroke-width="3" />
+                            <path class="opacity-75" fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span class="text-xs text-muted font-medium select-none">
+                            @_localizer["Browse_Loading"]
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <div class="@(_isLoading && !_isInitialLoad
+                            ? "opacity-50 transition-opacity duration-200 pointer-events-none"
+                            : "") @(_isFadingIn ? "results-fade-in" : "")">
+
+            @if (_isInitialLoad && _isLoading)
+            {
+                @* Loading skeletons — replicate the exact markup structure of the loaded
+                   state so that <main> keeps its dimensions and the sidebar never shifts.
+                   Hierarchy: hero (SDVIP) → 2-col VIP grid → row list *@
+
+                @* Hero skeleton — mirrors the SDVIP article: grid-cols-5, h-44 image col *@
+                <div class="rounded-3xl overflow-hidden border-2 border-slate-100 bg-white mb-6" aria-hidden="true">
+                    <div class="grid grid-cols-1 sm:grid-cols-5">
+                        <div class="sm:col-span-2 h-44 skeleton"></div>
+                        <div class="sm:col-span-3 p-6 space-y-3">
+                            <div class="skeleton h-5 w-24 rounded-full"></div>
+                            <div class="skeleton h-6 w-3/4 rounded-xl"></div>
+                            <div class="skeleton h-4 w-1/2 rounded-full"></div>
+                            <div class="skeleton h-4 w-5/6 rounded-full"></div>
+                            <div class="flex gap-2 pt-2">
+                                <div class="skeleton h-10 w-32 rounded-full"></div>
+                                <div class="skeleton h-10 w-24 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* VIP grid skeleton — same grid-cols-1 sm:grid-cols-2 gap-4 mb-8 as real VIP section.
+                   Card variant uses h-48 internally; real VIP cards use h-40. Override via wrapper. *@
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8" aria-hidden="true">
+                    @for (int i = 0; i < 2; i++)
+                    {
+                        <div class="rounded-2xl overflow-hidden bg-white border border-gray-100">
+                            <div class="skeleton h-40 w-full"></div>
+                            <div class="p-4 space-y-2">
+                                <div class="skeleton h-4 w-3/4 rounded-full"></div>
+                                <div class="skeleton h-3 w-1/2 rounded-full"></div>
+                                <div class="skeleton h-3 w-5/6 rounded-full"></div>
+                                <div class="flex gap-2 pt-1">
+                                    <div class="skeleton h-8 w-28 rounded-xl"></div>
+                                    <div class="skeleton h-8 flex-1 rounded-xl"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @* Row skeleton — mirrors real row articles: flex gap-4 p-4 with w-20 h-16 thumbnail *@
+                <div class="space-y-3" aria-hidden="true">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100">
+                            <div class="skeleton w-20 h-16 rounded-xl flex-shrink-0"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="skeleton h-4 w-2/3 rounded-full"></div>
+                                <div class="skeleton h-3 w-1/3 rounded-full"></div>
+                                <div class="skeleton h-3 w-1/2 rounded-full"></div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="skeleton h-8 w-24 rounded-xl hidden sm:block"></div>
+                                <div class="skeleton h-8 w-8 rounded-xl"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (_hasError)
+            {
+                <div class="min-h-[500px] flex items-center justify-center">
+                    <EmptyState Title="@_localizer["Home_ErrorTitle"]"
+                                Subtitle="@_localizer["Home_ErrorSubtitle"]">
+                        <ActionButton>
+                            <button type="button"
+                                    class="text-sm font-medium text-brand-500 hover:text-brand-700 cursor-pointer transition-colors duration-150"
+                                    @onclick="ReloadAsync">
+                                @_localizer["Action_TryAgain"]
+                            </button>
+                        </ActionButton>
+                    </EmptyState>
+                </div>
+            }
+            else if (!_hasAnyListings)
+            {
+                <div class="min-h-[500px] flex items-center justify-center">
+                    <EmptyState Title="@_localizer["Empty_NoResults"]"
+                                Subtitle="@_localizer["Empty_NoResultsSubtitle"]">
+                        <ActionButton>
+                            <button type="button"
+                                    class="text-sm font-medium text-brand-500 hover:text-brand-700 cursor-pointer transition-colors duration-150"
+                                    @onclick="ResetFilters">
+                                @_localizer["Browse_ResetAll"]
+                                @* ES: Limpiar filtros *@
+                            </button>
+                        </ActionButton>
+                    </EmptyState>
+                </div>
+            }
+            else
+            {
+                @* ── Tier hierarchy: GM Featured → VIP → Verified (order comes from API) ── *@
+
+                @* Top-ranked hero slot (VIP con hierarchy > 0) *@
+                @if (_sdvipListings.Count > 0)
+                {
+                    @foreach (var listing in _sdvipListings)
+                    {
+                        <article class="mb-6 rounded-3xl overflow-hidden border-2 border-amber-300 sdvip-glow bg-white card-hover cursor-pointer"
+                                 aria-label="@_localizer["Browse_TierSdVip"]: @GetTitle(listing)">
+                            <div class="grid grid-cols-1 sm:grid-cols-5">
+
+                                @* Image col *@
+                                <div class="sm:col-span-2 h-44 sm:h-auto relative">
+                                    @if (!string.IsNullOrEmpty(listing.CoverPhotoUrl))
+                                    {
+                                        <img src="@listing.CoverPhotoUrl"
+                                             alt="@GetTitle(listing)"
+                                             class="w-full h-full object-cover"
+                                             loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                                            <svg class="w-10 h-10 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                                            </svg>
+                                        </div>
+                                    }
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" aria-hidden="true"></div>
+                                    <div class="absolute top-3 left-3">
+                                        <span class="inline-flex items-center gap-1 badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-soft">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                            @_localizer["Browse_TierSdVip"]
+                                        </span>
+                                    </div>
+                                </div>
+
+                                @* Content col *@
+                                <div class="sm:col-span-3 p-6 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-start justify-between gap-3 flex-wrap">
+                                            <h2 class="text-lg font-bold text-ink">@GetTitle(listing)</h2>
+                                            <RatingStars Score="(double)listing.Rating"
+                                                         Count="listing.ReviewCount"
+                                                         Compact="false" />
+                                        </div>
+                                        <p class="text-muted text-xs mt-1 flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                            @listing.Location
+                                        </p>
+                                        <p class="mt-3 text-sm text-muted leading-relaxed line-clamp-2">
+                                            @GetDescription(listing)
+                                        </p>
+                                        <div class="flex flex-wrap gap-2 mt-3">
+                                            @if (listing.DailyRate.HasValue)
+                                            {
+                                                <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">
+                                                    @_localizer["Listing_From"] $@listing.DailyRate.Value.ToString("F0")/@_localizer["Listing_Day"]
+                                                </span>
+                                            }
+                                            @if (listing.IdVerified)
+                                            {
+                                                <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs flex items-center gap-1">
+                                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                                    @_localizer["Listing_IdVerified"]
+                                                </span>
+                                            }
+                                            @if (listing.Languages.Length > 0)
+                                            {
+                                                <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">
+                                                    @string.Join(" / ", listing.Languages)
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 flex items-center gap-2.5 flex-wrap">
+                                        <WhatsAppButton WhatsAppNumber="@listing.WhatsAppNumber"
+                                                        Text="WhatsApp"
+                                                        Size="pill"
+                                                        AriaLabel="@($"Contact {GetTitle(listing)} via WhatsApp")" />
+                                        <a href="/listings/@listing.Id"
+                                           class="text-sm text-brand-500 hover:text-brand-700 font-medium cursor-pointer transition-colors duration-200 flex items-center gap-1">
+                                            @_localizer["Browse_ViewFullProfile"]
+                                            @* ES: Ver perfil completo *@
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                }
+
+                @* VIP section *@
+                @if (_vipListings.Count > 0)
+                {
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8"
+                         role="list"
+                         aria-label="@_localizer["Home_VipGridLabel"]">
+                        @foreach (var listing in _vipListings)
+                        {
+                            <article role="listitem"
+                                     class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer"
+                                     aria-label="VIP: @GetTitle(listing)">
+                                @* Image *@
+                                <div class="h-40 relative">
+                                    @if (!string.IsNullOrEmpty(listing.CoverPhotoUrl))
+                                    {
+                                        <img src="@listing.CoverPhotoUrl" alt="@GetTitle(listing)"
+                                             class="w-full h-full object-cover" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-600 to-slate-800"></div>
+                                    }
+                                    <div class="absolute top-2 left-2">
+                                        <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                            VIP
+                                        </span>
+                                    </div>
+                                    @if (listing.IdVerified || listing.PhoneVerified)
+                                    {
+                                        <div class="absolute top-2 right-2 bg-white/90 text-green-700 text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                            @_localizer["Badge_Verified"]
+                                        </div>
+                                    }
+                                </div>
+                                @* Content *@
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="min-w-0">
+                                            <h3 class="font-bold text-ink text-sm truncate">@GetTitle(listing)</h3>
+                                            <p class="text-muted text-xs mt-0.5 truncate">@listing.Location · @listing.CategorySlug</p>
+                                        </div>
+                                        <RatingStars Score="(double)listing.Rating" Count="listing.ReviewCount" Compact="true" />
+                                    </div>
+                                    <p class="text-xs text-muted mt-2 line-clamp-2 leading-relaxed">
+                                        @GetDescription(listing)
+                                    </p>
+                                    <div class="flex gap-2 mt-3">
+                                        <WhatsAppButton WhatsAppNumber="@listing.WhatsAppNumber"
+                                                        Text="WhatsApp"
+                                                        Size="compact"
+                                                        AriaLabel="@($"Contact {GetTitle(listing)} via WhatsApp")" />
+                                        <a href="/listings/@listing.Id"
+                                           class="flex-1 flex items-center justify-center text-xs font-medium text-brand-600 hover:text-brand-800 border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">
+                                            @_localizer["Action_Details"]
+                                            @* ES: Detalles *@
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+
+                @* Verified / Regular section *@
+                @if (_regularListings.Count > 0)
+                {
+                    <div class="space-y-3"
+                         role="list"
+                         aria-label="@_localizer["Browse_VerifiedListingsLabel"]">
+                        @foreach (var listing in _regularListings)
+                        {
+                            <article role="listitem"
+                                     class="rounded-2xl border border-slate-100 bg-white card-hover cursor-pointer"
+                                     aria-label="@_localizer["Listing_VerifiedListing"]: @GetTitle(listing)">
+                                <div class="flex items-center gap-4 p-4">
+                                    @* Thumbnail *@
+                                    <div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                                        @if (!string.IsNullOrEmpty(listing.CoverPhotoUrl))
+                                        {
+                                            <img src="@listing.CoverPhotoUrl" alt="@GetTitle(listing)"
+                                                 class="w-full h-full object-cover" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <div class="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @* Content *@
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start justify-between gap-2 flex-wrap">
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <h3 class="font-semibold text-ink text-sm">@GetTitle(listing)</h3>
+                                                    <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0">
+                                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                                        @_localizer["Badge_Verified"]
+                                                    </span>
+                                                </div>
+                                                <p class="text-muted text-xs mt-0.5 truncate">@listing.Location · @listing.CategorySlug</p>
+                                            </div>
+                                            <RatingStars Score="(double)listing.Rating" Count="listing.ReviewCount" Compact="true" />
+                                        </div>
+                                        <p class="text-xs text-muted mt-1 line-clamp-1">@GetDescription(listing)</p>
+                                    </div>
+
+                                    @* Action buttons *@
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <div class="hidden sm:block">
+                                            <WhatsAppButton WhatsAppNumber="@listing.WhatsAppNumber"
+                                                            Text="@_localizer["Browse_Contact"]"
+                                                            Size="compact"
+                                                            AriaLabel="@($"Contact {GetTitle(listing)} via WhatsApp")" />
+                                        </div>
+                                        <a href="/listings/@listing.Id"
+                                           class="p-2 rounded-xl border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-muted cursor-pointer transition-colors duration-200"
+                                           aria-label="@($"View details for {GetTitle(listing)}")">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+
+                @* Pagination *@
+                @if (_pagedResult is not null && _pagedResult.TotalPages > 1)
+                {
+                    <Pagination CurrentPage="_pagedResult.Page"
+                                TotalPages="_pagedResult.TotalPages"
+                                OnPageChanged="OnPageChangedAsync" />
+                }
+            }
+
+            </div>@* end dim-wrapper *@
+
+        </main>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Category { get; set; }
+
+    [Inject] private IListingsService   ListingsService   { get; set; } = default!;
+    [Inject] private ICategoriesService CategoriesService { get; set; } = default!;
+
+    // ── State ──────────────────────────────────────────────────────────
+    private PagedResult<ListingCardDto>? _pagedResult;
+    private CategoryDto[]  _categories    = [];
+    private ListingFilters _filters       = ListingFilters.Default;
+    private string?        _activeCategory;
+    private string         _sortOrder     = "recommended";
+    private bool           _isLoading      = true;
+    private bool           _hasError       = false;
+    private bool           _isInitialLoad  = true;
+    private bool           _isFadingIn     = false;
+
+    // Bucketed listings (derived from _pagedResult.Items)
+    private List<ListingCardDto> _sdvipListings   = [];
+    private List<ListingCardDto> _vipListings      = [];
+    private List<ListingCardDto> _regularListings  = [];
+
+    private bool _hasAnyListings =>
+        _sdvipListings.Count > 0 || _vipListings.Count > 0 || _regularListings.Count > 0;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        NavBarState.IsDark = false;
+        FooterState.IsCompact = true;
+
+        _activeCategory = Category;
+
+        // Parse query-string category if no route segment
+        if (string.IsNullOrEmpty(_activeCategory))
+        {
+            var query = new Uri(Navigation.Uri).Query.TrimStart('?');
+            foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var kv = pair.Split('=', 2);
+                if (kv.Length == 2 &&
+                    Uri.UnescapeDataString(kv[0]).Equals("category", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrEmpty(kv[1]))
+                {
+                    _activeCategory = Uri.UnescapeDataString(kv[1]);
+                    break;
+                }
+            }
+        }
+
+        var categoriesTask = CategoriesService.GetAllAsync();
+        var listingsTask   = FetchListingsAsync(page: 1);
+
+        await Task.WhenAll(categoriesTask, listingsTask);
+        _categories = categoriesTask.Result;
+    }
+
+    public void Dispose()
+    {
+    }
+
+    // ── Data fetching ──────────────────────────────────────────────────
+    private async Task FetchListingsAsync(int page = 1)
+    {
+        _isLoading = true;
+        _hasError  = false;
+        StateHasChanged();
+
+        try
+        {
+            // Only apply tier param if exactly one tier is selected
+            string? tierParam = _filters.TierParam;
+
+            _pagedResult = await ListingsService.SearchAsync(
+                category:  _activeCategory,
+                tier:      tierParam,
+                minRating: _filters.MinRating,
+                language:  _filters.LanguageParam,
+                page:      page,
+                pageSize:  12
+            );
+
+            // If API not yet available, use mock data
+            if (_pagedResult is null)
+                _pagedResult = GetMockData();
+
+            BucketListings(_pagedResult.Items);
+        }
+        catch
+        {
+            _hasError = true;
+        }
+        finally
+        {
+            bool wasInitial = _isInitialLoad;
+            _isLoading      = false;
+            _isInitialLoad  = false;
+            _isFadingIn     = !wasInitial && !_hasError;
+            StateHasChanged();
+
+            if (_isFadingIn)
+            {
+                await Task.Delay(300);
+                _isFadingIn = false;
+            }
+        }
+    }
+
+    private void BucketListings(IEnumerable<ListingCardDto> items)
+    {
+        _sdvipListings   = [];
+        _vipListings     = [];
+        _regularListings = [];
+
+        // The API already returns items sorted by Hierarchy DESC, Tier DESC,
+        // AvgRating DESC, CreatedAt DESC, Id DESC. The first VIP with a positive hierarchy is
+        // promoted to the hero slot; remaining VIPs go into the grid; everything else
+        // goes into the regular list.
+        bool topVipTaken = false;
+        foreach (var item in items)
+        {
+            if (!topVipTaken
+                && item.Tier.Equals("VIP", StringComparison.OrdinalIgnoreCase)
+                && item.ProviderHierarchy > 0)
+            {
+                _sdvipListings.Add(item);
+                topVipTaken = true;
+            }
+            else if (item.Tier.Equals("VIP", StringComparison.OrdinalIgnoreCase))
+            {
+                _vipListings.Add(item);
+            }
+            else
+            {
+                _regularListings.Add(item);
+            }
+        }
+    }
+
+    // ── Event handlers ─────────────────────────────────────────────────
+    private async Task OnFiltersChanged(ListingFilters newFilters)
+    {
+        _filters = newFilters;
+        await FetchListingsAsync(page: 1);
+    }
+
+    private async Task SelectCategory(string? slug)
+    {
+        _activeCategory = slug;
+        await FetchListingsAsync(page: 1);
+
+        // Update URL without full navigation
+        var path = string.IsNullOrEmpty(slug) ? "/browse" : $"/browse/{slug}";
+        Navigation.NavigateTo(path, forceLoad: false, replace: true);
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        await FetchListingsAsync(page: 1);
+    }
+
+    private async Task OnPageChangedAsync(int page)
+    {
+        await FetchListingsAsync(page: page);
+    }
+
+    private async Task ReloadAsync()
+    {
+        await FetchListingsAsync(page: 1);
+    }
+
+    private async Task ResetFilters()
+    {
+        _filters = ListingFilters.Default;
+        await FetchListingsAsync(page: 1);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────
+    private string GetTitle(ListingCardDto listing)
+    {
+        var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return lang == "es" ? listing.TitleEs : listing.TitleEn;
+    }
+
+    private string GetDescription(ListingCardDto listing)
+    {
+        var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return lang == "es" ? listing.DescriptionEs : listing.DescriptionEn;
+    }
+
+    private string GetCategoryName(CategoryDto cat)
+    {
+        var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return lang == "es" ? cat.NameEs : cat.NameEn;
+    }
+
+    private string GetActiveCategoryName()
+    {
+        if (string.IsNullOrEmpty(_activeCategory))
+            return _localizer["Browse_AllCategories"];
+
+        var cat = _categories.FirstOrDefault(c => c.Slug == _activeCategory);
+        if (cat is not null) return GetCategoryName(cat);
+
+        // Fallback: humanize slug
+        return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
+            _activeCategory.Replace("-", " "));
+    }
+
+    private string GetPageTitle()
+    {
+        var cat = GetActiveCategoryName();
+        return $"{cat} — Bulletin Dells";
+    }
+
+    // ── Mock data (used until backend is available) ────────────────────
+    private static PagedResult<ListingCardDto> GetMockData() => new(
+        Items: new ListingCardDto[]
+        {
+            // Top VIP — high hierarchy assigned by GM → hero slot
+            new(
+                Id:                Guid.NewGuid(),
+                TitleEn:           "Dells Premier Car Rentals",
+                TitleEs:           "Renta de Autos Premier Dells",
+                Tier:              "VIP",
+                Rating:            4.9m,
+                ReviewCount:       127,
+                Location:          "Wisconsin Dells, WI",
+                CategorySlug:      "car-rental",
+                CoverPhotoUrl:     "https://picsum.photos/seed/sdvip-car/800/440",
+                DescriptionEn:     "Daily, weekly, and seasonal vehicle rentals. Pick-up anywhere. Bilingual staff. Verified with ID and passport. 5+ years in the community.",
+                DescriptionEs:     "Renta diaria, semanal y de temporada. Recogida en cualquier lugar. Personal bilingüe. Verificado con ID y pasaporte. Más de 5 años en la comunidad.",
+                Languages:         ["EN", "ES"],
+                WhatsAppNumber:    "+16083109999",
+                DailyRate:         39m,
+                WeeklyRate:        null,
+                MonthlyRate:       null,
+                PhoneVerified:     true,
+                IdVerified:        true,
+                SocialVerified:    true,
+                ProviderHierarchy: 9999
+            ),
+            // VIP 1
+            new(
+                Id:                Guid.NewGuid(),
+                TitleEn:           "Riverside Auto Rentals",
+                TitleEs:           "Renta de Autos Riverside",
+                Tier:              "VIP",
+                Rating:            4.7m,
+                ReviewCount:       49,
+                Location:          "Downtown Dells",
+                CategorySlug:      "car-rental",
+                CoverPhotoUrl:     "https://picsum.photos/seed/vip-auto1/600/320",
+                DescriptionEn:     "Economy to SUV. Rates from $34/day. Free pick-up in Wisconsin Dells area. Spanish-speaking staff available.",
+                DescriptionEs:     "Económico a SUV. Desde $34/día. Recogida gratuita. Personal hispanohablante.",
+                Languages:         ["EN", "ES"],
+                WhatsAppNumber:    "+16083101111",
+                DailyRate:         34m,
+                WeeklyRate:        null,
+                MonthlyRate:       null,
+                PhoneVerified:     true,
+                IdVerified:        true,
+                SocialVerified:    false,
+                ProviderHierarchy: 0
+            ),
+            // VIP 2
+            new(
+                Id:                Guid.NewGuid(),
+                TitleEn:           "Lakeview Wheels",
+                TitleEs:           "Ruedas Lakeview",
+                Tier:              "VIP",
+                Rating:            4.6m,
+                ReviewCount:       31,
+                Location:          "Lake Delton",
+                CategorySlug:      "car-rental",
+                CoverPhotoUrl:     "https://picsum.photos/seed/vip-auto2/600/320",
+                DescriptionEn:     "Compact cars ideal for J1 students. Affordable weekly rates. No credit card required — cash accepted.",
+                DescriptionEs:     "Autos compactos ideales para estudiantes J1. Tarifas semanales económicas. Efectivo aceptado.",
+                Languages:         ["EN", "ES"],
+                WhatsAppNumber:    "+16083102222",
+                DailyRate:         29m,
+                WeeklyRate:        null,
+                MonthlyRate:       null,
+                PhoneVerified:     true,
+                IdVerified:        false,
+                SocialVerified:    false,
+                ProviderHierarchy: 0
+            ),
+            // Regular 1
+            new(
+                Id:                Guid.NewGuid(),
+                TitleEn:           "Sunset Motors",
+                TitleEs:           "Sunset Motors",
+                Tier:              "Verified",
+                Rating:            4.3m,
+                ReviewCount:       18,
+                Location:          "Wisconsin Dells",
+                CategorySlug:      "car-rental",
+                CoverPhotoUrl:     "https://picsum.photos/seed/reg-car1/160/128",
+                DescriptionEn:     "Affordable daily rates, seasonal specials, local family-owned business.",
+                DescriptionEs:     "Tarifas diarias accesibles, ofertas de temporada, negocio familiar local.",
+                Languages:         ["EN"],
+                WhatsAppNumber:    "+16083103333",
+                DailyRate:         25m,
+                WeeklyRate:        null,
+                MonthlyRate:       null,
+                PhoneVerified:     true,
+                IdVerified:        false,
+                SocialVerified:    false,
+                ProviderHierarchy: 0
+            ),
+            // Regular 2
+            new(
+                Id:                Guid.NewGuid(),
+                TitleEn:           "Budget Wheels Dells",
+                TitleEs:           "Budget Wheels Dells",
+                Tier:              "Verified",
+                Rating:            4.1m,
+                ReviewCount:       11,
+                Location:          "Lake Delton",
+                CategorySlug:      "car-rental",
+                CoverPhotoUrl:     "https://picsum.photos/seed/reg-car2/160/128",
+                DescriptionEn:     "Basic rentals at the lowest prices. Passport accepted as deposit.",
+                DescriptionEs:     "Rentas básicas al precio más bajo. Pasaporte aceptado como depósito.",
+                Languages:         ["EN", "ES"],
+                WhatsAppNumber:    "+16083104444",
+                DailyRate:         22m,
+                WeeklyRate:        null,
+                MonthlyRate:       null,
+                PhoneVerified:     false,
+                IdVerified:        false,
+                SocialVerified:    false,
+                ProviderHierarchy: 0
+            ),
+        },
+        TotalCount: 5,
+        Page:       1,
+        PageSize:   12
+    );
+}

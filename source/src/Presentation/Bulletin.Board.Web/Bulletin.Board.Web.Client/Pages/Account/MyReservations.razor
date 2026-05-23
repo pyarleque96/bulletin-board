@@ -1,0 +1,118 @@
+@page "/account/reservations"
+@attribute [Authorize]
+
+@using Bulletin.Board.Web.Client.Models
+@using Microsoft.AspNetCore.Authorization
+
+@inject IListingsService _listings
+
+<PageTitle>My reservations | Bulletin Dells</PageTitle>
+
+<section class="max-w-3xl mx-auto px-4 pt-24 pb-16">
+
+    <header class="mb-6">
+        <h1 class="text-2xl font-bold text-ink tracking-tight">My reservations</h1>
+        <p class="text-muted text-sm mt-1">Requests you've sent to providers.</p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="mb-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm">
+            @_errorMessage
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <p class="text-muted text-sm">Loading…</p>
+    }
+    else if (_items is null || _items.Count == 0)
+    {
+        <div class="bg-white rounded-3xl border border-dashed border-slate-200 p-10 text-center">
+            <p class="text-muted text-sm">No reservation requests yet.</p>
+        </div>
+    }
+    else
+    {
+        <ul class="space-y-3">
+            @foreach (var r in _items)
+            {
+                <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="font-semibold text-ink">@r.ListingTitleEn</h3>
+                                <span class="@StatusBadgeClass(r.Status)">@r.Status</span>
+                            </div>
+                            <p class="text-sm text-ink mt-2">
+                                <strong>@r.VehicleName</strong>
+                                <span class="text-muted">·</span>
+                                @r.StartDate.ToString("MMM d") → @r.EndDate.ToString("MMM d, yyyy")
+                            </p>
+                            @if (!string.IsNullOrWhiteSpace(r.Comment))
+                            {
+                                <p class="text-muted text-sm mt-2 leading-relaxed">@r.Comment</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(r.ResponseNote))
+                            {
+                                <p class="text-[11px] text-muted mt-2 italic">Provider note: @r.ResponseNote</p>
+                            }
+                            <p class="text-[11px] text-muted mt-2">submitted @r.CreatedAt.LocalDateTime.ToString("MMM d, yyyy HH:mm")</p>
+                        </div>
+
+                        @if (r.Status == "Pending" || r.Status == "Accepted")
+                        {
+                            <button type="button" @onclick="() => CancelAsync(r)" disabled="@_busy"
+                                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs disabled:opacity-50">
+                                Cancel
+                            </button>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private bool _loading = true;
+    private bool _busy;
+    private string? _errorMessage;
+    private IReadOnlyList<MyReservationDto>? _items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        _errorMessage = null;
+        try { _items = await _listings.GetMyReservationsAsync(); }
+        catch (Exception ex) { _errorMessage = $"Failed to load: {ex.Message}"; }
+        finally { _loading = false; }
+    }
+
+    private async Task CancelAsync(MyReservationDto r)
+    {
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            await _listings.CancelReservationAsync(r.Id, note: null);
+            await ReloadAsync();
+        }
+        catch (Exception ex) { _errorMessage = $"Cancel failed: {ex.Message}"; }
+        finally { _busy = false; }
+    }
+
+    private static string StatusBadgeClass(string status) => status switch
+    {
+        "Pending"   => "text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full",
+        "Accepted"  => "text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full",
+        "Rejected"  => "text-[10px] uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5 rounded-full",
+        "Cancelled" => "text-[10px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full",
+        _           => "text-[10px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full"
+    };
+}

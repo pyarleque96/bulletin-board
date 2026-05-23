@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Housing (Regular tier)
+  =====================================================
+  Mockup: housing-manage-regular.html
+  Categoría: Housing / Rentals
+  Tier: Regular (no Verified, no VIP)
+  Estado: Tab "Properties" activo
+  Responsive: 375 / 768 / 1280
+  WCAG 2.1 AA · Bilingüe EN/ES
+  =====================================================
+  ESTRUCTURA DEL LAYOUT (replica v1):
+    1. Banda header — bg-white border-b border-slate-100 px-4 py-5 pt-24
+       a. Breadcrumb (idéntico a v1)
+       b. Título "Manage" + status badge + tier pill (Regular)
+       c. Tabs: Properties | Bookings | Inquiries | Calendar (locked)
+    2. Área principal — max-w-6xl mx-auto px-4 py-8
+       - Sub-header con CTA "Add property"
+       - Lista de PropertyCards (ItemCard pattern)
+       - TierGate banner visible sobre Calendar tab (LOCKED)
+  =====================================================
+  DATOS QUE ESPERA DEL BACKEND:
+    BINDING: ListingId: Guid
+    BINDING: ListingTitle (EN/ES)
+    BINDING: Tier: "Regular" | "Verified" | "VIP"
+    BINDING: ListingStatus: Pending | Approved | Rejected | NeedsChanges
+    BINDING: PropertyDto[]: Id, Title, Type (Cabin|Apartment|House|Room),
+             Bedrooms, Bathrooms, MaxGuests, NightlyRateCents, WeeklyRateCents?,
+             Address, Status, Photos[], IsActive
+    BINDING: BookingsCount, InquiriesCount, CalendarLocked (bool — true si tier < VIP)
+  BINDING POINTS:
+    - data-tab-active="properties|bookings|inquiries|calendar"
+    - data-tab-locked="true" en Calendar para tier no-VIP
+    - aria-selected on tabs → @bind en Blazor
+    - Edit button → emite aviso "Editing will return listing to Pending review"
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Housing — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412' },
+            ink: '#0f172a', muted: '#64748b',
+          },
+          fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+          boxShadow: { soft: '0 4px 24px -4px rgba(30,41,59,0.08)' },
+        },
+      },
+    };
+  </script>
+  <style>
+    .badge-sdvip { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+    .badge-vip   { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .skeleton {
+      background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after {
+      content:''; position:absolute; bottom:-1px; left:0; right:0;
+      height:2px; background:#f97316; border-radius:2px 2px 0 0;
+    }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .manage-tab:hover:not([aria-disabled="true"]) { color:#0f172a; }
+    .manage-tab[aria-disabled="true"] { cursor:not-allowed; opacity:0.55; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<!-- ===== NAVBAR ===== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline" aria-label="Bulletin Dells — home">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold" aria-label="User account">M</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HEADER BAND ===== -->
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home<!-- ES: Inicio --></a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings<!-- ES: Mis Anuncios --></a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <!-- BINDING: @listing.TitleEn | @listing.TitleEs -->
+      <span class="text-ink font-medium" aria-current="page">Mirror Lake Cabins</span>
+    </nav>
+
+    <!-- Título + status badge + tier pill -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage<!-- ES: Gestionar --></h1>
+          <!-- BINDING: StatusBadgeClass(@listing.Status) -->
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            Approved<!-- ES: Aprobado -->
+          </span>
+          <!-- BINDING: Tier pill — Regular variant (slate, sobrio) -->
+          <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5z"/></svg>
+            Regular tier<!-- ES: Plan regular -->
+          </span>
+        </div>
+        <p class="text-sm text-muted mt-1">
+          Mirror Lake Cabins<!-- ES: Cabañas Mirror Lake -->
+          <span class="text-slate-300 mx-1.5">·</span>
+          Housing / Rentals<!-- ES: Hospedaje / Rentas -->
+        </p>
+      </div>
+      <a href="/listing/detail/mirror-lake-cabins"
+         class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-xl transition-colors duration-150 cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Public view<!-- ES: Ver público -->
+      </a>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections / Secciones de gestión">
+
+      <!-- Tab: Properties (active) -->
+      <button type="button" role="tab" aria-selected="true" aria-controls="panel-properties" id="tab-properties"
+              class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Properties<!-- ES: Propiedades -->
+          <!-- BINDING: @_properties.Count -->
+          <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="3 properties">3</span>
+        </span>
+      </button>
+
+      <!-- Tab: Bookings -->
+      <button type="button" role="tab" aria-selected="false" aria-controls="panel-bookings" id="tab-bookings"
+              class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Bookings<!-- ES: Reservas -->
+          <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="2 pending">2</span>
+        </span>
+      </button>
+
+      <!-- Tab: Inquiries -->
+      <button type="button" role="tab" aria-selected="false" aria-controls="panel-inquiries" id="tab-inquiries"
+              class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Inquiries<!-- ES: Consultas -->
+          <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">5</span>
+        </span>
+      </button>
+
+      <!-- Tab: Calendar — LOCKED (VIP only) -->
+      <button type="button" role="tab" aria-selected="false" aria-disabled="true" aria-controls="panel-calendar" id="tab-calendar"
+              class="manage-tab px-4 py-2.5 text-sm text-muted bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap"
+              title="Available for VIP providers"
+              data-tab-locked="true">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Calendar sync<!-- ES: Sincronización de calendario -->
+          <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- Sub-header del panel -->
+  <section id="panel-properties" role="tabpanel" aria-labelledby="tab-properties" tabindex="0">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <h2 class="text-base font-semibold text-ink">Your properties<!-- ES: Tus propiedades --></h2>
+        <p class="text-sm text-muted mt-0.5">
+          Editing any property sends the listing back to GM for re-approval.
+          <!-- ES: Editar una propiedad regresa el anuncio a revisión del GM. -->
+        </p>
+      </div>
+      <a href="/account/listings/housing/property/new"
+         class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer no-underline"
+         aria-label="Add a new property / Agregar nueva propiedad">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add property<!-- ES: Agregar propiedad -->
+      </a>
+    </div>
+
+    <!-- ===== PROPERTY LIST ===== -->
+    <ul class="space-y-4" role="list" aria-label="Property list / Lista de propiedades">
+
+      <!-- Property Card 1 — Approved -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- BINDING: @property.Title -->
+              <h3 class="font-semibold text-ink">Cabin near Mirror Lake — 2BR Lakefront</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved<!-- ES: Aprobada --></span>
+              <span class="text-[10px] uppercase tracking-wider bg-green-50 text-green-700 px-2 py-0.5 rounded-full">active</span>
+            </div>
+            <!-- BINDING: @FormatSpecs(property) -->
+            <p class="text-muted text-xs mt-0.5">2 BR · 1 BA · Up to 4 guests · Pet-friendly</p>
+            <p class="text-ink text-sm mt-1 font-medium">
+              $145/night<!-- BINDING: @FormatRate(p.NightlyRateCents) -->
+              <span class="text-muted text-xs">· $890/wk</span>
+            </p>
+            <p class="text-[11px] text-muted mt-0.5">
+              Last updated May 12, 2026<!-- ES: Última actualización May 12, 2026 -->
+            </p>
+          </div>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer" aria-label="Edit Cabin near Mirror Lake">Edit<!-- ES: Editar --></button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Deactivate<!-- ES: Desactivar --></button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors duration-150 cursor-pointer">Delete<!-- ES: Eliminar --></button>
+          </div>
+        </div>
+
+        <!-- Edit warning (visible solo cuando se entra en edit mode) -->
+        <!--
+        <div role="alert" class="mt-4 flex items-start gap-2 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Editing will return this listing to Pending review. / Editar regresará este anuncio a revisión pendiente.
+        </div>
+        -->
+
+        <!-- Photos -->
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h4 class="text-sm font-semibold text-ink">
+              Photos (4)<!-- ES: Fotos (4) -->
+              <!-- BINDING: Regular tier = max 5 fotos. VIP = unlimited -->
+              <span class="ml-1 text-[11px] text-muted font-normal">· Regular limit: 5</span>
+            </h4>
+            <label class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium cursor-pointer transition-colors duration-150">
+              Upload photo<!-- ES: Subir foto -->
+              <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" aria-label="Upload property photo" />
+            </label>
+          </div>
+          <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" role="list">
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/cabin-mirror-1/400/225" alt="Cabin exterior — lakefront view" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2 flex gap-1 flex-wrap">
+                <span class="text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">primary</span>
+                <span class="text-[9px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">public</span>
+              </div>
+            </li>
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/cabin-mirror-2/400/225" alt="Cabin living room" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2">
+                <span class="text-[9px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">public</span>
+              </div>
+            </li>
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/cabin-mirror-3/400/225" alt="Cabin bedroom" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <!-- BINDING: p.IsApproved == false → pending GM -->
+              <div class="absolute top-2 left-2">
+                <span class="text-[9px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">Awaiting GM approval<!-- ES: Esperando aprobación del GM --></span>
+              </div>
+            </li>
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/cabin-mirror-4/400/225" alt="Cabin kitchen" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2">
+                <span class="text-[9px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">public</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Property Card 2 — Pending -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">Studio Apartment — Downtown Dells</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending<!-- ES: Pendiente --></span>
+            </div>
+            <p class="text-muted text-xs mt-0.5">Studio · 1 BA · Up to 2 guests · Walk to Wisconsin Dells Pkwy</p>
+            <p class="text-ink text-sm mt-1 font-medium">$89/night</p>
+            <p class="text-[11px] text-muted mt-0.5">Last updated May 13, 2026 · Submitted for review</p>
+          </div>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Edit</button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors duration-150 cursor-pointer">Delete</button>
+          </div>
+        </div>
+      </li>
+
+      <!-- Property Card 3 — Needs changes -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">3BR House — Kalahari Area</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">Needs changes<!-- ES: Requiere cambios --></span>
+            </div>
+            <p class="text-muted text-xs mt-0.5">3 BR · 2 BA · Up to 8 guests · Hot tub · 0.5 mi from Kalahari</p>
+            <p class="text-ink text-sm mt-1 font-medium">$210/night</p>
+            <!-- BINDING: @gmFeedback message -->
+            <p class="text-[11px] text-orange-700 mt-2 bg-orange-50 border border-orange-200 px-3 py-2 rounded-xl">
+              GM feedback: Please add at least one interior photo showing the kitchen.
+              <!-- ES: Comentario del GM: Por favor agrega al menos una foto interior mostrando la cocina. -->
+            </p>
+          </div>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium transition-colors duration-150 cursor-pointer">Edit and resubmit<!-- ES: Editar y reenviar --></button>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+
+    <!-- ===== TIER GATE — Calendar Sync (Housing VIP feature) ===== -->
+    <!--
+      BINDING: render only if tier < VIP
+      Component: <TierGate FeatureKey="housing.calendar-sync" RequiredTier="VIP" />
+      - If user is NOT Verified → CTA links to /verification (NOT payment)
+      - If user IS Verified but not VIP → CTA links to /upgrade/vip
+    -->
+    <div class="mt-8 rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-6 sm:p-7" role="region" aria-label="VIP feature lock">
+      <div class="flex items-start gap-4 flex-wrap">
+        <div class="flex-shrink-0 w-11 h-11 rounded-2xl bg-white border border-amber-200 flex items-center justify-center shadow-soft">
+          <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm font-semibold text-ink">Google Calendar sync — VIP only<!-- ES: Sincronización con Google Calendar — Solo VIP --></h3>
+            <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+          </div>
+          <p class="text-sm text-amber-900 mt-1 leading-relaxed max-w-2xl">
+            Two-way sync with Google Calendar, iCal export, auto-block dates from external bookings, and unlimited multi-photo galleries (5+ per property).
+            <!-- ES: Sincronización bidireccional con Google Calendar, exportación iCal, bloqueo automático por reservas externas, y galerías ilimitadas (5+ por propiedad). -->
+          </p>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-3 text-xs text-amber-900">
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Google Calendar 2-way sync</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Unlimited photos per property</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Analytics dashboard</li>
+            <li class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Top Host badge + hero placement</li>
+          </ul>
+          <div class="flex items-center gap-2 mt-4 flex-wrap">
+            <!-- BINDING: if (!IsVerified) href="/verification"; else href="/upgrade/vip" -->
+            <a href="/verification" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-ink hover:bg-slate-800 text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline">
+              Get verified first<!-- ES: Verifícate primero -->
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+            <a href="/about/vip" class="text-xs text-amber-900 hover:text-ink font-medium underline-offset-2 hover:underline">Learn about VIP<!-- ES: Conoce VIP --></a>
+          </div>
+          <p class="text-[11px] text-amber-800 mt-2">
+            Verification is required before any tier upgrade — no payment without verification.
+            <!-- ES: La verificación es requerida antes de cualquier upgrade — no hay pago sin verificación. -->
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<script>
+  // Tab switching demo — replace in Blazor with @onclick + conditional render
+  document.querySelectorAll('[role="tab"]:not([aria-disabled="true"])').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        if (t.getAttribute('aria-disabled') === 'true') return;
+        t.setAttribute('aria-selected','false');
+        t.classList.remove('text-ink'); t.classList.add('text-muted');
+      });
+      tab.setAttribute('aria-selected','true');
+      tab.classList.add('text-ink'); tab.classList.remove('text-muted');
+    });
+  });
+</script>
+</body>
+</html>

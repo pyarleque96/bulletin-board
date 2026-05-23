@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Settings (VIP)
+  =====================================================
+  VIP = todo lo Regular + secciones exclusivas:
+    · Auto-reply templates (pre-aprobadas GM)
+    · Quiet hours
+    · Reply SLA target (badge Fast responder)
+    · Featured promotion windows (depende de hierarchy plan)
+    · Analytics export CSV semanal
+    · Multi-language presence (ES/EN/auto)
+    · Dynamic pricing rules (weekend / high season)
+    · Default insurance disclaimer text
+  Safe flags (NO re-aprueban): hide_phone, notifications, language preference, pause/resume, quiet_hours, sla_minutes, analytics_export.
+  Content-edit flags (regla #5 → Pending): titles, descriptions, pickup address, hours, auto-reply templates, dynamic pricing rules, insurance disclaimer.
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage · Settings VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},vip:{50:'#fdf4ff',100:'#fae8ff',500:'#a855f7',600:'#9333ea',700:'#7e22ce'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}[data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}.safe-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}.pending-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:#fef3c7;color:#92400e;border:1px solid #fde68a}.vip-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:linear-gradient(135deg,#fae8ff,#fdf4ff);color:#7e22ce;border:1px solid #e9d5ff;text-transform:uppercase;letter-spacing:.04em}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Dells Auto Rentals</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Auto Rentals · Compact Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="vip-chip">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Vehicles</a>
+      <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Settings</span>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-3xl mx-auto px-4 py-8 w-full">
+
+  <!-- Pending warning -->
+  <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="alert">
+    <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p class="text-xs text-ink leading-relaxed">Fields marked <span class="pending-pill">Content</span> return the listing to Pending GM review when saved. Fields marked <span class="safe-pill">Safe</span> apply immediately.
+      <!-- ES: Los campos "Content" requieren re-aprobación; los "Safe" se aplican al instante. -->
+    </p>
+  </div>
+
+  <!-- Visibility (safe) -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink">Visibility<!-- ES: Visibilidad --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">Toggles below apply instantly without GM re-approval.</p>
+    <div class="space-y-3">
+      <label class="flex items-start justify-between gap-3 py-1"><span><span class="text-sm text-ink font-medium block">Pause listing</span><span class="text-[11px] text-muted">Hide from search but keep all data.</span></span><input type="checkbox" class="mt-1 h-5 w-9 rounded-full"/></label>
+      <label class="flex items-start justify-between gap-3 py-1"><span><span class="text-sm text-ink font-medium block">Hide public phone number</span><span class="text-[11px] text-muted">Customers contact you only through WhatsApp deep-link.</span></span><input type="checkbox" checked class="mt-1 h-5 w-9 rounded-full"/></label>
+    </div>
+  </section>
+
+  <!-- Contact (mixed) -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink">Contact<!-- ES: Contacto --></h2><span class="pending-pill">Content</span></div>
+    <p class="text-xs text-muted mb-5">Public contact methods customers see on your listing.</p>
+    <div class="space-y-4">
+      <div><label class="block text-xs font-semibold text-ink mb-1.5">WhatsApp number</label><input type="tel" value="+1 608 555 0142" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div>
+      <div><label class="block text-xs font-semibold text-ink mb-1.5">Business email</label><input type="email" value="hello@dellsautorentals.com" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div>
+      <div><label class="block text-xs font-semibold text-ink mb-1.5">Time zone</label><select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"><option>America/Chicago (CST)</option><option>America/New_York (EST)</option><option>America/Denver (MST)</option></select></div>
+    </div>
+  </section>
+
+  <!-- Notifications (safe) -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink">Notifications<!-- ES: Notificaciones --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">Choose how Bulletin Dells alerts you.</p>
+    <div class="space-y-3">
+      <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">Email me about new inquiries</span><input type="checkbox" checked class="h-5 w-9 rounded-full"/></label>
+      <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">Email me when I get a new review</span><input type="checkbox" checked class="h-5 w-9 rounded-full"/></label>
+      <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">WhatsApp me on new reservations</span><input type="checkbox" checked class="h-5 w-9 rounded-full"/></label>
+      <div class="flex items-start gap-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 mt-2">
+        <svg class="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p class="text-[11px] text-ink">The GM is always copied on every customer conversation — this cannot be turned off.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Auto-reply language (safe) -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink">Language preference<!-- ES: Idioma --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">Default language used when WhatsApp deep-links open a pre-filled message.</p>
+    <select class="w-full max-w-xs rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"><option>Auto-detect from customer</option><option>English</option><option>Spanish</option><option>Both (bilingual greeting)</option></select>
+  </section>
+
+  <!-- VIP: Auto-reply templates -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6 relative overflow-hidden">
+    <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-vip-50 opacity-60 pointer-events-none"></div>
+    <div class="flex items-center justify-between mb-1 relative"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Auto-reply templates<!-- ES: Plantillas de respuesta --></h2><span class="pending-pill">Content</span></div>
+    <p class="text-xs text-muted mb-5 relative">Pre-approved by the GM. Edits send the template back to GM review before sending to customers.</p>
+    <ul class="space-y-2 relative">
+      <li class="flex items-start justify-between gap-3 p-3 rounded-2xl border border-slate-200 bg-slate-50/60"><div class="min-w-0"><div class="text-sm font-semibold text-ink flex items-center gap-2">Welcome · EN <span class="safe-pill" style="background:#ecfdf5;color:#047857">Approved</span></div><p class="text-[11px] text-muted truncate">"Hi! Thanks for reaching out. Our compact fleet is ready..."</p></div><button class="text-xs text-vip-700 font-semibold flex-shrink-0">Edit</button></li>
+      <li class="flex items-start justify-between gap-3 p-3 rounded-2xl border border-slate-200 bg-slate-50/60"><div class="min-w-0"><div class="text-sm font-semibold text-ink flex items-center gap-2">Welcome · ES <span class="safe-pill" style="background:#ecfdf5;color:#047857">Approved</span></div><p class="text-[11px] text-muted truncate">"¡Hola! Gracias por escribir. Nuestra flota compacta..."</p></div><button class="text-xs text-vip-700 font-semibold flex-shrink-0">Edit</button></li>
+      <li class="flex items-start justify-between gap-3 p-3 rounded-2xl border border-amber-200 bg-amber-50/60"><div class="min-w-0"><div class="text-sm font-semibold text-ink flex items-center gap-2">After-hours · EN <span class="pending-pill">Pending GM</span></div><p class="text-[11px] text-muted truncate">"We are currently closed. We will reply tomorrow at 8 AM."</p></div><button class="text-xs text-muted font-semibold flex-shrink-0" disabled>Edit</button></li>
+    </ul>
+    <button class="mt-3 text-xs px-3 py-1.5 rounded-xl border border-vip-200 text-vip-700 font-semibold hover:bg-vip-50">+ New template</button>
+  </section>
+
+  <!-- VIP: Quiet hours -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Quiet hours<!-- ES: Horas de silencio --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">No notifications between these hours. Customers can still send inquiries.</p>
+    <div class="grid grid-cols-2 gap-3 max-w-sm"><div><label class="block text-[11px] font-semibold text-ink mb-1">From</label><input type="time" value="22:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div><div><label class="block text-[11px] font-semibold text-ink mb-1">To</label><input type="time" value="07:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div></div>
+  </section>
+
+  <!-- VIP: Reply SLA -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Reply SLA target<!-- ES: Tiempo objetivo de respuesta --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">Average reply time you commit to. Affects the public <strong>Fast responder</strong> badge.</p>
+    <div class="flex items-center gap-3"><input type="number" value="15" min="5" max="240" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm"/><span class="text-sm text-muted">minutes</span><span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Fast responder active</span></div>
+  </section>
+
+  <!-- VIP: Featured promotion windows -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Featured promotion windows<!-- ES: Ventanas de promoción --></h2><span class="pending-pill">Content</span></div>
+    <p class="text-xs text-muted mb-5">Days/hours when the GM-granted boost applies (only if your hierarchy plan includes scheduling).</p>
+    <div class="grid grid-cols-7 gap-1.5 mb-3">
+      <button class="text-[10px] py-1.5 rounded-lg bg-vip-100 text-vip-700 font-semibold">Mon</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-slate-100 text-muted">Tue</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-slate-100 text-muted">Wed</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-slate-100 text-muted">Thu</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-vip-100 text-vip-700 font-semibold">Fri</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-vip-100 text-vip-700 font-semibold">Sat</button>
+      <button class="text-[10px] py-1.5 rounded-lg bg-vip-100 text-vip-700 font-semibold">Sun</button>
+    </div>
+    <div class="grid grid-cols-2 gap-3 max-w-sm"><div><label class="block text-[11px] font-semibold text-ink mb-1">Boost from</label><input type="time" value="08:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div><div><label class="block text-[11px] font-semibold text-ink mb-1">Boost to</label><input type="time" value="20:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"/></div></div>
+  </section>
+
+  <!-- VIP: Analytics export -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Analytics export<!-- ES: Exportar analíticas --></h2><span class="safe-pill">Safe</span></div>
+    <p class="text-xs text-muted mb-5">Schedule a weekly CSV with KPIs delivered to your business email.</p>
+    <label class="flex items-center justify-between gap-3 py-1"><span><span class="text-sm text-ink font-medium block">Send weekly CSV every Monday</span><span class="text-[11px] text-muted">hello@dellsautorentals.com</span></span><input type="checkbox" checked class="h-5 w-9 rounded-full"/></label>
+  </section>
+
+  <!-- VIP: Dynamic pricing rules (car-rental specific) -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Dynamic pricing rules<!-- ES: Reglas de precio dinámico --></h2><span class="pending-pill">Content</span></div>
+    <p class="text-xs text-muted mb-5">Multipliers applied on top of each vehicle's base daily price.</p>
+    <div class="space-y-3">
+      <div class="flex items-center gap-3"><span class="text-sm text-ink flex-1">Weekend (Fri – Sun)</span><input type="number" step="0.05" value="1.25" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right"/><span class="text-sm text-muted">×</span></div>
+      <div class="flex items-center gap-3"><span class="text-sm text-ink flex-1">High season (Jun – Aug)</span><input type="number" step="0.05" value="1.40" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right"/><span class="text-sm text-muted">×</span></div>
+      <div class="flex items-center gap-3"><span class="text-sm text-ink flex-1">Last-minute (&lt; 24h)</span><input type="number" step="0.05" value="1.15" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right"/><span class="text-sm text-muted">×</span></div>
+    </div>
+  </section>
+
+  <!-- VIP: Insurance disclaimer (car-rental specific) -->
+  <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+    <div class="flex items-center justify-between mb-1"><h2 class="text-base font-semibold text-ink flex items-center gap-2"><span class="vip-chip">VIP</span> Default insurance disclaimer<!-- ES: Descargo de seguro --></h2><span class="pending-pill">Content</span></div>
+    <p class="text-xs text-muted mb-5">Displayed on every vehicle detail page and pre-pended to WhatsApp deep-link messages.</p>
+    <textarea rows="3" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm">All vehicles include basic liability coverage. Comprehensive insurance available on request. Driver must be 21+ with valid US license.</textarea>
+    <!-- ES: Todos los vehículos incluyen cobertura básica de responsabilidad. Cobertura total bajo solicitud. Conductor 21+ con licencia válida de EE.UU. -->
+  </section>
+
+  <!-- Save sticky -->
+  <div class="sticky bottom-4 z-10 bg-white rounded-3xl border border-slate-200 shadow-soft p-4 flex items-center justify-between gap-3 flex-wrap">
+    <p class="text-[11px] text-muted leading-relaxed flex-1 min-w-[200px]"><strong class="text-ink">Content changes return the listing to Pending.</strong> Safe changes apply immediately.</p>
+    <div class="flex items-center gap-2">
+      <button class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink">Cancel</button>
+      <button data-tooltip="Editing content fields returns this listing to Pending review" class="text-xs px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold">Save changes</button>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <section class="bg-white rounded-3xl border border-red-200 shadow-soft p-5 mt-8">
+    <h2 class="text-base font-semibold text-red-800 mb-1">Danger zone<!-- ES: Zona de peligro --></h2>
+    <p class="text-xs text-muted mb-4">Deleting is permanent. All photos, reservations and reviews will be removed.</p>
+    <button class="px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold">Delete listing</button>
+  </section>
+</main>
+</body>
+</html>

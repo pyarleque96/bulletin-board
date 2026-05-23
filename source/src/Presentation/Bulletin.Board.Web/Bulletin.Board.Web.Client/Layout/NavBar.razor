@@ -1,0 +1,187 @@
+@using Bulletin.Board.Web.Client.Services
+@using Bulletin.Board.Web.Client.States
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Globalization
+
+@implements IDisposable
+
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SharedResource> _localizer
+@inject NavBarState NavBarState
+
+<header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill @_navDarkClass rounded-full px-5 py-3 flex items-center justify-between"
+         aria-label="Main navigation">
+
+        <!-- Logo -->
+        <NavLink href="/" class="flex items-center cursor-pointer" aria-label="Bulletin Dells home" Match="NavLinkMatch.All">
+            <img src="@(NavBarState.IsDark ? "/images/brand/bulletin-dells-white-logo.png" : "/images/brand/bulletin-dells-logo.png")"
+                 alt="Bulletin Dells"
+                 class="h-8 w-auto mt-1" />
+        </NavLink>
+
+        <!-- Desktop nav links -->
+        <ul class="nav-pill-list hidden md:flex items-center gap-1" role="list" id="nav-pill-list">
+            <span class="nav-indicator" aria-hidden="true"></span>
+
+            <li>
+                <NavLink href="/"
+                         Match="NavLinkMatch.All"
+                         class="nav-link px-3 py-1.5 rounded-full text-sm text-muted cursor-pointer">
+                    @_localizer["Nav_Home"]
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="/browse"
+                         class="nav-link px-3 py-1.5 rounded-full text-sm text-muted cursor-pointer">
+                    @_localizer["Nav_Browse"]
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="/how-it-works"
+                         class="nav-link px-3 py-1.5 rounded-full text-sm text-muted cursor-pointer">
+                    @_localizer["Nav_HowItWorks"]
+                </NavLink>
+            </li>
+            @* Owner shortcut — visible to any authenticated user *@
+            <AuthorizeView>
+                <Authorized>
+                    <li>
+                        <NavLink href="/manage"
+                                 class="nav-link px-3 py-1.5 rounded-full text-sm text-muted cursor-pointer">
+                            @_localizer["Nav_Manage"]
+                        </NavLink>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+
+            @* Admin link — only visible to users with role Admin *@
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <li>
+                        <NavLink href="/admin/categories"
+                                 class="nav-link px-3 py-1.5 rounded-full text-sm
+                                        text-brand-700 hover:text-brand-800 hover:bg-brand-50
+                                        transition-colors duration-200 cursor-pointer border
+                                        border-transparent hover:border-brand-300"
+                                 ActiveClass="text-brand-800 bg-brand-50 border-brand-300">
+                            @_localizer["Nav_Admin"]
+                        </NavLink>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+
+        <!-- Language toggle + auth state -->
+        <div class="flex items-center gap-2">
+
+            <!-- Language toggle -->
+            <button @onclick="ToggleCulture"
+                    class="nav-lang-btn hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
+                    aria-label="@_localizer["Nav_LangToggle"]">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                @_langLabel
+            </button>
+
+            <!-- Auth state -->
+            <AuthorizeView>
+                <Authorized>
+                    <span class="hidden sm:block text-xs text-muted truncate max-w-[140px]"
+                          title="@context.User.Identity?.Name">
+                        @context.User.Identity?.Name
+                    </span>
+                    <button @onclick="SignOut"
+                            class="nav-link px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
+                            aria-label="@_localizer["Nav_Logout"]">
+                        @_localizer["Nav_Logout"]
+                    </button>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink href="/login"
+                             class="nav-link px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
+                        @_localizer["Nav_Login"]
+                    </NavLink>
+                    <NavLink href="/register"
+                             class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full btn-primary cursor-pointer"
+                             aria-label="@_localizer["Nav_ListYours"]">
+                        @_localizer["Nav_ListYours"]
+                    </NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+    </nav>
+</header>
+
+@code {
+    private string _langLabel    = "EN / ES";
+    private string _navDarkClass => NavBarState.IsDark ? "nav-dark" : string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var current = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToUpperInvariant();
+        _langLabel = current == "ES" ? "ES / EN" : "EN / ES";
+        NavBarState.OnChange += HandleNavBarStateChange;
+    }
+
+    private void HandleNavBarStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavBarState.OnChange -= HandleNavBarStateChange;
+    }
+
+    /// <summary>
+    /// Switches the UI culture by calling the /Culture/Set endpoint which sets
+    /// the .AspNetCore.Culture cookie and redirects back to the current page.
+    ///
+    /// Flow:
+    ///   1. Determine the next culture (toggle en↔es).
+    ///   2. Build a safe relative return URL from the current URI.
+    ///   3. Navigate with forceLoad:true so the browser performs a real HTTP
+    ///      request to /Culture/Set, the server writes the cookie, and then
+    ///      redirects back — causing Blazor WASM to restart with the new cookie
+    ///      already in place.  This is the only reliable way to change the
+    ///      IStringLocalizer culture in Blazor WASM (the ResourceManager is
+    ///      initialised once at startup; a soft navigation cannot replace it).
+    ///
+    /// Navigation.ToBaseRelativePath returns the path WITHOUT a leading slash
+    /// (e.g. "browse" for https://host/browse, "" for https://host/).
+    /// We prepend "/" so the redirect URI is always an absolute-path reference
+    /// that passes the server-side open-redirect guard (which rejects absolute
+    /// URIs with a scheme).
+    /// </summary>
+    private void ToggleCulture()
+    {
+        var current = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        var next    = current == "es" ? "en" : "es";
+
+        // ToBaseRelativePath("https://host/browse?q=foo") → "browse?q=foo"
+        // ToBaseRelativePath("https://host/")             → ""
+        var relative     = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var relativePath = "/" + relative;   // always starts with /
+
+        Navigation.NavigateTo(
+            $"/Culture/Set?culture={next}&redirectUri={Uri.EscapeDataString(relativePath)}",
+            forceLoad: true);
+    }
+
+    private async Task SignOut()
+    {
+        await AuthService.LogoutAsync();
+        var provider = (BulletinAuthStateProvider)AuthStateProvider;
+        provider.NotifyUserLoggedOut();
+        Navigation.NavigateTo("/");
+    }
+}
+

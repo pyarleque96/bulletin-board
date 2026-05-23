@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Listing Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc', ink: '#0f172a', muted: '#64748b',
+          },
+          boxShadow: { soft: '0 2px 8px rgba(0,0,0,0.06)', lift: '0 4px 16px rgba(0,0,0,0.10)' },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    #sidebar { transition: width 300ms cubic-bezier(0.32,0.72,0,1); overflow: hidden; }
+    #sidebar .label { transition: opacity 200ms cubic-bezier(0.32,0.72,0,1); }
+    #sidebar.collapsed .label { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; }
+    #sidebar.collapsed { width: 64px; }
+    #sidebar:not(.collapsed) { width: 256px; }
+    .nav-item { transition: background-color 150ms ease, color 150ms ease; }
+    .nav-item:hover { background: rgba(255,255,255,0.08); }
+    .nav-item.active { background: rgba(59,130,246,0.25); color: #93c5fd; }
+    button { transition: all 200ms cubic-bezier(0.32,0.72,0,1); }
+    button:active { transform: scale(0.98); }
+    .photo-card { transition: box-shadow 200ms ease; }
+    .photo-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    /* Toggle switch */
+    .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #cbd5e1; border-radius: 20px; transition: 200ms cubic-bezier(0.32,0.72,0,1); }
+    .toggle-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 200ms cubic-bezier(0.32,0.72,0,1); }
+    input:checked + .toggle-slider { background: #22c55e; }
+    input:checked + .toggle-slider:before { transform: translateX(16px); }
+  </style>
+</head>
+<body class="bg-surface text-ink min-h-[100dvh] flex">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="flex flex-col min-h-[100dvh] bg-ink text-slate-300 flex-shrink-0">
+    <div class="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+      <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span>
+    </div>
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer border-b border-white/10 w-full text-left">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+      <span class="label text-xs font-medium">Collapse</span>
+    </button>
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="label text-sm">Dashboard</span></a>
+      <a href="listings-queue.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="label text-sm">Listings Queue</span></a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label text-sm">Providers</span></a>
+      <a href="categories.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg><span class="label text-sm">Categories</span></a>
+      <a href="reviews-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="label text-sm">Reviews Queue</span></a>
+    </nav>
+    <div class="p-3 border-t border-white/10">
+      <div class="flex items-center gap-3 px-2 py-2">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">GM</div>
+        <div class="label min-w-0"><p class="text-xs font-medium text-white truncate">General Manager</p><p class="text-[11px] text-slate-400 truncate">admin@bulletindells.com</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-auto min-h-[100dvh]">
+    <header class="bg-white border-b border-slate-200/60 px-6 py-4 flex items-center justify-between sticky top-0 z-10" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <div class="flex items-center gap-3">
+        <a href="listings-queue.html" class="text-muted hover:text-ink transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </a>
+        <div>
+          <h1 class="text-lg font-semibold text-ink">Airport Shuttle — Premium Round Trip</h1>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="text-xs text-muted">Ramirez Transport LLC</span>
+            <span class="text-slate-300">·</span>
+            <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">VIP</span>
+            <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+          </div>
+        </div>
+      </div>
+      <!-- Status + Featured Controls -->
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span class="text-xs font-medium text-muted">GM Featured</span>
+          <!-- data-binding: PUT /api/v1/listings/{id}/featured -->
+          <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+        </label>
+        <select class="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white text-ink focus:outline-none focus:ring-2 focus:ring-brand-400 font-medium" aria-label="Change listing status">
+          <option value="Pending" selected>Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="NeedsChanges">Needs Changes</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <button class="px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 active:scale-[0.98]">
+          Save Changes
+        </button>
+      </div>
+    </header>
+
+    <div class="p-6 grid grid-cols-3 gap-6">
+
+      <!-- Left: Main Details -->
+      <div class="col-span-2 space-y-5">
+
+        <!-- Photo Gallery -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-ink">Photos</h2>
+            <p class="text-xs text-muted">Toggle IsPublic per photo — only public photos shown to users</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Photo 1 - Public -->
+            <div class="photo-card rounded-xl overflow-hidden border border-slate-200/60 relative">
+              <img src="https://picsum.photos/seed/shuttle_a/400/260" alt="Shuttle exterior" class="w-full h-32 object-cover" />
+              <div class="p-2.5 bg-white">
+                <p class="text-xs text-muted truncate mb-2">shuttle_exterior.jpg</p>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <!-- data-binding: PUT /api/v1/photos/{id}/visibility -->
+                  <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                  <span class="text-xs font-medium text-green-600">Public</span>
+                </label>
+              </div>
+            </div>
+            <!-- Photo 2 - Public -->
+            <div class="photo-card rounded-xl overflow-hidden border border-slate-200/60 relative">
+              <img src="https://picsum.photos/seed/shuttle_b/400/260" alt="Shuttle interior" class="w-full h-32 object-cover" />
+              <div class="p-2.5 bg-white">
+                <p class="text-xs text-muted truncate mb-2">shuttle_interior.jpg</p>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                  <span class="text-xs font-medium text-green-600">Public</span>
+                </label>
+              </div>
+            </div>
+            <!-- Photo 3 - Not Public -->
+            <div class="photo-card rounded-xl overflow-hidden border border-slate-200/60 relative">
+              <img src="https://picsum.photos/seed/shuttle_c/400/260" alt="Driver license" class="w-full h-32 object-cover opacity-60" />
+              <div class="p-2.5 bg-white">
+                <p class="text-xs text-muted truncate mb-2">driver_license.jpg</p>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+                  <span class="text-xs font-medium text-slate-500">Hidden</span>
+                </label>
+              </div>
+            </div>
+            <!-- Photo 4 - Not Public -->
+            <div class="photo-card rounded-xl overflow-hidden border border-slate-200/60 relative">
+              <img src="https://picsum.photos/seed/shuttle_d/400/260" alt="Route map" class="w-full h-32 object-cover opacity-60" />
+              <div class="p-2.5 bg-white">
+                <p class="text-xs text-muted truncate mb-2">route_map.jpg</p>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+                  <span class="text-xs font-medium text-slate-500">Hidden</span>
+                </label>
+              </div>
+            </div>
+            <!-- Photo 5 - Public -->
+            <div class="photo-card rounded-xl overflow-hidden border border-slate-200/60 relative">
+              <img src="https://picsum.photos/seed/shuttle_e/400/260" alt="Fleet vehicle" class="w-full h-32 object-cover" />
+              <div class="p-2.5 bg-white">
+                <p class="text-xs text-muted truncate mb-2">fleet_2023.jpg</p>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                  <span class="text-xs font-medium text-green-600">Public</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Listing Data -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <h2 class="text-sm font-semibold text-ink mb-4">Listing Information</h2>
+          <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <p class="text-xs text-muted mb-0.5">Title (EN)</p>
+              <p class="font-medium text-ink">Airport Shuttle — Premium Round Trip</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted mb-0.5">Title (ES)</p>
+              <p class="font-medium text-ink">Shuttle al Aeropuerto — Viaje Redondo Premium</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted mb-0.5">Price</p>
+              <p class="font-medium font-mono text-ink">$45.00 / trip</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted mb-0.5">Category</p>
+              <p class="font-medium text-ink">Airport Rides</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-xs text-muted mb-0.5">Description (EN)</p>
+              <p class="text-ink text-sm leading-relaxed">Professional airport transfer service to and from Madison Dane County Airport and Milwaukee Mitchell. Clean vehicles, on-time pickup guarantee, luggage assistance included. Available 24/7.</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-xs text-muted mb-0.5">Description (ES)</p>
+              <p class="text-ink text-sm leading-relaxed">Servicio profesional de traslado al aeropuerto de Madison Dane County y Milwaukee Mitchell. Vehículos limpios, garantía de puntualidad, ayuda con equipaje incluida. Disponible 24/7.</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted mb-0.5">WhatsApp</p>
+              <p class="font-medium text-ink font-mono">+1 (608) 447-2913</p>
+            </div>
+            <div>
+              <p class="text-xs text-muted mb-0.5">Submitted</p>
+              <p class="font-medium text-ink font-mono">May 4, 2026 — 9:17 AM</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- GM Note -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <h2 class="text-sm font-semibold text-ink mb-2">GM Note to Provider</h2>
+          <p class="text-xs text-muted mb-3">This note is sent to the provider when status is "Needs Changes" or "Rejected". Leave blank if approving.</p>
+          <!-- data-binding: gmNote field in PUT /api/v1/listings/{id}/status -->
+          <textarea rows="4" placeholder="e.g. Please upload a clearer photo of the vehicle exterior and confirm pricing includes all fees..." class="w-full text-sm border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none text-ink placeholder:text-slate-300"></textarea>
+        </div>
+      </div>
+
+      <!-- Right: Provider + Actions -->
+      <div class="space-y-5">
+
+        <!-- Provider Card -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <h2 class="text-sm font-semibold text-ink mb-4">Provider</h2>
+          <div class="flex items-center gap-3 mb-4">
+            <img src="https://picsum.photos/seed/ramirez_pf/80/80" alt="Ramirez" class="w-12 h-12 rounded-full object-cover" />
+            <div>
+              <p class="font-semibold text-ink">Ramirez Transport LLC</p>
+              <div class="flex items-center gap-1.5 mt-1">
+                <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">VIP</span>
+                <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">Verified</span>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-xs text-muted">Phone</span>
+              <span class="text-xs font-mono">+1 (608) 447-2913</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-muted">Hierarchy</span>
+              <span class="text-xs font-mono font-semibold text-amber-600">9999</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-muted">Total Listings</span>
+              <span class="text-xs font-mono">6</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-muted">Avg Rating</span>
+              <span class="text-xs font-mono">4.9</span>
+            </div>
+          </div>
+          <a href="providers.html" class="mt-4 flex items-center justify-center gap-2 w-full px-3 py-2 border border-slate-200 text-xs font-medium rounded-lg text-muted hover:bg-slate-50 transition-colors">
+            View Provider Profile
+          </a>
+        </div>
+
+        <!-- Quick Status Actions -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <h2 class="text-sm font-semibold text-ink mb-3">Quick Actions</h2>
+          <!-- data-binding: PUT /api/v1/listings/{id}/status -->
+          <div class="space-y-2">
+            <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 active:scale-[0.98]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Approve Listing
+            </button>
+            <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-100 text-orange-700 text-sm font-medium rounded-xl hover:bg-orange-200 active:scale-[0.98]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Request Changes
+            </button>
+            <button class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 text-sm font-medium rounded-xl hover:bg-red-100 active:scale-[0.98] border border-red-200">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              Reject Listing
+            </button>
+          </div>
+          <p class="text-[11px] text-muted mt-3 text-center">Provider receives email notification on status change</p>
+        </div>
+
+        <!-- Listing History -->
+        <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <h2 class="text-sm font-semibold text-ink mb-3">Status History</h2>
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <div class="w-1.5 h-1.5 rounded-full bg-yellow-400 mt-1.5 flex-shrink-0"></div>
+              <div>
+                <p class="text-xs font-medium text-ink">Pending review</p>
+                <p class="text-[11px] text-muted">May 4, 2026 — 9:17 AM</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></div>
+              <div>
+                <p class="text-xs font-medium text-ink">Needs Changes</p>
+                <p class="text-[11px] text-muted">Apr 28, 2026 — "Clearer photos needed"</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5 flex-shrink-0"></div>
+              <div>
+                <p class="text-xs font-medium text-ink">First Submission</p>
+                <p class="text-[11px] text-muted">Apr 25, 2026 — 2:44 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

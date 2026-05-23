@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Sticker Circular (Light ink, dark surface)</title>
+  <circle cx="256" cy="256" r="256" fill="#0F172A"/>
+  <circle cx="266" cy="266" r="216" fill="#000000" opacity="0.5"/>
+  <circle cx="256" cy="256" r="226" fill="#101A3D"/>
+  <circle cx="256" cy="256" r="208" fill="#FFFFFF"/>
+  <g transform="translate(0 -10)">
+    <rect x="242" y="106" width="28" height="320" fill="#101A3D"/>
+    <path fill="#101A3D" fill-rule="evenodd" d="M 242 106 L 168 106 C 122 106, 96 132, 96 174 C 96 216, 122 242, 168 242 L 242 242 Z M 242 138 L 178 138 C 144 138, 128 154, 128 174 C 128 194, 144 210, 178 210 L 242 210 Z"/>
+    <path fill="#101A3D" fill-rule="evenodd" d="M 242 262 L 158 262 C 104 262, 78 290, 78 332 C 78 374, 104 402, 158 402 L 242 402 Z M 242 294 L 168 294 C 138 294, 118 310, 118 332 C 118 354, 138 370, 168 370 L 242 370 Z"/>
+    <path fill="#F39323" fill-rule="evenodd" d="M 270 106 L 344 106 C 390 106, 416 132, 416 174 C 416 216, 390 242, 344 242 L 270 242 Z M 270 138 L 334 138 C 368 138, 384 154, 384 174 C 384 194, 368 210, 334 210 L 270 210 Z"/>
+    <path fill="#F39323" fill-rule="evenodd" d="M 270 262 L 354 262 C 408 262, 434 290, 434 332 C 434 374, 408 402, 354 402 L 270 402 Z M 270 294 L 344 294 C 374 294, 394 310, 394 332 C 394 354, 374 370, 344 370 L 270 370 Z"/>
+  </g>
+  <g fill="#F39323">
+    <path d="M 110 90 L 116 102 L 128 105 L 116 108 L 110 120 L 104 108 L 92 105 L 104 102 Z"/>
+  </g>
+</svg>

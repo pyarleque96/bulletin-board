@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salon Esperanza — Beauty · Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { heading: ['Outfit','sans-serif'], body: ['Rubik','sans-serif'] },
+          colors: {
+            lake:   {50:'#e6f4fb',100:'#b3daf2',200:'#80c0e9',300:'#4da6e0',400:'#1a8cd7',500:'#0077B6',600:'#005f91',700:'#00476d'},
+            amber:  {50:'#fffbf0',100:'#fef3c7',200:'#fde68a',300:'#fcd34d',400:'#fbbf24',500:'#F59E0B',600:'#d97706',700:'#b45309'},
+            forest: {50:'#e8f5ee',100:'#c3e6cf',200:'#9dd8b0',500:'#2D6A4F',600:'#24553f'},
+            cream: '#FFFBF5',
+            dells: { text:'#1A2E3B', muted:'#4A6375', border:'#DDE8EE' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    *,*::before,*::after { box-sizing: border-box; }
+    body { font-family: 'Rubik', sans-serif; background: #FFFBF5; color: #1A2E3B; -webkit-font-smoothing: antialiased; }
+    h1,h2,h3,h4,h5,h6 { font-family: 'Outfit', sans-serif; }
+
+    @keyframes fadeSlideUp  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes shimmer      { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+    @keyframes pulse-soft   { 0%,100%{opacity:1} 50%{opacity:.6} }
+    @keyframes modalIn      { from{opacity:0;transform:scale(.96) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    @keyframes float        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+    .animate-fsu   { animation: fadeSlideUp .5s cubic-bezier(.16,1,.3,1) both; }
+    .animate-fsu-2 { animation: fadeSlideUp .5s cubic-bezier(.16,1,.3,1) .12s both; }
+    .animate-fsu-3 { animation: fadeSlideUp .5s cubic-bezier(.16,1,.3,1) .24s both; }
+    .animate-modal { animation: modalIn .3s cubic-bezier(.16,1,.3,1) both; }
+    .animate-float { animation: float 3.5s ease-in-out infinite; }
+
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+    /* Z: 10=nav, 20=dropdown, 30=modal, 50=toast */
+
+    /* Tier badges */
+    .badge-sdvip    { background:linear-gradient(135deg,#F59E0B 0%,#d97706 100%); color:#fff; font-family:'Outfit',sans-serif; font-weight:700; letter-spacing:.03em; box-shadow:0 2px 8px rgba(245,158,11,.35); }
+    .badge-vip      { background:#0077B6; color:#fff; font-family:'Outfit',sans-serif; font-weight:600; }
+    .badge-verified { background:#2D6A4F; color:#fff; font-family:'Outfit',sans-serif; font-weight:600; }
+
+    /* Buttons */
+    .btn-primary  { background:#F59E0B; color:#1A2E3B; font-family:'Outfit',sans-serif; font-weight:700; transition:background .2s ease,transform .15s cubic-bezier(.16,1,.3,1),box-shadow .2s ease; box-shadow:0 3px 12px rgba(245,158,11,.32); }
+    .btn-primary:hover  { background:#d97706; }
+    .btn-primary:active { transform:scale(.98); }
+
+    .wa-btn { background:#25D366; color:#fff; font-family:'Outfit',sans-serif; font-weight:700; transition:background .2s ease,transform .15s cubic-bezier(.16,1,.3,1),box-shadow .2s ease; box-shadow:0 4px 16px rgba(37,211,102,.3); }
+    .wa-btn:hover  { background:#1da851; box-shadow:0 6px 20px rgba(37,211,102,.4); }
+    .wa-btn:active { transform:scale(.98); }
+
+    .btn-ghost { color:#1A2E3B; border:1.5px solid #DDE8EE; font-family:'Outfit',sans-serif; font-weight:600; transition:border-color .2s ease,background .2s ease,transform .15s cubic-bezier(.16,1,.3,1); }
+    .btn-ghost:hover  { border-color:#0077B6; background:rgba(0,119,182,.05); }
+    .btn-ghost:active { transform:scale(.98); }
+
+    /* Stars */
+    .star-filled { color:#F59E0B; }
+    .star-empty  { color:#DDE8EE; }
+
+    /* Gallery */
+    .gallery-main { border-radius:24px; overflow:hidden; }
+    .thumb { transition:opacity .15s ease,box-shadow .15s ease; cursor:pointer; }
+    .thumb:hover { opacity:.85; }
+    .thumb.active { box-shadow:0 0 0 2.5px #0077B6; opacity:1; }
+
+    /* Sticky sidebar */
+    .sticky-panel { position:sticky; top:88px; max-height:calc(100vh - 96px); overflow-y:auto; }
+
+    /* Service item */
+    .service-item { transition:background .15s ease,border-color .15s ease; }
+    .service-item:hover { background:#f8fbff; border-color:#b3daf2; }
+
+    /* Availability pill */
+    .avail-open  { background:#dcfce7; color:#166534; }
+    .avail-busy  { background:#fef9c3; color:#854d0e; }
+    .avail-closed{ background:#fee2e2; color:#991b1b; }
+
+    /* Review card */
+    .review-card { background:#fff; border:1px solid #DDE8EE; border-radius:16px; padding:16px; }
+    .review-verified { background:#e8f5ee; color:#2D6A4F; font-family:'Outfit',sans-serif; font-weight:600; font-size:.65rem; border:1px solid #c3e6cf; }
+
+    /* Glass card */
+    .glass-card { background:rgba(255,255,255,.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.6); box-shadow:0 4px 20px -6px rgba(0,119,182,.1),inset 0 1px 0 rgba(255,255,255,.75); }
+
+    /* Language toggle */
+    .lang-active { background:#0077B6; color:#fff; }
+
+    /* Waiver modal */
+    #waiver-modal { display:none; }
+    #waiver-modal.open { display:flex; }
+
+    /* Toast */
+    #toast { transition:opacity .3s ease,transform .3s cubic-bezier(.16,1,.3,1); }
+    #toast.hidden-toast { opacity:0; transform:translateY(12px); pointer-events:none; }
+
+    /* Rating bar */
+    .rating-bar-bg { background:#eef3f7; border-radius:4px; overflow:hidden; height:8px; }
+    .rating-bar-fill { height:100%; border-radius:4px; background:#F59E0B; transition:width .4s ease; }
+
+    /* Floating badge pulse */
+    .pulse-dot { animation: pulse-soft 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-cream">
+
+  <!-- ============================================================
+       @component: NavBar (detail page — back nav)
+       Data: listing.category, listing.title, language
+  ============================================================ -->
+  <header class="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-dells-border" role="banner">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center gap-3">
+
+      <!-- Back -->
+      <a href="home-listings.html"
+         class="flex items-center gap-2 text-dells-muted hover:text-dells-text transition-colors duration-200 cursor-pointer mr-2 flex-shrink-0"
+         aria-label="Back to listings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        <span class="font-body text-sm hidden sm:inline">Back / Regresar</span>
+      </a>
+
+      <!-- Logo -->
+      <a href="landing.html" class="flex items-center gap-2 flex-shrink-0" aria-label="Bulletin Dells home">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <rect width="36" height="36" rx="9" fill="#0077B6"/>
+          <path d="M6 24 C10 20 14 28 18 24 C22 20 26 28 30 24" stroke="#FFFBF5" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <circle cx="18" cy="13" r="5" fill="#F59E0B"/>
+          <circle cx="18" cy="13" r="2.5" fill="#fff"/>
+          <line x1="18" y1="16" x2="18" y2="21" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="font-heading font-700 text-dells-text text-sm hidden sm:inline">Bulletin<span class="text-lake-500">Dells</span></span>
+      </a>
+
+      <!-- Breadcrumb -->
+      <!-- @binding: listing.category, listing.title -->
+      <nav class="hidden md:flex items-center gap-1 text-xs font-body text-dells-muted ml-2" aria-label="Breadcrumb">
+        <a href="home-listings.html" class="hover:text-lake-500 transition-colors cursor-pointer">Browse</a>
+        <span aria-hidden="true">/</span>
+        <a href="home-listings.html?cat=beauty" class="hover:text-lake-500 transition-colors cursor-pointer">Beauty</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-dells-text font-500" aria-current="page">Salon Esperanza</span>
+      </nav>
+
+      <!-- Language -->
+      <div class="ml-auto flex items-center rounded-lg overflow-hidden border border-dells-border text-xs font-heading font-600" role="group" aria-label="Language">
+        <button class="lang-active px-2.5 py-1.5 cursor-pointer transition-colors" aria-pressed="true">EN</button>
+        <button class="px-2.5 py-1.5 text-dells-muted hover:bg-lake-50 cursor-pointer transition-colors" aria-pressed="false">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN LAYOUT: left col (gallery + details + reviews) / right col (contact panel)
+       @binding: listing, provider, reviews
+  ============================================================ -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-8" aria-label="Service listing detail">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+
+      <!-- ============================================================
+           LEFT COLUMN
+      ============================================================ -->
+      <div>
+
+        <!-- ========================================================
+             @component: ListingGallery
+             Data: listing.approvedPhotos[] (GM-filtered)
+             @binding: selectedPhotoIndex
+        ======================================================== -->
+        <div class="mb-6 animate-fsu">
+
+          <!-- Main photo -->
+          <!-- @state: approvedPhotos[selectedPhotoIndex] -->
+          <div class="gallery-main relative h-72 sm:h-96 mb-3 bg-gradient-to-br from-pink-50 to-purple-50"
+               role="img" aria-label="Main photo: Salon Esperanza interior — GM approved">
+            <svg class="w-full h-full" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="800" height="380" fill="url(#beautyGrad)"/>
+              <!-- Background flora / soft shapes -->
+              <ellipse cx="680" cy="80" rx="110" ry="90" fill="#fce7f3" opacity=".65"/>
+              <ellipse cx="120" cy="300" rx="90" ry="70" fill="#e8f5ee" opacity=".5"/>
+              <!-- Mirror silhouette -->
+              <ellipse cx="280" cy="155" rx="70" ry="90" fill="#fff" opacity=".35"/>
+              <ellipse cx="280" cy="145" rx="60" ry="78" fill="url(#mirrorShine)" opacity=".55"/>
+              <!-- Chair silhouette -->
+              <rect x="220" y="265" width="120" height="80" rx="10" fill="#1A2E3B" opacity=".2"/>
+              <rect x="235" y="220" width="90" height="55" rx="8" fill="#1A2E3B" opacity=".22"/>
+              <rect x="240" y="207" width="80" height="20" rx="6" fill="#F59E0B" opacity=".45"/>
+              <!-- Floating petals / sparkle -->
+              <circle cx="480" cy="100" r="6" fill="#F59E0B" opacity=".55"/>
+              <circle cx="560" cy="170" r="4" fill="#F59E0B" opacity=".4"/>
+              <circle cx="160" cy="140" r="5" fill="#F59E0B" opacity=".35"/>
+              <!-- Scissors icon hint -->
+              <line x1="550" y1="80" x2="590" y2="120" stroke="#be185d" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <line x1="590" y1="80" x2="550" y2="120" stroke="#be185d" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <circle cx="545" cy="78" r="8" fill="#be185d" opacity=".25"/>
+              <circle cx="595" cy="78" r="8" fill="#be185d" opacity=".25"/>
+              <!-- Treeline bottom (Wisconsin nature) -->
+              <path d="M0 330 C200 305 400 345 600 320 C720 308 770 330 800 322 L800 380 L0 380 Z" fill="#2D6A4F" opacity=".15"/>
+              <defs>
+                <linearGradient id="beautyGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#fdf2f8"/>
+                  <stop offset="45%" stop-color="#fce7f3"/>
+                  <stop offset="100%" stop-color="#ffe4e6"/>
+                </linearGradient>
+                <linearGradient id="mirrorShine" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#fff"/>
+                  <stop offset="100%" stop-color="#e6f4fb"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <!-- Badges overlay -->
+            <div class="absolute top-4 left-4 flex gap-2 flex-wrap">
+              <span class="badge-vip px-3 py-1.5 rounded-full text-xs">VIP</span>
+              <span class="badge-verified px-3 py-1.5 rounded-full text-xs">ID Verified</span>
+              <span class="bg-white/90 text-forest-600 text-xs font-heading font-600 px-2.5 py-1.5 rounded-full flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                GM Approved
+              </span>
+            </div>
+
+            <!-- Photo count -->
+            <div class="absolute bottom-4 right-4 bg-black/50 text-white text-xs font-heading font-600 px-3 py-1.5 rounded-full" aria-label="4 photos available">
+              1 / 4 photos
+            </div>
+
+            <!-- Availability floating badge -->
+            <div class="absolute bottom-4 left-4 avail-open flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-heading font-700 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-green-500 pulse-dot" aria-hidden="true"></span>
+              Open now / Abierto
+            </div>
+          </div>
+
+          <!-- Thumbnails -->
+          <!-- @binding: listing.approvedPhotos.map() -->
+          <div class="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Photo thumbnails">
+            <button role="listitem" class="thumb active flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 1 — selected" aria-pressed="true">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#fdf2f8,#fbcfe8);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 2" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#fce7f3,#f9a8d4);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 3" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#e8f5ee,#9dd8b0);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 4" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#fffbf0,#fde68a);"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             @component: ListingHeader
+             Data: listing.title, listing.category, listing.tier, listing.location
+        ======================================================== -->
+        <div class="mb-6 animate-fsu-2">
+          <div class="flex flex-wrap items-start gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+              <h1 class="font-heading font-800 text-2xl sm:text-3xl text-dells-text leading-tight">
+                Salon Esperanza
+              </h1>
+              <p class="font-body text-sm text-dells-muted mt-1">
+                Beauty &amp; Wellness · Wisconsin Dells, WI
+                <span class="mx-1.5 text-dells-border" aria-hidden="true">·</span>
+                Habla español
+              </p>
+            </div>
+            <!-- Starting price -->
+            <div class="flex flex-col items-end flex-shrink-0">
+              <p class="font-heading font-800 text-2xl text-lake-600">$25<span class="text-base font-400 text-dells-muted">+</span></p>
+              <p class="font-body text-xs text-dells-muted">Starting price</p>
+            </div>
+          </div>
+
+          <!-- Tier + verification badges -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="badge-vip px-3 py-1.5 rounded-full text-xs">VIP</span>
+            <span class="badge-verified px-3 py-1.5 rounded-full text-xs">ID Verified</span>
+            <span class="bg-lake-50 text-lake-600 border border-lake-100 px-3 py-1.5 rounded-full text-xs font-heading font-600">Phone Verified</span>
+            <span class="bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1.5 rounded-full text-xs font-heading font-600">Bilingual EN/ES</span>
+            <span class="bg-forest-50 text-forest-600 border border-forest-100 px-3 py-1.5 rounded-full text-xs font-heading font-600" style="background:#e8f5ee;border-color:#c3e6cf;">Social Verified</span>
+          </div>
+
+          <!-- Rating summary -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1" aria-label="Rating: 4.9 out of 5">
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span class="font-heading font-700 text-base text-dells-text ml-1">4.9</span>
+            </div>
+            <span class="font-body text-sm text-dells-muted">41 verified reviews</span>
+            <span class="font-body text-xs text-lake-500 font-500 cursor-pointer hover:underline" tabindex="0" role="button"
+                  onclick="document.getElementById('reviews').scrollIntoView({behavior:'smooth'})">
+              View all
+            </span>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             @component: ListingDescription
+             Data: listing.description, listing.services[]
+        ======================================================== -->
+        <div class="border-t border-dells-border pt-6 mb-6 animate-fsu-3">
+          <h2 class="font-heading font-700 text-lg text-dells-text mb-3">About this provider</h2>
+          <p class="font-body text-sm text-dells-muted leading-relaxed mb-3">
+            Salon Esperanza has been the go-to beauty destination for Wisconsin Dells' J1 workers and local community since 2021.
+            We specialize in hair care, nails, eyebrows, and skincare — all at fair prices.
+            Walk-ins welcome; appointments preferred via WhatsApp.
+          </p>
+          <p class="font-body text-sm text-dells-muted leading-relaxed">
+            <span class="font-500 text-dells-text">Sobre nosotras:</span> Salon Esperanza atiende a la comunidad latina y visitantes de Wisconsin Dells.
+            Especialistas en cabello, uñas, cejas y cuidado de la piel. Pregunta por nuestros precios en español.
+          </p>
+
+          <!-- Services list -->
+          <!-- @binding: listing.services[] -->
+          <h3 class="font-heading font-700 text-base text-dells-text mt-5 mb-3">Services Offered / Servicios</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="list" aria-label="Available services">
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-pink-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Haircut &amp; Style</p>
+                  <p class="font-body text-xs text-dells-muted">Corte y peinado</p>
+                </div>
+              </div>
+              <p class="font-heading font-700 text-sm text-lake-600 flex-shrink-0">$30+</p>
+            </div>
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Manicure &amp; Pedicure</p>
+                  <p class="font-body text-xs text-dells-muted">Uñas manos y pies</p>
+                </div>
+              </div>
+              <p class="font-heading font-700 text-sm text-lake-600 flex-shrink-0">$25+</p>
+            </div>
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="8" r="5"/>
+                    <path d="M12 13v8M8 17h8"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Eyebrow Threading</p>
+                  <p class="font-body text-xs text-dells-muted">Hilo para cejas</p>
+                </div>
+              </div>
+              <p class="font-heading font-700 text-sm text-lake-600 flex-shrink-0">$12+</p>
+            </div>
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-lake-50 flex items-center justify-center flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="4"/>
+                    <path d="M3 9h18M3 15h18M9 3v18"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Hair Color</p>
+                  <p class="font-body text-xs text-dells-muted">Tinte y coloración</p>
+                </div>
+              </div>
+              <p class="font-heading font-700 text-sm text-lake-600 flex-shrink-0">$55+</p>
+            </div>
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-forest-50 flex items-center justify-center flex-shrink-0" style="background:#e8f5ee;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Facial Treatment</p>
+                  <p class="font-body text-xs text-dells-muted">Limpieza facial</p>
+                </div>
+              </div>
+              <p class="font-heading font-700 text-sm text-lake-600 flex-shrink-0">$40+</p>
+            </div>
+
+            <div role="listitem"
+                 class="service-item flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-dells-border bg-white cursor-default">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fff8e6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4l3 3"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-heading font-600 text-sm text-dells-text">Appointment Required</p>
+                  <p class="font-body text-xs text-dells-muted">Cita previa via WhatsApp</p>
+                </div>
+              </div>
+              <span class="font-body text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full flex-shrink-0">Walk-in OK</span>
+            </div>
+
+          </div>
+
+          <!-- Hours / Schedule -->
+          <!-- @binding: listing.schedule -->
+          <h3 class="font-heading font-700 text-base text-dells-text mt-6 mb-3">Hours / Horario</h3>
+          <div class="bg-white rounded-2xl border border-dells-border overflow-hidden" role="table" aria-label="Business hours">
+            <div class="divide-y divide-dells-border">
+              <div class="flex items-center justify-between px-4 py-2.5" role="row">
+                <span class="font-body text-sm text-dells-text font-500" role="cell">Mon – Fri</span>
+                <span class="font-body text-sm text-dells-muted" role="cell">9:00 AM – 7:00 PM</span>
+              </div>
+              <div class="flex items-center justify-between px-4 py-2.5 bg-lake-50" role="row">
+                <span class="font-body text-sm text-lake-600 font-600" role="cell">Saturday</span>
+                <span class="font-body text-sm text-lake-600 font-500" role="cell">9:00 AM – 6:00 PM</span>
+              </div>
+              <div class="flex items-center justify-between px-4 py-2.5" role="row">
+                <span class="font-body text-sm text-dells-text font-500" role="cell">Sunday</span>
+                <span class="font-body text-sm text-dells-muted" role="cell">10:00 AM – 4:00 PM</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================================
+             @component: ReviewList
+             Data: GET /api/listings/{id}/reviews
+             Rules: only verified contact reviews, GM approved
+        ======================================================== -->
+        <div id="reviews" class="border-t border-dells-border pt-6">
+
+          <!-- Header with aggregate rating breakdown -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-5 mb-5">
+            <div>
+              <h2 class="font-heading font-700 text-lg text-dells-text flex items-center gap-2">
+                Reviews
+                <span class="text-dells-muted font-400 text-sm">(41)</span>
+              </h2>
+            </div>
+            <!-- Rating breakdown -->
+            <div class="flex-1 flex flex-col gap-1.5" aria-label="Rating breakdown">
+              <div class="flex items-center gap-2">
+                <span class="font-body text-xs text-dells-muted w-4 text-right">5</span>
+                <svg class="star-filled w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <div class="rating-bar-bg flex-1"><div class="rating-bar-fill" style="width:82%" aria-label="82% five star reviews"></div></div>
+                <span class="font-body text-xs text-dells-muted w-6">34</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-body text-xs text-dells-muted w-4 text-right">4</span>
+                <svg class="star-filled w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <div class="rating-bar-bg flex-1"><div class="rating-bar-fill" style="width:15%" aria-label="15% four star reviews"></div></div>
+                <span class="font-body text-xs text-dells-muted w-6">6</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-body text-xs text-dells-muted w-4 text-right">3</span>
+                <svg class="star-empty w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <div class="rating-bar-bg flex-1"><div class="rating-bar-fill" style="width:2%" aria-label="2% three star reviews"></div></div>
+                <span class="font-body text-xs text-dells-muted w-6">1</span>
+              </div>
+            </div>
+            <div class="text-center sm:text-right flex-shrink-0">
+              <p class="font-heading font-800 text-4xl text-dells-text">4.9</p>
+              <div class="flex items-center justify-center gap-0.5" aria-label="4.9 stars">
+                <svg class="star-filled w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="star-filled w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="star-filled w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="star-filled w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="star-filled w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <p class="font-body text-xs text-dells-muted mt-1">out of 5</p>
+            </div>
+          </div>
+
+          <!-- Verified reviews trust note -->
+          <div class="flex items-start gap-3 p-4 rounded-2xl mb-5" style="background:#e8f5ee;border:1px solid #c3e6cf;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <p class="font-body text-xs text-forest-600">
+              <strong class="font-heading font-600">Verified reviews only.</strong> Only users who contacted this provider through Bulletin Dells can leave a review. All reviews are approved by GM before publishing. / Solo reseñas verificadas, aprobadas por el GM.
+            </p>
+          </div>
+
+          <!-- Review cards -->
+          <!-- @binding: reviews.map() -->
+          <div class="flex flex-col gap-4">
+
+            <div class="review-card" role="article" aria-label="Review by Karla M.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#be185d,#9d174d);" aria-hidden="true">K</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Karla M.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Apr 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="5 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                El mejor salón de Wisconsin Dells para las que somos J1. Me hicieron las uñas y cejas en una sola visita. Precios justos y super amables. ¡Volveré pronto!
+              </p>
+            </div>
+
+            <div class="review-card" role="article" aria-label="Review by Ashley T.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#0077B6,#2D6A4F);" aria-hidden="true">A</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Ashley T.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Mar 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="5 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                Booked a haircut via WhatsApp — so easy. They were ready when I arrived, no wait. Best haircut I've had since moving to Dells. Highly recommend for locals and seasonal workers.
+              </p>
+            </div>
+
+            <div class="review-card" role="article" aria-label="Review by Daniela R.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#F59E0B,#d97706);" aria-hidden="true">D</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Daniela R.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Feb 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="4 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-empty w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                Muy satisfecha con el tinte de cabello. El precio fue exactamente el que me dijeron por WhatsApp, sin sorpresas. El lugar es pequeño pero muy limpio y acogedor.
+              </p>
+            </div>
+
+          </div>
+
+          <button class="mt-4 btn-ghost w-full rounded-2xl py-3 text-sm cursor-pointer" aria-label="Load more reviews">
+            Show more reviews / Ver más reseñas
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ============================================================
+           RIGHT COLUMN: Sticky contact panel
+           @component: ContactPanel (generic — no date picker)
+           Data: listing.whatsappNumber, listing.providerId, provider.name
+           States: default, waiver-open, success
+      ============================================================ -->
+      <div class="sticky-panel animate-fsu-2">
+        <div class="bg-white rounded-3xl border border-dells-border p-6 shadow-sm">
+
+          <!-- Provider info -->
+          <div class="flex items-center gap-3 mb-5 pb-5 border-b border-dells-border">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-heading font-800 text-xl text-white flex-shrink-0"
+                 style="background:linear-gradient(135deg,#be185d,#9d174d);" aria-hidden="true">E</div>
+            <div>
+              <p class="font-heading font-700 text-base text-dells-text">Salon Esperanza</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="badge-vip px-2 py-0.5 rounded-lg text-xs">VIP</span>
+                <span class="badge-verified px-2 py-0.5 rounded-lg text-xs">Verified</span>
+              </div>
+              <p class="font-body text-xs text-dells-muted mt-1 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Responds within 30 min
+              </p>
+            </div>
+          </div>
+
+          <!-- Current availability -->
+          <div class="flex items-center justify-between mb-5 p-3.5 rounded-2xl border border-dells-border bg-cream">
+            <div>
+              <p class="font-heading font-700 text-sm text-dells-text">Availability / Disponibilidad</p>
+              <p class="font-body text-xs text-dells-muted mt-0.5">Ask about today's open slots</p>
+            </div>
+            <span class="avail-open flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-heading font-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500 pulse-dot" aria-hidden="true"></span>
+              Open
+            </span>
+          </div>
+
+          <!-- Starting price summary -->
+          <div class="bg-cream rounded-2xl p-4 mb-5">
+            <p class="font-heading font-700 text-sm text-dells-text mb-3">Price Guide / Guía de precios</p>
+            <div class="flex flex-col gap-2">
+              <div class="flex justify-between items-center">
+                <span class="font-body text-sm text-dells-muted">Haircut &amp; Style</span>
+                <span class="font-heading font-600 text-sm text-dells-text">$30+</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-body text-sm text-dells-muted">Nails (mani/pedi)</span>
+                <span class="font-heading font-600 text-sm text-dells-text">$25+</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-body text-sm text-dells-muted">Eyebrows</span>
+                <span class="font-heading font-600 text-sm text-dells-text">$12+</span>
+              </div>
+              <div class="border-t border-dells-border mt-1 pt-2 flex justify-between items-center">
+                <span class="font-heading font-700 text-sm text-dells-text">Confirm via WhatsApp</span>
+                <span class="font-body text-xs text-dells-muted">Exact price on contact</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- WhatsApp CTA — triggers waiver -->
+          <!-- @onClick: openWaiverModal() -->
+          <!-- @Blazor: Rule = waiver accepted + contact logged to GM before redirect -->
+          <button
+            id="open-waiver-btn"
+            class="wa-btn w-full flex items-center justify-center gap-3 rounded-2xl py-4 text-base cursor-pointer mb-3"
+            aria-label="Contact Salon Esperanza via WhatsApp — legal disclaimer will appear"
+            aria-haspopup="dialog">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M11.99 0C5.366 0 0 5.373 0 12.001c0 2.117.551 4.103 1.515 5.832L.057 23.73a.5.5 0 0 0 .609.635l5.977-1.568A11.922 11.922 0 0 0 11.99 24C18.62 24 24 18.627 24 12S18.62 0 11.99 0zm0 21.818a9.748 9.748 0 0 1-5.031-1.395l-.36-.213-3.737.98.998-3.638-.234-.374A9.76 9.76 0 0 1 2.182 12c0-5.41 4.402-9.818 9.808-9.818 5.41 0 9.826 4.408 9.826 9.818 0 5.407-4.416 9.818-9.826 9.818z"/>
+            </svg>
+            Book via WhatsApp / Reservar
+          </button>
+
+          <button class="btn-ghost w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm cursor-pointer mb-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            Share listing / Compartir
+          </button>
+
+          <!-- Trust note -->
+          <div class="flex items-start gap-2 p-3 rounded-2xl" style="background:#e8f5ee;border:1px solid #c3e6cf;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <p class="font-body text-xs text-forest-600">
+              Bulletin Dells connects you with this provider. We do not manage transactions or service delivery.
+            </p>
+          </div>
+
+          <!-- Report / flag section -->
+          <div class="mt-4 text-center">
+            <button class="font-body text-xs text-dells-muted hover:text-red-500 transition-colors cursor-pointer underline underline-offset-2" aria-label="Report this listing">
+              Report this listing / Reportar anuncio
+            </button>
+          </div>
+        </div>
+
+        <!-- Related listings preview (sticky below panel) -->
+        <div class="mt-4">
+          <p class="font-heading font-700 text-xs text-dells-muted uppercase tracking-widest mb-3 px-1">Similar Services / Similares</p>
+          <div class="flex flex-col gap-2">
+            <!-- @binding: relatedListings.slice(0,2) -->
+            <a href="detail-generic-listing.html"
+               class="flex items-center gap-3 bg-white rounded-2xl border border-dells-border p-3 hover:border-lake-200 transition-colors cursor-pointer group">
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden" style="background:linear-gradient(135deg,#fdf2f8,#fbcfe8);"></div>
+              <div class="min-w-0">
+                <p class="font-heading font-600 text-sm text-dells-text truncate group-hover:text-lake-600 transition-colors">Bella Nails Studio</p>
+                <p class="font-body text-xs text-dells-muted">Beauty · VIP</p>
+              </div>
+              <div class="ml-auto flex-shrink-0">
+                <div class="flex items-center gap-0.5" aria-hidden="true">
+                  <svg class="star-filled w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span class="font-body text-xs text-dells-muted">4.7</span>
+                </div>
+              </div>
+            </a>
+            <a href="detail-generic-listing.html"
+               class="flex items-center gap-3 bg-white rounded-2xl border border-dells-border p-3 hover:border-lake-200 transition-colors cursor-pointer group">
+              <div class="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden" style="background:linear-gradient(135deg,#e6f4fb,#b3daf2);"></div>
+              <div class="min-w-0">
+                <p class="font-heading font-600 text-sm text-dells-text truncate group-hover:text-lake-600 transition-colors">Dells Hair Lounge</p>
+                <p class="font-body text-xs text-dells-muted">Beauty · Verified</p>
+              </div>
+              <div class="ml-auto flex-shrink-0">
+                <div class="flex items-center gap-0.5" aria-hidden="true">
+                  <svg class="star-filled w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span class="font-body text-xs text-dells-muted">4.5</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       @component: WaiverModal
+       Data: listing.title, listing.providerId, user.id
+       Rule: waiver must be accepted; GM receives email copy
+  ============================================================ -->
+  <div id="waiver-modal"
+    class="fixed inset-0 z-30 items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="waiver-title"
+    aria-describedby="waiver-body">
+
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl animate-modal" tabindex="-1" id="waiver-panel">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h2 id="waiver-title" class="font-heading font-700 text-lg text-dells-text">Before You Contact</h2>
+        </div>
+        <button id="waiver-close"
+          class="p-2 rounded-xl hover:bg-cream text-dells-muted hover:text-dells-text transition-colors cursor-pointer"
+          aria-label="Close disclaimer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Waiver body -->
+      <div id="waiver-body" class="font-body text-sm text-dells-muted leading-relaxed mb-5 max-h-52 overflow-y-auto pr-1">
+        <p class="mb-3 font-heading font-600 text-dells-text">Bulletin Dells Legal Disclaimer</p>
+        <p class="mb-3">
+          Bulletin Dells is a <strong>connection platform only</strong>. We list and moderate service providers but we do <strong>not</strong> provide, manage, or guarantee any service listed.
+        </p>
+        <p class="mb-2">By contacting this provider, you acknowledge that:</p>
+        <ul class="list-disc pl-4 flex flex-col gap-1.5 mb-3">
+          <li>Bulletin Dells is not a party to any agreement between you and the provider.</li>
+          <li>We do not handle payments, disputes, or service quality.</li>
+          <li>You contact the provider at your own discretion and responsibility.</li>
+          <li>Your contact interaction will be logged and a copy sent to our team for safety.</li>
+          <li>Ratings must be based on actual contact made through this platform.</li>
+        </ul>
+        <p class="text-xs" lang="es">
+          <strong>Aviso legal:</strong> Bulletin Dells es una plataforma de conexión. No prestamos ni garantizamos ningún servicio. Al contactar a este proveedor, aceptas que tu interacción será registrada y que Bulletin Dells no es responsable del servicio prestado.
+        </p>
+      </div>
+
+      <!-- Confirm checkbox -->
+      <label class="flex items-start gap-3 cursor-pointer mb-5">
+        <input type="checkbox" id="waiver-checkbox"
+          class="w-4 h-4 mt-0.5 rounded border-dells-border accent-lake-500 cursor-pointer flex-shrink-0"
+          aria-required="true"
+          aria-label="I understand and agree to the disclaimer" />
+        <span class="font-body text-sm text-dells-text">
+          I understand and agree to the disclaimer above.
+          <span class="text-dells-muted text-xs block mt-0.5">Entiendo y acepto el aviso legal.</span>
+        </span>
+      </label>
+
+      <!-- Error -->
+      <div id="waiver-error" class="hidden items-center gap-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 mb-4" role="alert" aria-live="polite">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Please confirm you have read the disclaimer. / Por favor confirma que leíste el aviso.
+      </div>
+
+      <div class="flex gap-3">
+        <button id="waiver-cancel" class="btn-ghost flex-1 rounded-2xl py-3 text-sm cursor-pointer">Cancel / Cancelar</button>
+        <!-- @onClick: acceptWaiverAndRedirectWhatsApp — POST /api/contacts, then wa.me deep link -->
+        <a id="waiver-accept-btn" href="#"
+          class="wa-btn flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 text-sm cursor-pointer"
+          aria-label="Accept disclaimer and open WhatsApp" role="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M11.99 0C5.366 0 0 5.373 0 12.001c0 2.117.551 4.103 1.515 5.832L.057 23.73a.5.5 0 0 0 .609.635l5.977-1.568A11.922 11.922 0 0 0 11.99 24C18.62 24 24 18.627 24 12S18.62 0 11.99 0zm0 21.818a9.748 9.748 0 0 1-5.031-1.395l-.36-.213-3.737.98.998-3.638-.234-.374A9.76 9.76 0 0 1 2.182 12c0-5.41 4.402-9.818 9.808-9.818 5.41 0 9.826 4.408 9.826 9.818 0 5.407-4.416 9.818-9.826 9.818z"/>
+          </svg>
+          Open WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="hidden-toast fixed bottom-6 right-4 z-50 bg-dells-text text-white rounded-2xl px-5 py-3 shadow-xl flex items-center gap-3 max-w-xs" role="status" aria-live="polite">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5"/>
+    </svg>
+    <div>
+      <p class="font-heading font-700 text-sm">Opening WhatsApp</p>
+      <p class="font-body text-xs text-white/70">Contact logged · GM notified</p>
+    </div>
+  </div>
+
+  <script>
+    // Gallery thumbnails
+    document.querySelectorAll('.thumb').forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        document.querySelectorAll('.thumb').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-pressed', 'false');
+        });
+        thumb.classList.add('active');
+        thumb.setAttribute('aria-pressed', 'true');
+      });
+    });
+
+    // Waiver modal
+    const openBtn   = document.getElementById('open-waiver-btn');
+    const modal     = document.getElementById('waiver-modal');
+    const panel     = document.getElementById('waiver-panel');
+    const closeBtn  = document.getElementById('waiver-close');
+    const cancelBtn = document.getElementById('waiver-cancel');
+    const acceptBtn = document.getElementById('waiver-accept-btn');
+    const checkbox  = document.getElementById('waiver-checkbox');
+    const errDiv    = document.getElementById('waiver-error');
+    const toast     = document.getElementById('toast');
+
+    function openModal() {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      panel.focus();
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      checkbox.checked = false;
+      errDiv.classList.add('hidden');
+      errDiv.classList.remove('flex');
+    }
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    acceptBtn?.addEventListener('click', e => {
+      e.preventDefault();
+      if (!checkbox.checked) {
+        errDiv.classList.remove('hidden');
+        errDiv.classList.add('flex');
+        checkbox.focus();
+        return;
+      }
+      // @Blazor: POST /api/contacts — log interaction + send GM email
+      // then: NavigationManager.NavigateTo("https://wa.me/1608XXXXXXX?text=...");
+      closeModal();
+      toast.classList.remove('hidden-toast');
+      setTimeout(() => toast.classList.add('hidden-toast'), 3500);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manage · Photos (Mechanic / Transportation) — Bulletin Dells</title>
+
+<!--
+─────────────────────────────────────────────────────────────────────────────
+  PHOTOS TAB — Generic design for:
+    · Mechanics       (Regular + VIP)
+    · Transportation  (Regular + VIP)
+
+  Reuses the exact visual pattern from Housing/Tabs/PhotosRegular.razor:
+    · Page surface, upload button, GM-decides banner
+    · Filter pill bar with counts (All / Public / Pending / Rejected / Hidden)
+    · Responsive photo grid: 2 cols → 3 → 4
+
+  Difference from Housing/PhotosRegular:
+    · No "per-property" sub-grouping (single listing)
+    · Adds "Cover" + "Reorder" affordance (drag handle visual, JS hook noted)
+    · Adds GM Rejection feedback (Rule #4) on RejectedBadge → tooltip card
+
+  Backend (already implemented per CLAUDE.md):
+    GET    /api/v1/manage/listings/{id}/overview            → counts + cover
+    POST   /api/v1/manage/listings/{id}/photos              → upload (status=Pending)
+    DELETE /api/v1/manage/listings/{id}/photos/{photoId}    → remove
+    PATCH  /api/v1/admin/listings/{lid}/images/{iid}/moderate (GM only)
+
+  Photo statuses (matches PhotoStatusBadge component):
+    · Public    → bg-emerald-100  text-emerald-700  border-emerald-200
+    · Pending   → bg-amber-100    text-amber-700    border-amber-200
+    · Rejected  → bg-red-100      text-red-700      border-red-200
+    · Hidden    → bg-slate-100    text-slate-600    border-slate-200
+
+  Localization keys: {{ Manage_Photos_<Key> }}.
+─────────────────────────────────────────────────────────────────────────────
+-->
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['"DM Sans"', 'system-ui', 'sans-serif'] },
+        colors: {
+          ink:    '#1E293B',
+          muted:  '#64748B',
+          brand:  { 50:'#EFF6FF', 100:'#DBEAFE', 200:'#BFDBFE', 300:'#93C5FD',
+                    400:'#60A5FA', 500:'#3B82F6', 600:'#2563EB', 700:'#1D4ED8' },
+          accent: { 50:'#FFF7ED', 500:'#F97316', 600:'#EA580C' },
+          surface:'#F8FAFC',
+        },
+        boxShadow: {
+          soft:  '0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.04)',
+        },
+      }
+    }
+  };
+</script>
+
+<style>
+  html, body { background: #F8FAFC; font-family: 'DM Sans', system-ui, sans-serif; color: #1E293B; }
+  .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+
+  /* GM-rejected tooltip (Rule #4 feedback) */
+  .gm-feedback-wrap { position: relative; }
+  .gm-feedback-card {
+    position: absolute; bottom: calc(100% + 8px); left: 0;
+    width: 240px; padding: 10px 12px;
+    background: #1E293B; color: #fff; border-radius: 12px;
+    font-size: 11px; line-height: 1.5;
+    box-shadow: 0 10px 30px -8px rgba(15,23,42,0.4);
+    opacity: 0; pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 20;
+  }
+  .gm-feedback-card::after {
+    content: ''; position: absolute; top: 100%; left: 14px;
+    border: 6px solid transparent; border-top-color: #1E293B;
+  }
+  .gm-feedback-wrap:hover .gm-feedback-card,
+  .gm-feedback-wrap:focus-within .gm-feedback-card {
+    opacity: 1; pointer-events: auto; transform: translateY(0);
+  }
+
+  /* Selection ring for cover photo */
+  .is-cover { box-shadow: 0 0 0 3px #F97316, 0 4px 16px -4px rgba(249,115,22,0.35); }
+
+  /* Hidden photo de-emphasis */
+  .is-hidden img { filter: grayscale(1) brightness(0.85); }
+
+  /* Skeleton shimmer */
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .sk {
+    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+    border-radius: 12px;
+  }
+
+  /* Drop zone */
+  .dropzone {
+    background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(148,163,184,0.06) 6px, rgba(148,163,184,0.06) 12px);
+  }
+  .dropzone.is-dragover { background: #EFF6FF; border-color: #3B82F6; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sk { animation: none; }
+    .gm-feedback-card { transition: none; }
+  }
+</style>
+</head>
+<body class="min-h-[100dvh]">
+
+<!-- Sticky header stub -->
+<header class="bg-white border-b border-slate-100 px-4 py-5 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto">
+    <nav class="text-xs text-muted flex items-center gap-1.5">
+      <a href="#" class="hover:text-ink">Manage</a><span>/</span>
+      <span class="text-ink font-medium truncate">Dells Airport Rides · Transportation</span>
+    </nav>
+    <div class="mt-3 flex items-center gap-3 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Airport Rides</h1>
+      <span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Verified</span>
+      <span class="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Approved</span>
+    </div>
+    <div class="mt-4 -mb-2 flex items-center gap-1 overflow-x-auto" role="tablist" aria-label="Manage tabs">
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Overview</button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Inquiries</button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Reviews</button>
+      <button class="px-3 py-2 text-sm font-semibold text-ink border-b-2 border-accent-500"
+              role="tab" aria-selected="true" aria-controls="panel-photos" id="tab-photos">
+        Photos
+        <span class="ml-1 text-[10px] bg-slate-100 text-slate-600 px-1.5 rounded-full tabular-nums">12</span>
+      </button>
+      <button class="px-3 py-2 text-sm text-muted hover:text-ink" role="tab">Settings</button>
+    </div>
+  </div>
+</header>
+
+<!--
+═════════════════════════════════════════════════════════════════════════════
+  BEGIN TAB CONTENT
+═════════════════════════════════════════════════════════════════════════════
+-->
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-photos"
+      role="tabpanel"
+      aria-labelledby="tab-photos"
+      tabindex="0">
+
+  <!-- Header row -->
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink">
+        <!-- EN: "Listing photos" / ES: "Fotos del anuncio" -->
+        {{ Manage_Photos_Title }}
+      </h2>
+      <p class="text-sm text-muted mt-0.5">
+        <!-- EN: "Upload up to 15 photos. The GM decides which become public." -->
+        <!-- ES: "Sube hasta 15 fotos. El GM decide cuáles se hacen públicas." -->
+        {{ Manage_Photos_Subtitle }}
+      </p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Upload button — wrapped in PendingReviewTooltip in Blazor (Rule #5) -->
+      <label class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors duration-150 min-h-[44px]">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <!-- EN: "Upload photos" / ES: "Subir fotos" -->
+        {{ Manage_Photos_Upload }}
+        <input type="file" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" />
+      </label>
+    </div>
+  </div>
+
+  <!-- Rule #4 banner — "GM decides public photos" -->
+  <div class="mb-5 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="note">
+    <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p class="text-xs text-ink leading-relaxed">
+      <!-- EN: "Photos start as Pending. The GM reviews and approves them before they go public (Rule #4). Editing any approved photo returns the listing to Pending (Rule #5)." -->
+      <!-- ES: "Las fotos empiezan en Pendiente. El GM las revisa y aprueba antes de hacerlas públicas (Regla #4). Editar una foto aprobada devuelve el anuncio a Pendiente (Regla #5)." -->
+      {{ Banner_GmDecidesPhotos }}
+    </p>
+  </div>
+
+  <!-- Filter pills with counts -->
+  <div class="flex items-center justify-between gap-3 flex-wrap mb-5">
+    <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="{{ Manage_Photos_Filter_AriaLabel }}">
+      <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">
+        {{ Manage_Common_All }}
+        <span class="ml-1 bg-white/20 px-1.5 rounded-full tabular-nums">12</span>
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+        <!-- EN: "Public" / ES: "Públicas" -->
+        {{ Photo_Status_Public }}
+        <span class="ml-1 bg-emerald-100 text-emerald-800 px-1.5 rounded-full tabular-nums">7</span>
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+        <!-- EN: "Pending" / ES: "Pendientes" -->
+        {{ Photo_Status_Pending }}
+        <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 rounded-full tabular-nums">3</span>
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+        <!-- EN: "Rejected" / ES: "Rechazadas" -->
+        {{ Photo_Status_Rejected }}
+        <span class="ml-1 bg-red-100 text-red-800 px-1.5 rounded-full tabular-nums">1</span>
+      </button>
+      <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+        <!-- EN: "Hidden" / ES: "Ocultas" -->
+        {{ Photo_Status_Hidden }}
+        <span class="ml-1 bg-slate-200 text-slate-700 px-1.5 rounded-full tabular-nums">1</span>
+      </button>
+    </div>
+    <p class="text-[11px] text-muted tabular-nums">
+      <!-- EN: "12 of 15 slots used" / ES: "12 de 15 espacios usados" -->
+      {{ Manage_Photos_SlotsUsed }}
+    </p>
+  </div>
+
+  <!-- Photo grid -->
+  <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list">
+
+    <!-- ─── Photo 1 · COVER · Public ──────────────────────────────────────── -->
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden is-cover">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech1/640/480" alt="Black SUV front view"
+             class="w-full h-full object-cover" loading="lazy" />
+        <!-- Status badge (Public) -->
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ Photo_Status_Public }}
+        </span>
+        <!-- Cover badge -->
+        <span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-accent-500 text-white px-2 py-0.5 rounded-full font-bold">
+          <!-- EN: "Cover" / ES: "Portada" -->
+          {{ Manage_Photos_Cover }}
+        </span>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Black SUV front view</span>
+        <div class="flex items-center gap-1">
+          <!-- Drag handle (reorder) — JS hook: data-photo-id, data-action="drag" -->
+          <button type="button" aria-label="Drag to reorder"
+                  class="p-1.5 rounded-lg hover:bg-slate-100 text-muted cursor-grab">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+              <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+              <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+            </svg>
+          </button>
+          <!-- Remove (PendingReviewTooltip wraps this) -->
+          <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer px-2 py-1 rounded-lg hover:bg-red-50 transition-colors">
+            {{ Manage_Common_Remove }}
+          </button>
+        </div>
+      </div>
+    </li>
+
+    <!-- ─── Photo 2 · Public ──────────────────────────────────────────────── -->
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech2/640/480" alt="Vehicle interior"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ Photo_Status_Public }}
+        </span>
+        <!-- Quick action: make cover -->
+        <button type="button"
+                class="absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-white/95 backdrop-blur text-ink border border-slate-200 font-medium hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+          {{ Manage_Photos_MakeCover }}
+        </button>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Interior — 8 seats</span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+
+    <!-- ─── Photo 3 · Pending (under GM review) ──────────────────────────── -->
+    <li class="bg-white rounded-2xl border border-amber-200 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech3/640/480" alt="Side view of vehicle"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          {{ Photo_Status_Pending }}
+        </span>
+        <!-- Overlay note -->
+        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+          <p class="text-[10px] text-white/95 leading-tight">
+            <!-- EN: "Awaiting GM review" / ES: "En revisión por el GM" -->
+            {{ Manage_Photos_AwaitingReview }}
+          </p>
+        </div>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Uploaded · May 14</span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+
+    <!-- ─── Photo 4 · Rejected (GM feedback tooltip) ─────────────────────── -->
+    <li class="bg-white rounded-2xl border border-red-200 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech4/640/480" alt="Blurred photo"
+             class="w-full h-full object-cover opacity-60" loading="lazy" />
+        <!-- Rejected badge with tooltip -->
+        <div class="absolute top-2 left-2 gm-feedback-wrap">
+          <button type="button"
+                  class="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 font-bold cursor-help"
+                  aria-describedby="photo-4-feedback">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            {{ Photo_Status_Rejected }}
+          </button>
+          <div id="photo-4-feedback" class="gm-feedback-card" role="tooltip">
+            <p class="font-semibold text-white mb-1">
+              <!-- EN: "GM feedback" / ES: "Comentario del GM" -->
+              {{ Manage_Photos_GmFeedback }}
+            </p>
+            <p class="text-slate-200">
+              "Photo is out of focus and shows a competitor logo. Please upload a clean shot."
+            </p>
+          </div>
+        </div>
+        <!-- Blur overlay icon -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-9 h-9 rounded-full bg-red-600/90 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Engine bay close-up</span>
+        <div class="flex items-center gap-2">
+          <!-- Re-upload would replace via DELETE + POST cycle -->
+          <button type="button" class="text-[11px] text-brand-600 hover:text-brand-700 font-medium cursor-pointer">
+            <!-- EN: "Replace" / ES: "Reemplazar" -->
+            {{ Manage_Photos_Replace }}
+          </button>
+          <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+            {{ Manage_Common_Remove }}
+          </button>
+        </div>
+      </div>
+    </li>
+
+    <!-- ─── Photo 5 · Hidden (was public, GM toggled off) ─────────────────── -->
+    <li class="bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden is-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech5/640/480" alt="Older vehicle photo"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          {{ Photo_Status_Hidden }}
+        </span>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">
+          <!-- EN: "Hidden by GM" / ES: "Ocultada por GM" -->
+          {{ Manage_Photos_HiddenByGm }}
+        </span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+
+    <!-- ─── Photos 6–8 · Public (compact, no extra annotations) ───────────── -->
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech6/640/480" alt="Repair bay"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ Photo_Status_Public }}
+        </span>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Repair bay #2</span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech7/640/480" alt="Driver portrait"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ Photo_Status_Public }}
+        </span>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Driver — Carlos M.</span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+    <li class="bg-white rounded-2xl border border-amber-200 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/mech8/640/480" alt="Recent upload"
+             class="w-full h-full object-cover" loading="lazy" />
+        <span class="absolute top-2 left-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-bold">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          {{ Photo_Status_Pending }}
+        </span>
+      </div>
+      <div class="p-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] text-muted truncate">Uploaded · May 16</span>
+        <button type="button" class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer">
+          {{ Manage_Common_Remove }}
+        </button>
+      </div>
+    </li>
+
+    <!-- ─── Add tile (always last) ────────────────────────────────────────── -->
+    <li>
+      <label class="dropzone aspect-[4/3] rounded-2xl border-2 border-dashed border-slate-300 hover:border-brand-400 hover:bg-brand-50 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors duration-200 group">
+        <div class="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center group-hover:border-brand-300 transition-colors">
+          <svg class="w-5 h-5 text-muted group-hover:text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <p class="text-xs font-medium text-ink">
+          <!-- EN: "Add photo" / ES: "Añadir foto" -->
+          {{ Manage_Photos_AddPhoto }}
+        </p>
+        <p class="text-[10px] text-muted">
+          <!-- EN: "or drag &amp; drop" / ES: "o arrastra aquí" -->
+          {{ Manage_Photos_DragDrop }}
+        </p>
+        <input type="file" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" />
+      </label>
+    </li>
+  </ul>
+
+  <!-- Helper / format notes -->
+  <div class="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-muted">
+    <span class="inline-flex items-center gap-1.5">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <!-- EN: "JPG, PNG, WebP · up to 5 MB each" / ES: "JPG, PNG, WebP · hasta 5 MB cada una" -->
+      {{ Manage_Photos_Format }}
+    </span>
+    <span class="inline-flex items-center gap-1.5">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <!-- EN: "Recommended 1600×1200 px or wider" / ES: "Recomendado 1600×1200 px o más" -->
+      {{ Manage_Photos_RecommendedSize }}
+    </span>
+  </div>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗
+       ║ STATES (templates — toggle for QA)                                  ║
+       ╚══════════════════════════════════════════════════════════════════════╝ -->
+
+  <!-- EMPTY STATE (no photos yet) -->
+  <template id="state-empty">
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-10 text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+        <svg class="w-6 h-6 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <h3 class="text-sm font-semibold text-ink">{{ Manage_Photos_Empty_Title }}</h3>
+      <p class="text-xs text-muted mt-1 max-w-sm mx-auto">
+        <!-- EN: "Add at least 3 photos so customers can see your service. The GM will review them before they go public." -->
+        <!-- ES: "Añade al menos 3 fotos para que los clientes vean tu servicio. El GM las revisará antes de hacerlas públicas." -->
+        {{ Manage_Photos_Empty_Description }}
+      </p>
+      <label class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors min-h-[44px]">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        {{ Manage_Photos_Upload }}
+        <input type="file" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" />
+      </label>
+    </div>
+  </template>
+
+  <!-- LOADING SKELETON -->
+  <template id="state-loading">
+    <ul aria-busy="true" role="status" aria-label="{{ Manage_Photos_Loading_AriaLabel }}"
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <li><div class="sk aspect-[4/3] rounded-2xl"></div><div class="sk h-3 w-3/4 mt-2"></div></li>
+      <li><div class="sk aspect-[4/3] rounded-2xl"></div><div class="sk h-3 w-2/3 mt-2"></div></li>
+      <li><div class="sk aspect-[4/3] rounded-2xl"></div><div class="sk h-3 w-1/2 mt-2"></div></li>
+      <li><div class="sk aspect-[4/3] rounded-2xl"></div><div class="sk h-3 w-3/5 mt-2"></div></li>
+    </ul>
+  </template>
+
+  <!-- ERROR STATE -->
+  <template id="state-error">
+    <div class="bg-red-50 rounded-3xl border border-red-200 p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-white border border-red-200 flex items-center justify-center">
+        <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h3 class="text-sm font-semibold text-ink">{{ Manage_Photos_Error_Title }}</h3>
+      <p class="text-xs text-muted mt-1 mb-3">{{ Manage_Photos_Error_Description }}</p>
+      <button type="button" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors">
+        {{ Manage_Common_Retry }}
+      </button>
+    </div>
+  </template>
+</main>
+
+<!--
+═════════════════════════════════════════════════════════════════════════════
+  END TAB CONTENT
+
+  PORTING NOTES (Frontend agent):
+
+  1. Reuse existing components:
+       <PhotoStatusBadge Status="Public|Pending|Rejected|Hidden" />
+       <PendingReviewTooltip>  — wraps upload/delete CTAs (Rule #5).
+       <ManageEmptyState />    — for the empty state.
+
+  2. Card border tint comes from photo status:
+       Public   → border-slate-100
+       Pending  → border-amber-200
+       Rejected → border-red-200
+       Hidden   → border-slate-200 + .is-hidden (grayscale filter)
+
+  3. Cover photo:
+       Add class .is-cover to the <li>. There is only one cover at a time.
+       On click of "Make cover": optimistic UI swap + PATCH endpoint
+       (suggest: PATCH /api/v1/manage/listings/{id}/photos/{pid}/cover).
+
+  4. Reorder:
+       The drag-handle button is a visual affordance. Wire to a
+       SortableJS-style component or Blazor's drag-drop API.
+       Persist via PUT /api/v1/manage/listings/{id}/photos/order
+       passing the new id sequence.
+
+  5. GM rejection tooltip:
+       The `.gm-feedback-card` pattern is reused from index.html's
+       "GM Feedback tooltip" (2026-05-09 memory).
+       On mobile (pointer: coarse), promote to a click-toggle with
+       JS rather than hover.
+
+  6. Upload validation (client-side before POST):
+       - Max 5 MB per file
+       - Allowed MIME: image/jpeg, image/png, image/webp
+       - Slot limit: 15 photos total (server-enforced too)
+
+  7. Spanish text density check:
+       "Pendientes" (10c) > "Pending" (7c) — filter pills wrap fine.
+       "Awaiting GM review" → "En revisión por el GM" — overlay note
+       has enough line-height room.
+
+  8. Accessibility:
+       - All images have alt text (must come from ListingPhotoDto.AltText;
+         fallback: "Photo {n} of {category}").
+       - Status badges include an inline SVG to avoid color-only signal.
+       - Drag-handle has aria-label.
+       - Touch targets: upload button + remove button >= 44×44 on mobile.
+-->
+</body>
+</html>

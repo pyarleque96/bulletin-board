@@ -1,0 +1,59 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Full-width accent (orange) submit button for forms.
+    Used in auth forms: "Sign in", "Create account".
+    Visually identical to PrimaryButton but:
+    - Always full-width (w-full)
+    - Larger padding (py-3.5) for form prominence
+    - Shadow glow on load state
+    - Designed for dark-background auth panels
+*@
+
+<button
+    type="@Type"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@(Disabled || IsLoading)"
+    aria-disabled="@(Disabled || IsLoading)"
+    aria-busy="@IsLoading">
+    @if (IsLoading)
+    {
+        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "submit";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string ComputedClass =>
+        "w-full flex items-center justify-center gap-2 " +
+        "bg-accent text-white font-semibold tracking-wide px-6 py-3.5 rounded-full text-[0.9375rem] " +
+        "shadow-[0_4px_16px_rgba(249,115,22,0.35)] " +
+        "transition-[background-color,box-shadow,transform] duration-200 " +
+        "hover:bg-[#ea6c0a] hover:shadow-[0_6px_24px_rgba(249,115,22,0.45)] hover:-translate-y-px " +
+        "active:translate-y-0 active:shadow-[0_2px_8px_rgba(249,115,22,0.3)] " +
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

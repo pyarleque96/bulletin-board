@@ -1,0 +1,41 @@
+@*
+    ApprovedBadge — Badge de estado "Approved".
+    Azul brand (bg #dbeafe, text #1d4ed8) — patrón manage/index.html (.status-approved).
+    Shield SVG: path "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+
+    Parámetros:
+      IconOnly (bool, default false) — muestra solo el icono sin texto, padding circular.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<span class="@WrapperClass" aria-label="@_localizer["Badge_Approved"]" role="img">
+    @* Shield SVG canónico de home-8.html (trust banner "GM Approved") *@
+    <svg class="@IconClass"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    @if (!IconOnly)
+    {
+        <span>@_localizer["Badge_Approved"]</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Cuando es true, muestra solo el icono (padding circular, sin texto).
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; } = false;
+
+    private string WrapperClass => IconOnly
+        ? "approved-badge approved-badge--icon-only inline-flex items-center justify-center"
+        : "approved-badge inline-flex items-center gap-1";
+
+    private string IconClass => IconOnly ? "w-3.5 h-3.5" : "w-2.5 h-2.5";
+}

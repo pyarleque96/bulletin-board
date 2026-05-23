@@ -1,0 +1,663 @@
+<!--
+  PROPUESTA 03 — "Trust-first / Verified-first"
+  Filosofía: Soft Structuralism al estilo Airbnb. Protagonismo absoluto a verificación, ratings y GM-approved.
+  Visual limpio, blanco airy, badges grandes, fotos de personas reales (no objetos), Q&A inline para reducir fricción.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bulletin Dells — Verified local providers, hand-reviewed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: {
+      brand: { 50:'#eff6ff',100:'#dbeafe',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' },
+      accent: { DEFAULT:'#F97316',600:'#ea580c',700:'#c2410c' },
+      ink: '#1E293B', surface: '#F8FAFC', muted: '#64748B',
+      trust: { DEFAULT:'#10B981', 50:'#ecfdf5', 100:'#d1fae5', 600:'#059669', 700:'#047857' }
+    },
+    fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] }
+  } } };
+</script>
+<style>
+  html, body { background:#fff; }
+  body { font-family:'DM Sans', sans-serif; color:#1E293B; -webkit-font-smoothing:antialiased; }
+
+  .hero-bg {
+    background:
+      radial-gradient(circle at 70% 25%, rgba(16,185,129,0.16), transparent 55%),
+      radial-gradient(circle at 20% 80%, rgba(59,130,246,0.14), transparent 50%),
+      linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+  }
+  .hero-grid-lines { position:absolute; inset:0; pointer-events:none;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:72px 72px; mask-image: radial-gradient(circle at 50% 40%, #000 40%, transparent 80%);
+  }
+
+  .bezel-outer { padding:6px; border-radius:2rem; background:rgba(255,255,255,0.05); box-shadow:0 0 0 1px rgba(255,255,255,0.10); }
+  .bezel-inner { border-radius:calc(2rem - 6px); background:#fff; }
+  .bezel-light-outer { padding:5px; border-radius:1.5rem; background:rgba(15,23,42,0.03); box-shadow:0 0 0 1px rgba(15,23,42,0.06); }
+  .bezel-light-inner { border-radius:calc(1.5rem - 5px); background:#fff; }
+
+  .eyebrow { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:9999px; font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; }
+  .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:0.5; transform:scale(1.4);} }
+  .fade-up { opacity:0; transform:translateY(16px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .fade-up { opacity:1; transform:none; } .pulse-dot { animation:none; } }
+
+  .hover-lift { transition: transform 300ms cubic-bezier(0.32,0.72,0,1), box-shadow 300ms ease; }
+  .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 20px 48px -12px rgba(15,23,42,0.10); }
+
+  .wa-btn { background:#25D366; color:#fff; }
+  .wa-btn:hover { background:#1ebe5d; }
+  .star { color:#F59E0B; }
+
+  /* Big verified badge motif */
+  .v-medal {
+    width:64px; height:64px; border-radius:50%;
+    background: linear-gradient(135deg,#10B981 0%,#059669 100%);
+    box-shadow: 0 0 0 8px rgba(16,185,129,0.08), 0 12px 32px -8px rgba(16,185,129,0.4);
+    display:flex; align-items:center; justify-content:center; color:#fff;
+  }
+
+  /* Provider face avatar with ring */
+  .face-ring {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 5px #10B981;
+  }
+
+  /* Trust stat */
+  .stat-num { font-feature-settings: 'tnum'; font-variant-numeric: tabular-nums; }
+
+  .skip-link { position:absolute; top:-40px; left:8px; background:#1E293B; color:#fff; padding:8px 12px; z-index:100; border-radius:6px; transition: top 200ms; }
+  .skip-link:focus { top:8px; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content / Saltar al contenido</a>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<header class="fixed top-3 inset-x-3 sm:inset-x-6 z-40">
+  <nav class="max-w-7xl mx-auto rounded-full bg-white/92 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.10)] px-4 sm:px-6 py-2.5 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-xl bg-ink flex items-center justify-center"><span class="font-black text-white text-sm">BD</span></div>
+      <span class="hidden sm:inline font-black text-ink tracking-tight">Bulletin<span class="text-trust">Dells</span></span>
+    </a>
+    <ul class="hidden md:flex items-center gap-1 text-sm">
+      <li><a href="/browse" class="px-3 py-2 rounded-full text-ink hover:bg-slate-100">Browse</a></li>
+      <li><a href="#verified" class="px-3 py-2 rounded-full text-ink hover:bg-slate-100">Verified providers</a></li>
+      <li><a href="/how-it-works" class="px-3 py-2 rounded-full text-ink hover:bg-slate-100">How it works</a></li>
+      <li><a href="#tiers" class="px-3 py-2 rounded-full text-ink hover:bg-slate-100">Pricing</a></li>
+    </ul>
+    <div class="flex items-center gap-2">
+      <button class="text-xs font-semibold text-muted hover:text-ink px-2.5 py-1.5 rounded-full">EN · ES</button>
+      <a href="/account/register" class="text-xs font-bold px-3.5 py-2 rounded-full bg-trust text-white hover:bg-trust-700 transition-colors">Get verified</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero-bg min-h-[100dvh] flex flex-col items-center justify-center pt-28 pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-headline">
+  <div class="hero-grid-lines" aria-hidden="true"></div>
+  <div class="relative z-10 max-w-3xl w-full mx-auto flex flex-col items-center text-center space-y-8">
+    <div class="fade-up">
+      <span class="eyebrow bg-trust/20 text-trust-100 border border-trust/40 backdrop-blur-sm">
+        <span class="w-1.5 h-1.5 rounded-full bg-trust pulse-dot"></span>
+        Trust-first marketplace · Confianza primero
+      </span>
+    </div>
+    <div class="fade-up space-y-4" style="transition-delay:80ms;">
+      <h1 id="hero-headline" class="text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[1.0] tracking-tighter">
+        <span class="block">Real providers in</span>
+        <span class="block">
+          <span class="relative inline-block text-brand-500">Dells<svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 120 10" preserveAspectRatio="none" style="height:6px;"><path d="M2,6 Q30,1 60,6 Q90,11 118,5" stroke="#F97316" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>. Verified by humans.
+        </span>
+      </h1>
+      <p class="text-lg md:text-xl text-white/75 leading-relaxed max-w-[54ch] mx-auto">
+        Phone, ID, and social media check. No anonymous listings. No fake reviews. Just neighbors you can call today.
+        <span class="block mt-1.5 text-white/45 text-sm italic">Teléfono, ID y redes verificados. Sin anuncios anónimos ni reseñas falsas.</span>
+      </p>
+    </div>
+
+    <div class="fade-up w-full max-w-3xl" style="transition-delay:160ms;" role="search">
+      <div class="bezel-outer">
+        <div class="bezel-inner">
+          <div class="flex items-center">
+            <div class="pl-5 pr-2"><svg class="w-5 h-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <label for="hero-search" class="sr-only">Search verified providers</label>
+            <input id="hero-search" type="search" placeholder="Try 'verified mechanic near downtown'…" class="flex-1 py-4 px-3 text-ink placeholder-muted/60 bg-transparent border-none outline-none text-base"/>
+            <button class="group m-2 inline-flex items-center gap-2.5 bg-trust hover:bg-trust-700 text-white text-sm font-bold pl-4 pr-2 py-2.5 rounded-full transition-colors">
+              Find verified
+              <span class="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up flex flex-wrap items-center justify-center gap-2" style="transition-delay:240ms;">
+      <span class="text-white/50 text-xs self-center">Browse by trust:</span>
+      <a href="/browse?tier=VIP" class="px-3.5 py-1.5 rounded-full bg-orange-500/30 text-orange-100 text-xs font-medium border border-orange-400/40 hover:bg-orange-500/40 transition-colors">★ VIP</a>
+      <a href="/browse?tier=Verified" class="px-3.5 py-1.5 rounded-full bg-trust/30 text-trust-100 text-xs font-medium border border-trust/40 hover:bg-trust/40 transition-colors">✓ Verified</a>
+      <a href="/browse" class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors">All providers</a>
+    </div>
+
+    <div class="fade-up flex flex-wrap items-center justify-center gap-x-6 gap-y-3 pt-2" style="transition-delay:320ms;">
+      <div class="flex items-center gap-2"><svg class="w-4 h-4 text-trust" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span class="text-white/70 text-xs">100% manually reviewed</span></div>
+      <span class="hidden sm:block w-px h-3 bg-white/20"></span>
+      <div class="flex items-center gap-2"><svg class="w-4 h-4 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span class="text-white/70 text-xs">ID + phone + social verified</span></div>
+      <span class="hidden sm:block w-px h-3 bg-white/20"></span>
+      <div class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg><span class="text-white/70 text-xs">WhatsApp contact only</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TRUST STATS — counter band ═══════════════════ -->
+<section class="py-14 px-4 bg-trust-50 border-y border-trust/15" aria-label="Trust statistics">
+  <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 fade-up">
+    <div class="text-center md:text-left md:border-l-2 md:border-trust/40 md:pl-5">
+      <p class="stat-num text-4xl font-black text-ink tracking-tighter">100<span class="text-trust">%</span></p>
+      <p class="text-xs uppercase tracking-wider font-bold text-trust-700 mt-1">GM-approved listings</p>
+      <p class="text-[11px] text-muted italic mt-0.5">Anuncios aprobados por el GM</p>
+    </div>
+    <div class="text-center md:text-left md:border-l-2 md:border-trust/40 md:pl-5">
+      <p class="stat-num text-4xl font-black text-ink tracking-tighter">3<span class="text-trust">×</span></p>
+      <p class="text-xs uppercase tracking-wider font-bold text-trust-700 mt-1">Verification checkpoints</p>
+      <p class="text-[11px] text-muted italic mt-0.5">Teléfono · ID · Redes</p>
+    </div>
+    <div class="text-center md:text-left md:border-l-2 md:border-trust/40 md:pl-5">
+      <p class="stat-num text-4xl font-black text-ink tracking-tighter">2<span class="text-trust">+</span></p>
+      <p class="text-xs uppercase tracking-wider font-bold text-trust-700 mt-1">Languages</p>
+      <p class="text-[11px] text-muted italic mt-0.5">English & Español</p>
+    </div>
+    <div class="text-center md:text-left md:border-l-2 md:border-trust/40 md:pl-5">
+      <p class="stat-num text-4xl font-black text-ink tracking-tighter">0<span class="text-trust"> </span></p>
+      <p class="text-xs uppercase tracking-wider font-bold text-trust-700 mt-1">Anonymous reviews</p>
+      <p class="text-[11px] text-muted italic mt-0.5">Sin reseñas anónimas</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CATEGORIES — image-led, like Airbnb categories ═══════════════════ -->
+<section class="py-20 px-4 bg-white" aria-labelledby="cat-heading">
+  <div class="max-w-7xl mx-auto">
+    <div class="fade-up flex flex-col sm:flex-row items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="eyebrow bg-blue-50 text-brand-700">Explore · Explora</span>
+        <h2 id="cat-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-3 leading-[1.05]">What do you need today?</h2>
+        <p class="text-muted text-sm mt-2 max-w-[48ch]">Pick a category. Every provider verified before they appear here.<span class="block italic text-xs mt-1">Elige una categoría — todos los proveedores verificados antes de aparecer.</span></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 fade-up">
+      <a href="/browse?category=housing" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-housing/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Housing</h3>
+          <p class="text-white/75 text-xs">142 · 89 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=mechanics" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-mech/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Mechanics</h3>
+          <p class="text-white/75 text-xs">19 · 14 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=transportation" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-trans/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Transportation</h3>
+          <p class="text-white/75 text-xs">27 · 19 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=car_rentals" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-cars/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Car Rentals</h3>
+          <p class="text-white/75 text-xs">38 · 26 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=airport_rides" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-air/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Airport Rides</h3>
+          <p class="text-white/75 text-xs">24 · 19 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=beauty" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-beauty/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Beauty</h3>
+          <p class="text-white/75 text-xs">31 · 22 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=jobs" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-jobs/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Jobs</h3>
+          <p class="text-white/75 text-xs">53 · 31 verified</p>
+        </div>
+      </a>
+      <a href="/browse?category=restaurants" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+        <img src="https://picsum.photos/seed/t-food/400/500" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 text-white">
+          <h3 class="font-black text-lg tracking-tight">Restaurants</h3>
+          <p class="text-white/75 text-xs">17 · 11 verified</p>
+        </div>
+      </a>
+      <a href="/browse" class="hover-lift group relative aspect-[4/5] rounded-2xl overflow-hidden bg-ink flex flex-col items-center justify-center text-white">
+        <span class="text-4xl font-black tracking-tighter">9</span>
+        <span class="text-xs uppercase tracking-wider mt-1">categories</span>
+        <span class="inline-flex items-center gap-1 mt-3 text-xs font-semibold">View all <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURED — Provider-first cards (Airbnb-style) ═══════════════════ -->
+<section id="verified" class="py-20 px-4 bg-surface" aria-labelledby="feat-heading">
+  <div class="max-w-7xl mx-auto">
+    <div class="fade-up flex flex-col sm:flex-row items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="eyebrow bg-trust-100 text-trust-700">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Top trusted providers · Más confiables
+        </span>
+        <h2 id="feat-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter mt-3">Ranked by verification, then rating.</h2>
+        <p class="text-muted text-xs mt-2">Order: Hierarchy → GM Featured → Tier (VIP > Verified > Regular) → Avg Rating · The GM controls hierarchy; you can't buy it.</p>
+      </div>
+    </div>
+
+    <!-- GM Featured hero -->
+    <article class="fade-up bg-white rounded-3xl overflow-hidden ring-1 ring-amber-200 shadow-[0_24px_56px_-12px_rgba(245,158,11,0.18)] mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-12">
+        <div class="md:col-span-7 relative aspect-video md:aspect-auto md:min-h-[380px]">
+          <img src="https://picsum.photos/seed/trust-gm/900/600" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider shadow-soft">★ GM Featured</span>
+          <div class="absolute bottom-4 left-4 flex items-center gap-3 bg-white/95 backdrop-blur rounded-full pl-1 pr-4 py-1 shadow-soft">
+            <img src="https://picsum.photos/seed/host-marisol/80/80" alt="Marisol Ramírez" class="w-8 h-8 rounded-full face-ring"/>
+            <span class="text-xs font-bold text-ink">Marisol R.</span>
+            <span class="text-[10px] text-trust-700 font-bold uppercase tracking-wider">✓ Verified host</span>
+          </div>
+        </div>
+        <div class="md:col-span-5 p-6 sm:p-8 flex flex-col gap-4 self-center">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">Housing</span>
+            <span class="text-muted">·</span>
+            <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold uppercase tracking-wide">★ VIP</span>
+          </div>
+          <h3 class="text-2xl font-black text-ink tracking-tight leading-tight">Lakeside cabin · sleeps 4 · downtown Dells</h3>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="star">★★★★★</span><span class="font-bold text-ink">4.9</span><span class="text-muted">(127 verified contacts)</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-2">
+            <div class="text-center p-2 rounded-xl bg-trust-50">
+              <svg class="w-4 h-4 text-trust mx-auto mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12"/></svg>
+              <span class="text-[10px] font-bold text-trust-700">Phone ✓</span>
+            </div>
+            <div class="text-center p-2 rounded-xl bg-trust-50">
+              <svg class="w-4 h-4 text-trust mx-auto mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+              <span class="text-[10px] font-bold text-trust-700">ID ✓</span>
+            </div>
+            <div class="text-center p-2 rounded-xl bg-trust-50">
+              <svg class="w-4 h-4 text-trust mx-auto mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>
+              <span class="text-[10px] font-bold text-trust-700">Social ✓</span>
+            </div>
+          </div>
+          <div class="flex gap-2 pt-2">
+            <a href="#" class="wa-btn inline-flex items-center gap-2 font-bold text-sm px-5 py-3 rounded-full transition-colors flex-1 justify-center">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.8L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+              WhatsApp Marisol
+            </a>
+          </div>
+          <p class="text-[10px] text-muted/70 italic">First contact requires waiver acceptance. GM is emailed.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- VIP+Verified 3-col -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 fade-up">
+      <!-- card 1 VIP -->
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-orange-200">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/trust-mech/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider">★ VIP</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <img src="https://picsum.photos/seed/tony/64/64" alt="" class="w-8 h-8 rounded-full face-ring"/>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-ink truncate">Tony's Garage</p>
+              <p class="text-[10px] text-trust-700 font-bold uppercase tracking-wider">✓ Verified · Mechanics</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs mb-3">
+            <span class="star">★★★★★</span><span class="font-bold">4.8</span><span class="text-muted">(86 contacts)</span>
+          </div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full">WhatsApp</a>
+        </div>
+      </article>
+      <!-- card 2 VIP -->
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-orange-200">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/trust-air/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider">★ VIP</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <img src="https://picsum.photos/seed/dells-exp/64/64" alt="" class="w-8 h-8 rounded-full face-ring"/>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-ink truncate">Dells Express</p>
+              <p class="text-[10px] text-trust-700 font-bold uppercase tracking-wider">✓ Verified · Airport rides</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs mb-3">
+            <span class="star">★★★★★</span><span class="font-bold">4.95</span><span class="text-muted">(341 rides)</span>
+          </div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full">WhatsApp</a>
+        </div>
+      </article>
+      <!-- card 3 Verified -->
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-trust/30">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/trust-beauty/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-trust text-white text-[10px] font-black uppercase tracking-wider">✓ Verified</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <img src="https://picsum.photos/seed/bella/64/64" alt="" class="w-8 h-8 rounded-full face-ring"/>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-ink truncate">Bella Studio</p>
+              <p class="text-[10px] text-trust-700 font-bold uppercase tracking-wider">✓ Verified · Beauty</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs mb-3">
+            <span class="star">★★★★★</span><span class="font-bold">4.7</span><span class="text-muted">(58 contacts)</span>
+          </div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full">WhatsApp</a>
+        </div>
+      </article>
+    </div>
+
+    <div class="text-center mt-10 fade-up">
+      <a href="/browse" class="inline-flex items-center gap-2 bg-ink text-white font-bold text-sm px-7 py-3.5 rounded-full hover:bg-slate-700 transition-colors">
+        Browse all verified providers
+        <span class="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TRUST EXPLAINER — 3 medals ═══════════════════ -->
+<section class="py-24 px-4 bg-white" aria-labelledby="how-trust-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow bg-trust-100 text-trust-700">Why we're different · Por qué somos distintos</span>
+      <h2 id="how-trust-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-4">Trust isn't a sticker. It's a process.</h2>
+      <p class="text-muted text-base mt-3 max-w-[50ch] mx-auto italic">La confianza no es un sello — es un proceso.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 fade-up">
+      <!-- step 1 -->
+      <div class="bezel-light-outer"><div class="bezel-light-inner p-8 text-center">
+        <div class="v-medal mx-auto mb-5">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-lg tracking-tight">Phone verified</h3>
+        <p class="text-muted text-sm mt-2 leading-relaxed">We call. They answer. Real number, real person. No bots, no anonymous chat.<span class="block italic text-xs mt-1 text-muted/80">Llamamos y responden. Número real, persona real.</span></p>
+      </div></div>
+
+      <div class="bezel-light-outer"><div class="bezel-light-inner p-8 text-center">
+        <div class="v-medal mx-auto mb-5">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2M15 12h2M7 16h10"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-lg tracking-tight">ID / passport checked</h3>
+        <p class="text-muted text-sm mt-2 leading-relaxed">Photo ID or passport reviewed by our GM. Stored encrypted, never shown publicly.<span class="block italic text-xs mt-1 text-muted/80">ID o pasaporte revisado. Encriptado, nunca mostrado.</span></p>
+      </div></div>
+
+      <div class="bezel-light-outer"><div class="bezel-light-inner p-8 text-center">
+        <div class="v-medal mx-auto mb-5">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10A15.3 15.3 0 0 1 8 12 15.3 15.3 0 0 1 12 2z"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-lg tracking-tight">Social media linked</h3>
+        <p class="text-muted text-sm mt-2 leading-relaxed">Public Facebook or Instagram confirmed. Real history, real reputation outside Bulletin Dells.<span class="block italic text-xs mt-1 text-muted/80">Redes sociales confirmadas — historia real fuera de Bulletin Dells.</span></p>
+      </div></div>
+    </div>
+
+    <!-- Bottom rules strip -->
+    <div class="mt-14 fade-up grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-surface rounded-2xl p-2">
+      <div class="px-6 py-5">
+        <h4 class="font-bold text-ink text-sm mb-1">Ratings only from real contacts</h4>
+        <p class="text-muted text-xs leading-relaxed">Solo califica quien ya contactó al proveedor. El GM revisa cada reseña.</p>
+      </div>
+      <div class="px-6 py-5">
+        <h4 class="font-bold text-ink text-sm mb-1">GM curates the photos</h4>
+        <p class="text-muted text-xs leading-relaxed">El GM aprueba foto por foto. No hay galería sorpresa.</p>
+      </div>
+      <div class="px-6 py-5">
+        <h4 class="font-bold text-ink text-sm mb-1">WhatsApp + email audit</h4>
+        <p class="text-muted text-xs leading-relaxed">Tú hablas por WhatsApp; el GM recibe email de cada interacción.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TIERS — verification-forward comparison ═══════════════════ -->
+<section id="tiers" class="py-24 px-4 bg-surface border-y border-slate-200" aria-labelledby="tiers-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow bg-trust-100 text-trust-700">For providers · Para proveedores</span>
+      <h2 id="tiers-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-4">Verification unlocks visibility.</h2>
+      <p class="text-muted text-base mt-3 max-w-[52ch] mx-auto italic">La verificación abre la visibilidad. Sin atajos.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up">
+      <!-- Regular -->
+      <div class="bezel-light-outer"><div class="bezel-light-inner p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center"><svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></div>
+          <div>
+            <span class="text-[10px] uppercase tracking-wider font-bold text-slate-500">Regular</span>
+            <h3 class="font-black text-ink text-xl tracking-tight">Get listed</h3>
+          </div>
+        </div>
+        <p class="text-muted text-sm mb-6">Free · Gratis · No verification needed</p>
+        <ul class="space-y-2.5 text-sm text-ink/70 mb-6">
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Visible on the platform</li>
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> 3 GM-approved photos</li>
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> WhatsApp contact</li>
+          <li class="flex gap-2 text-slate-300"><span>✗</span> Verified badge</li>
+          <li class="flex gap-2 text-slate-300"><span>✗</span> Priority placement</li>
+        </ul>
+        <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors">Start free</a>
+      </div></div>
+
+      <!-- Verified — HIGHLIGHTED in this proposal -->
+      <div class="relative rounded-[2rem]" style="background:linear-gradient(135deg,#ecfdf5 0%,#fff 100%); box-shadow:0 0 0 2px rgba(16,185,129,0.30), 0 24px 56px -8px rgba(16,185,129,0.18);">
+        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+          <span class="px-4 py-1 rounded-full bg-trust text-white text-[10px] font-black uppercase tracking-wider shadow-soft">Recommended · Recomendado</span>
+        </div>
+        <div class="p-7 pt-9">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="v-medal !w-12 !h-12"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div>
+              <span class="text-[10px] uppercase tracking-wider font-bold text-trust-700">✓ Verified</span>
+              <h3 class="font-black text-ink text-xl tracking-tight">Build trust</h3>
+            </div>
+          </div>
+          <p class="text-muted text-sm mb-6">Free after ID check · Gratis tras verificación</p>
+          <ul class="space-y-2.5 text-sm text-ink/80 mb-6">
+            <li class="flex gap-2"><span class="text-trust font-bold">✓</span> Everything in Regular</li>
+            <li class="flex gap-2"><span class="text-trust font-bold">✓</span> <strong>Verified badge</strong> on listings</li>
+            <li class="flex gap-2"><span class="text-trust font-bold">✓</span> Phone + ID + social verified</li>
+            <li class="flex gap-2"><span class="text-trust font-bold">✓</span> 8 GM-approved photos</li>
+            <li class="flex gap-2"><span class="text-trust font-bold">✓</span> Higher placement than Regular</li>
+          </ul>
+          <a href="/account/register" class="group block text-center w-full text-sm font-bold py-3 rounded-full bg-trust hover:bg-trust-700 text-white transition-colors">
+            <span class="inline-flex items-center gap-2">Get verified · Verificarme <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- VIP -->
+      <div class="bezel-light-outer"><div class="bezel-light-inner p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,#fb923c,#f97316);"><svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div>
+            <span class="text-[10px] uppercase tracking-wider font-bold text-orange-700">★ VIP</span>
+            <h3 class="font-black text-ink text-xl tracking-tight">Get found first</h3>
+          </div>
+        </div>
+        <p class="text-muted text-sm mb-6">Contact for pricing · Consultar</p>
+        <ul class="space-y-2.5 text-sm text-ink/70 mb-6">
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Everything in Verified</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> VIP badge + top placement</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Unlimited photos</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Analytics dashboard</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Eligible for GM Featured</li>
+        </ul>
+        <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full border-2 border-accent text-accent hover:bg-orange-50 transition-colors">Upgrade to VIP</a>
+      </div></div>
+    </div>
+
+    <p class="text-center text-xs text-muted mt-8 max-w-[60ch] mx-auto italic">VIP requires Verified status first. Hierarchy is set by the GM — no shortcuts, no purchase.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ BECOME A PROVIDER ═══════════════════ -->
+<section class="py-24 px-4 bg-white" aria-labelledby="provider-heading">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow bg-blue-50 text-brand-700">Apply · Aplica</span>
+      <h2 id="provider-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-4">Become a verified Dells provider.</h2>
+      <p class="text-muted text-base mt-3 max-w-[44ch] mx-auto italic">Conviértete en proveedor verificado de Dells.</p>
+    </div>
+
+    <ol class="grid grid-cols-1 sm:grid-cols-5 gap-6 fade-up" role="list">
+      <li class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-4 shadow-soft"><span class="text-brand-600 font-black text-xl">1</span></div>
+        <h3 class="font-bold text-ink text-sm mb-1">Sign up</h3>
+        <p class="text-muted text-xs leading-relaxed">Free account · Email + phone</p>
+      </li>
+      <li class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-4 shadow-soft"><span class="text-brand-600 font-black text-xl">2</span></div>
+        <h3 class="font-bold text-ink text-sm mb-1">Upload photos</h3>
+        <p class="text-muted text-xs leading-relaxed">As many as you want · GM picks public ones</p>
+      </li>
+      <li class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-trust-50 border border-trust-100 flex items-center justify-center mx-auto mb-4 shadow-soft"><span class="text-trust-600 font-black text-xl">3</span></div>
+        <h3 class="font-bold text-ink text-sm mb-1">Verify identity</h3>
+        <p class="text-muted text-xs leading-relaxed">Phone + ID + social media</p>
+      </li>
+      <li class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-4 shadow-soft"><span class="text-amber-600 font-black text-xl">4</span></div>
+        <h3 class="font-bold text-ink text-sm mb-1">GM review</h3>
+        <p class="text-muted text-xs leading-relaxed">Approve · request changes · reject (with feedback)</p>
+      </li>
+      <li class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center mx-auto mb-4 shadow-soft"><span class="text-accent font-black text-xl">5</span></div>
+        <h3 class="font-bold text-ink text-sm mb-1">Go live</h3>
+        <p class="text-muted text-xs leading-relaxed">Listing published · WhatsApp leads start</p>
+      </li>
+    </ol>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 fade-up">
+      <a href="/account/register" class="group inline-flex items-center gap-3 bg-trust text-white font-bold px-7 py-3.5 rounded-full hover:bg-trust-700 transition-colors text-sm">
+        Apply for verification
+        <span class="w-8 h-8 rounded-full bg-black/[0.12] flex items-center justify-center group-hover:bg-black/[0.20] transition-colors"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+      </a>
+      <a href="/how-it-works" class="inline-flex items-center gap-2 text-muted hover:text-ink text-sm font-medium transition-colors">Read the guide · Lee la guía
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FINAL CTA + FOOTER ═══════════════════ -->
+<section class="py-20 px-4 bg-trust-50" aria-labelledby="final">
+  <div class="max-w-3xl mx-auto text-center fade-up">
+    <h2 id="final" class="text-4xl sm:text-5xl font-black text-ink tracking-tighter">Trust shouldn't be a gamble.</h2>
+    <p class="text-muted text-base mt-3 max-w-[44ch] mx-auto italic">La confianza no debería ser una apuesta.</p>
+    <a href="/browse" class="group inline-flex items-center gap-3 mt-8 bg-ink text-white font-bold px-7 py-3.5 rounded-full hover:bg-slate-700 transition-colors text-sm">
+      Find a verified provider
+      <span class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+    </a>
+  </div>
+</section>
+
+<footer class="bg-ink text-white py-16 px-4" role="contentinfo">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 rounded-xl bg-white text-ink flex items-center justify-center"><span class="font-black text-sm">BD</span></div>
+        <span class="font-black text-lg">Bulletin<span class="text-trust">Dells</span></span>
+      </div>
+      <p class="text-white/55 text-xs leading-relaxed max-w-[36ch]">Trust-first local marketplace for Wisconsin Dells. The platform connects — providers deliver the service.</p>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Browse</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="/browse?tier=Verified" class="hover:text-white">Verified ✓</a></li>
+        <li><a href="/browse?tier=VIP" class="hover:text-white">VIP ★</a></li>
+        <li><a href="/browse" class="hover:text-white">All providers</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Providers</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="/account/register" class="hover:text-white">Apply</a></li>
+        <li><a href="#" class="hover:text-white">Verification process</a></li>
+        <li><a href="#tiers" class="hover:text-white">Pricing</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Legal</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="#" class="hover:text-white">Terms</a></li>
+        <li><a href="#" class="hover:text-white">Privacy</a></li>
+        <li><a href="#" class="hover:text-white">Waiver</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto pt-8 mt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-[11px] text-white/40">© 2026 Bulletin Dells · Wisconsin Dells, WI · A platform — not a service provider.</p>
+    <div class="flex items-center gap-2 text-[11px]">
+      <button class="px-2.5 py-1 rounded-full bg-white/10 text-white font-bold">EN</button>
+      <button class="px-2.5 py-1 rounded-full text-white/55 hover:text-white">ES</button>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+      return;
+    }
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+  })();
+</script>
+</body>
+</html>

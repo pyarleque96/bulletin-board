@@ -1,0 +1,74 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppCheckbox — checkbox reutilizable.
+    Soporta: two-way binding, label personalizable, estado de error.
+    Estilo base: auth-checkbox + label cursor-pointer.
+    ChildContent para labels con HTML complejo (links, etc.).
+*@
+
+<div class="@WrapperClass">
+
+    <div class="flex items-@Align gap-2.5">
+        <input type="checkbox"
+               id="@InputId"
+               @bind="CurrentValue"
+               disabled="@Disabled"
+               required="@Required"
+               class="auth-checkbox @CssClass"
+               aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+               aria-invalid="@HasError" />
+
+        <label for="@InputId"
+               class="@LabelClass">
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else if (!string.IsNullOrEmpty(Label))
+            {
+                @Label
+            }
+        </label>
+    </div>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InputId { get; set; } = "";
+
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    [Parameter] public string WrapperClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+
+    /// <summary>Alineación vertical del flex: "start" para labels multi-línea, "center" para una línea.</summary>
+    [Parameter] public string Align { get; set; } = "center";
+
+    [Parameter] public string LabelClass { get; set; } =
+        "text-white/50 text-sm cursor-pointer select-none";
+
+    private bool CurrentValue
+    {
+        get => Value;
+        set => ValueChanged.InvokeAsync(value);
+    }
+}

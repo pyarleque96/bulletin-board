@@ -1,0 +1,380 @@
+<!--
+  SCREEN: 13 — Train Track (Circular Route)
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga de ruta / sección de transporte / rides
+  CONCEPTO: Pequeño tren (punto naranja) recorriendo una vía circular
+            con paradas iluminadas en naranja al pasar.
+            Cada parada = una categoría de la plataforma que se carga.
+            La vía es punteada (stroke-dasharray), las paradas son puntos.
+  HIGH-END: Double-Bezel alrededor del dial circular.
+            Timing preciso: el punto avanza con cubic-bezier suave,
+            cada parada "enciende" con escala + color.
+            Sensación: Wisconsin Dells Ducks tour, local y premium.
+  BLAZOR HOOK: Bind stop labels to actual category list.
+               Activar en estado "Loading categories".
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Main intro ── */
+    .track-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      transform: scale(0.9);
+      animation: wrap-in 0.8s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; transform: scale(1); } }
+
+    /* ── Double-Bezel ── */
+    .bezel-outer {
+      width: 14rem;
+      height: 14rem;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(30,41,59,0.05);
+      padding: 7px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 20px 60px -20px rgba(30,41,59,0.1);
+    }
+    .bezel-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Track SVG */
+    .track-svg {
+      width: 11rem;
+      height: 11rem;
+    }
+
+    /* Stops — initially gray, turn orange */
+    .stop-dot {
+      transition: fill 0.3s cubic-bezier(0.32,0.72,0,1),
+                  r 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .stop-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 5px;
+      font-weight: 500;
+      fill: #94a3b8;
+      transition: fill 0.3s;
+    }
+    .stop-label.lit {
+      fill: #fd8c1b;
+    }
+
+    /* Train (moving point) */
+    .train-dot {
+      will-change: transform;
+    }
+
+    /* Center brand */
+    .track-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .center-bd {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.04em;
+      color: #1e293b;
+      line-height: 1;
+    }
+    .center-sub {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 400;
+      font-size: 0.4rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-top: 0.15rem;
+    }
+
+    /* ── Bottom labels ── */
+    .bottom-labels {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: lab-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.8s forwards;
+    }
+    @keyframes lab-in { to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .sub {
+      margin-top: 0.35rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    /* Current stop label */
+    .current-stop {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c2650a;
+      background: #fef3e2;
+      border: 1px solid #fde8c8;
+      border-radius: 9999px;
+      padding: 0.2rem 0.65rem;
+      transition: all 0.3s cubic-bezier(0.32,0.72,0,1);
+      min-width: 12rem;
+      justify-content: center;
+    }
+    .stop-blink {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      animation: blink 1s ease infinite;
+      flex-shrink: 0;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading services · Cargando servicios">
+
+    <div class="track-wrap">
+
+      <!-- Double Bezel -->
+      <div class="bezel-outer" aria-hidden="true">
+        <div class="bezel-inner">
+
+          <!-- SVG track + train -->
+          <svg class="track-svg" id="trackSvg" viewBox="0 0 176 176" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="trainGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Circular track — dashed -->
+            <circle id="trackPath" cx="88" cy="88" r="64"
+                    fill="none"
+                    stroke="#e2e8f0"
+                    stroke-width="2"
+                    stroke-dasharray="6 4"
+                    stroke-linecap="round"/>
+
+            <!-- Stop points and labels (8 stops, every 45 degrees) -->
+            <!-- Stop 0 — top (12 o'clock) -->
+            <circle class="stop-dot" id="sd0" cx="88" cy="24" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl0" x="88" y="15" text-anchor="middle">Housing</text>
+
+            <!-- Stop 1 — 45deg -->
+            <circle class="stop-dot" id="sd1" cx="133.3" cy="42.7" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl1" x="148" y="42" text-anchor="middle">Transport</text>
+
+            <!-- Stop 2 — 90deg (3 o'clock) -->
+            <circle class="stop-dot" id="sd2" cx="152" cy="88" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl2" x="162" y="90" text-anchor="start">Jobs</text>
+
+            <!-- Stop 3 — 135deg -->
+            <circle class="stop-dot" id="sd3" cx="133.3" cy="133.3" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl3" x="148" y="138" text-anchor="middle">Beauty</text>
+
+            <!-- Stop 4 — 180deg (6 o'clock) -->
+            <circle class="stop-dot" id="sd4" cx="88" cy="152" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl4" x="88" y="163" text-anchor="middle">Car Rent.</text>
+
+            <!-- Stop 5 — 225deg -->
+            <circle class="stop-dot" id="sd5" cx="42.7" cy="133.3" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl5" x="26" y="138" text-anchor="middle">Rides</text>
+
+            <!-- Stop 6 — 270deg (9 o'clock) -->
+            <circle class="stop-dot" id="sd6" cx="24" cy="88" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl6" x="12" y="90" text-anchor="end">Mechan.</text>
+
+            <!-- Stop 7 — 315deg -->
+            <circle class="stop-dot" id="sd7" cx="42.7" cy="42.7" r="4" fill="#e2e8f0"/>
+            <text class="stop-label" id="sl7" x="26" y="42" text-anchor="middle">Providers</text>
+
+            <!-- Train dot — orange, positioned at track via JS -->
+            <circle class="train-dot" id="trainDot"
+                    cx="88" cy="24" r="6.5"
+                    fill="#fd8c1b"
+                    filter="url(#trainGlow)">
+              <animate attributeName="r" values="6.5;7.2;6.5" dur="0.9s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Train highlight -->
+            <circle class="train-dot" id="trainHighlight"
+                    cx="86" cy="22" r="2.5"
+                    fill="rgba(255,255,255,0.55)"/>
+          </svg>
+
+          <!-- Center mark -->
+          <div class="track-center">
+            <div class="center-bd">BD</div>
+            <div class="center-sub">Dells</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Labels -->
+      <div class="bottom-labels">
+        <p class="eyebrow">Exploring local services · Explorando servicios</p>
+        <div class="current-stop">
+          <span class="stop-blink"></span>
+          <span id="currentStopLabel">Housing</span>
+        </div>
+        <p class="sub">Bulletin Dells · Wisconsin</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: Replace with actual category list from GET /api/v1/categories */
+    /* Each stop corresponds to a category being loaded */
+
+    const cx = 88, cy = 88, r = 64;
+    const stopCount = 8;
+    const stopNames = ['Housing', 'Transport', 'Jobs', 'Beauty', 'Car Rentals', 'Rides', 'Mechanics', 'Providers'];
+    const stopNamesEs = ['Vivienda', 'Transporte', 'Empleos', 'Belleza', 'Autos', 'Rides', 'Mecánicos', 'Proveedores'];
+
+    let currentStop = 0;
+    const trainDot = document.getElementById('trainDot');
+    const trainHL = document.getElementById('trainHighlight');
+    const currentStopLabel = document.getElementById('currentStopLabel');
+
+    function getStopPos(index) {
+      const angle = (index / stopCount) * Math.PI * 2 - Math.PI / 2;
+      return {
+        x: cx + r * Math.cos(angle),
+        y: cy + r * Math.sin(angle)
+      };
+    }
+
+    function animateToStop(from, to, duration) {
+      const startAngle = (from / stopCount) * Math.PI * 2 - Math.PI / 2;
+      const endAngle = (to / stopCount) * Math.PI * 2 - Math.PI / 2;
+      const startTime = performance.now();
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        // cubic-bezier approx via ease function
+        const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+        const angle = startAngle + (endAngle - startAngle) * ease;
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+
+        trainDot.setAttribute('cx', x);
+        trainDot.setAttribute('cy', y);
+        trainHL.setAttribute('cx', x - 1.5);
+        trainHL.setAttribute('cy', y - 1.5);
+
+        if (t < 1) requestAnimationFrame(step);
+        else onArrived(to);
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    function onArrived(stopIndex) {
+      // Light up stop
+      const dot = document.getElementById(`sd${stopIndex}`);
+      const lbl = document.getElementById(`sl${stopIndex}`);
+      if (dot) {
+        dot.setAttribute('fill', '#fd8c1b');
+        dot.setAttribute('r', '5.5');
+      }
+      if (lbl) lbl.classList.add('lit');
+
+      // Update current label
+      currentStopLabel.textContent = `${stopNames[stopIndex]} · ${stopNamesEs[stopIndex]}`;
+    }
+
+    // Start animation loop
+    let stop = 0;
+    onArrived(0); // light first stop immediately
+
+    function nextStop() {
+      const from = stop;
+      stop = (stop + 1) % stopCount;
+      animateToStop(from, stop, 650);
+      setTimeout(nextStop, 950);
+    }
+
+    setTimeout(nextStop, 700);
+  </script>
+</body>
+</html>

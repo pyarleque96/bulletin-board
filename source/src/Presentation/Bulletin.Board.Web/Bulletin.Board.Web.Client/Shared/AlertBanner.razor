@@ -1,0 +1,103 @@
+@namespace Bulletin.Board.Web.Client.Shared
+
+@*
+    AlertBanner — banner de alerta reutilizable para formularios y páginas.
+    Variants : "error" (rojo) | "success" (verde) | "warning" (ámbar) | "info" (azul).
+    IsVisible : false oculta el componente sin desmontarlo (útil para control desde DB alerts).
+    ShowDismissButton : true muestra botón X; invoca OnDismiss al hacer click.
+    Solo se renderiza si IsVisible=true y (Message tiene valor o ChildContent no es null).
+*@
+
+@if (IsVisible && (!string.IsNullOrEmpty(Message) || ChildContent is not null))
+{
+    <div class="flex items-center gap-2 border text-sm rounded-xl px-4 py-3 @VariantClasses @CssClass"
+         role="@(Variant == "error" ? "alert" : "status")">
+
+        @* Icono por variant *@
+        @if (Variant == "success")
+        {
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        }
+        else if (Variant == "warning")
+        {
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        }
+        else if (Variant == "info")
+        {
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+        }
+        else
+        {
+            @* error (default) *@
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        }
+
+        <span class="flex-1">
+            @if (ChildContent is not null) { @ChildContent } else { @Message }
+        </span>
+
+        @if (ShowDismissButton)
+        {
+            <button type="button"
+                    @onclick="OnDismiss"
+                    class="text-current opacity-60 hover:opacity-100 transition-opacity cursor-pointer ml-auto flex-shrink-0"
+                    aria-label="Dismiss">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Texto del mensaje. Si está vacío y ChildContent es null, el componente no se renderiza.</summary>
+    [Parameter] public string? Message { get; set; }
+
+    /// <summary>Contenido alternativo al mensaje de texto.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Variante visual: "error" | "success" | "warning" | "info". Por defecto "error".</summary>
+    [Parameter] public string Variant { get; set; } = "error";
+
+    /// <summary>Controla la visibilidad sin desmontar el componente. Por defecto true.</summary>
+    [Parameter] public bool IsVisible { get; set; } = true;
+
+    /// <summary>Muestra botón X para dismiss manual. Por defecto false.</summary>
+    [Parameter] public bool ShowDismissButton { get; set; } = false;
+
+    /// <summary>Callback invocado al hacer click en el botón X.</summary>
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>Clases CSS extra opcionales para el wrapper.</summary>
+    [Parameter] public string CssClass { get; set; } = "";
+
+    private string VariantClasses => Variant switch
+    {
+        "success" => "bg-green-500/10 border-green-500/25 text-green-400",
+        "warning" => "bg-amber-500/10 border-amber-500/25 text-amber-500",
+        "info"    => "bg-blue-500/10 border-blue-500/25 text-blue-400",
+        _         => "bg-red-500/10 border-red-500/25 text-red-400",  // "error" + cualquier valor desconocido
+    };
+}

@@ -1,0 +1,13 @@
+{
+  "name": "bulletin.board.web",
+  "version": "1.0.0",
+  "description": "Tailwind CSS build for Bulletin Dells",
+  "private": true,
+  "scripts": {
+    "css:build": "tailwindcss -i ./Styles/tailwind.input.css -o ./wwwroot/tailwind.css --minify",
+    "css:watch": "tailwindcss -i ./Styles/tailwind.input.css -o ./wwwroot/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

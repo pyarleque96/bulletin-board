@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Skeleton Listing Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 04-skeleton-listing-detail.html
+    SPEC:   Skeleton para la página de detalle de un proveedor.
+            Cubre: galería de fotos, nombre, tier badges, descripción,
+            rating summary, sección de contacto (botón WhatsApp),
+            y bloque de reviews.
+    CUÁNDO: GET /api/v1/listings/{id} pending → mostrar skeleton.
+            @if (listing == null && isLoading) { <SkeletonListingDetail /> }
+    NOTAS:  - El botón CTA WhatsApp es el más importante → recibe skeleton
+              de color naranja suave (fde8c8) para indicar su peso visual.
+            - Galería: thumbnail principal + 4 miniaturas debajo.
+            - WCAG: aria-busy="true" en el main container.
+    BLAZOR: Componente <SkeletonListingDetail />
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      min-height: 100dvh;
+    }
+
+    /* ---- Shimmer ---- */
+    @keyframes shimmer {
+      0%   { background-position: -400% 0; }
+      100% { background-position: 400% 0; }
+    }
+
+    .sk {
+      background: linear-gradient(
+        90deg,
+        #e2e8f0 0%, #e2e8f0 25%,
+        #f1f5f9 50%,
+        #e2e8f0 75%, #e2e8f0 100%
+      );
+      background-size: 400% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    /* CTA skeleton — tonos naranja para marcar su importancia */
+    .sk-cta {
+      background: linear-gradient(
+        90deg,
+        #fde8c8 0%, #fde8c8 25%,
+        #fef3e2 50%,
+        #fde8c8 75%, #fde8c8 100%
+      );
+      background-size: 400% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
+    /* Delays en cascade */
+    .sk-d0 { animation-delay: 0s; }
+    .sk-d1 { animation-delay: 0.08s; }
+    .sk-d2 { animation-delay: 0.16s; }
+    .sk-d3 { animation-delay: 0.24s; }
+    .sk-d4 { animation-delay: 0.32s; }
+    .sk-d5 { animation-delay: 0.40s; }
+    .sk-d6 { animation-delay: 0.48s; }
+
+    .sk-badge { height: 22px; border-radius: 9999px; }
+    .sk-star  { width: 14px; height: 14px; border-radius: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sk, .sk-cta {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        background: #e2e8f0;
+      }
+      .sk-cta { background: #fde8c8; }
+    }
+  </style>
+</head>
+<body aria-busy="true" aria-label="Cargando detalle del proveedor / Loading provider detail">
+
+<!-- ================================================================
+     NAVEGACIÓN SKELETON
+     ================================================================ -->
+<nav style="background:#ffffff; border-bottom:1px solid #f1f5f9; padding:14px 24px; position:sticky; top:0; z-index:40;">
+  <div style="max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <div class="sk sk-d0" style="width:148px; height:28px;"></div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div class="sk sk-d1" style="width:80px; height:14px;"></div>
+      <div class="sk sk-d2" style="width:36px; height:36px; border-radius:50%;"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================================================================
+     BREADCRUMB
+     ================================================================ -->
+<div style="max-width:1100px; margin:0 auto; padding:16px 24px 0;">
+  <div style="display:flex; align-items:center; gap:8px;">
+    <div class="sk sk-d0" style="width:60px; height:12px;"></div>
+    <div style="width:6px; height:12px; color:#cbd5e1; font-size:10px; display:flex; align-items:center;" aria-hidden="true">›</div>
+    <div class="sk sk-d1" style="width:90px; height:12px;"></div>
+    <div style="width:6px; height:12px; color:#cbd5e1; font-size:10px; display:flex; align-items:center;" aria-hidden="true">›</div>
+    <div class="sk sk-d2" style="width:130px; height:12px;"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MAIN CONTENT — 2 columnas en desktop
+     ================================================================ -->
+<main
+  style="max-width:1100px; margin:0 auto; padding:24px 24px 64px;"
+  role="status"
+  aria-label="Cargando perfil del proveedor / Loading provider profile"
+>
+  <div style="display:grid; grid-template-columns:1fr; gap:32px;" id="detail-layout">
+
+    <!-- ============================================================
+         COLUMNA IZQUIERDA — Galería + Info principal
+         BLAZOR: grid-template-columns:minmax(0,2fr) minmax(0,1fr) en md+
+         ============================================================ -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- GALERÍA PRINCIPAL -->
+      <div style="display:flex; flex-direction:column; gap:8px;" aria-label="Galería de fotos">
+
+        <!-- Foto principal -->
+        <div
+          class="sk sk-d0"
+          style="width:100%; aspect-ratio:16/9; border-radius:12px; min-height:220px;"
+        ></div>
+
+        <!-- Miniaturas (4) — BLAZOR: GM aprueba cuáles son públicas -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+          <div class="sk sk-d1" style="aspect-ratio:1; border-radius:8px;"></div>
+          <div class="sk sk-d2" style="aspect-ratio:1; border-radius:8px;"></div>
+          <div class="sk sk-d3" style="aspect-ratio:1; border-radius:8px;"></div>
+          <!-- Última miniatura con overlay "+ más fotos" -->
+          <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden;">
+            <div class="sk sk-d4" style="width:100%; height:100%;"></div>
+            <!-- Overlay indicador -->
+            <div style="
+              position:absolute; inset:0; background:rgba(30,41,59,0.45);
+              border-radius:8px; display:flex; align-items:center; justify-content:center;
+            ">
+              <div class="sk sk-d4" style="width:40px; height:14px; background:rgba(255,255,255,0.3);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO: Título + Badges + Descripción -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Badges de tier -->
+        <div style="display:flex; gap:6px; align-items:center;">
+          <!-- BLAZOR: ProviderTier.VIP → badge naranja -->
+          <div class="sk sk-badge sk-d1" style="width:44px; background:#fde8c8;"></div>
+          <!-- BLAZOR: IsVerified → badge slate -->
+          <div class="sk sk-badge sk-d1" style="width:72px;"></div>
+          <!-- BLAZOR: Categoría -->
+          <div class="sk sk-badge sk-d2" style="width:90px;"></div>
+        </div>
+
+        <!-- Nombre del proveedor (h1) -->
+        <div class="sk sk-d1" style="width:70%; height:28px;"></div>
+
+        <!-- Subtítulo / tagline -->
+        <div class="sk sk-d2" style="width:50%; height:16px;"></div>
+
+        <!-- Descripción (párrafo — 4 líneas) -->
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="sk sk-d2" style="width:100%; height:13px;"></div>
+          <div class="sk sk-d3" style="width:100%; height:13px;"></div>
+          <div class="sk sk-d3" style="width:92%; height:13px;"></div>
+          <div class="sk sk-d4" style="width:78%; height:13px;"></div>
+        </div>
+
+        <!-- Rating summary -->
+        <div style="display:flex; align-items:center; gap:10px; padding:14px; background:#fafafa; border-radius:10px; border:1px solid #f1f5f9;">
+          <!-- Score grande -->
+          <div class="sk sk-d3" style="width:48px; height:40px; border-radius:8px;"></div>
+          <!-- Estrellas + conteo -->
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; gap:4px;">
+              <div class="sk sk-star sk-d4"></div>
+              <div class="sk sk-star sk-d4"></div>
+              <div class="sk sk-star sk-d4"></div>
+              <div class="sk sk-star sk-d4"></div>
+              <div class="sk sk-star sk-d4"></div>
+            </div>
+            <div class="sk sk-d5" style="width:80px; height:12px;"></div>
+          </div>
+        </div>
+
+        <!-- Detalles adicionales (idioma, ubicación, disponibilidad) -->
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="sk sk-d3" style="width:60%; height:11px;"></div>
+            <div class="sk sk-d4" style="width:80%; height:15px;"></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="sk sk-d3" style="width:50%; height:11px;"></div>
+            <div class="sk sk-d4" style="width:70%; height:15px;"></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="sk sk-d4" style="width:60%; height:11px;"></div>
+            <div class="sk sk-d5" style="width:90%; height:15px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         COLUMNA DERECHA — Sticky card de contacto
+         BLAZOR: position:sticky en md+, normal flow en mobile
+         ============================================================ -->
+    <div
+      style="display:flex; flex-direction:column; gap:12px; padding:20px; background:#ffffff; border:1px solid #f1f5f9; border-radius:16px; box-shadow:0 4px 20px -4px rgba(0,0,0,0.06);"
+    >
+      <!-- Proveedor mini-card -->
+      <div style="display:flex; align-items:center; gap:10px; padding-bottom:14px; border-bottom:1px solid #f1f5f9;">
+        <div class="sk sk-d2" style="width:52px; height:52px; border-radius:50%;"></div>
+        <div style="display:flex; flex-direction:column; gap:6px; flex:1;">
+          <div class="sk sk-d2" style="width:70%; height:15px;"></div>
+          <div class="sk sk-d3" style="width:55%; height:12px;"></div>
+        </div>
+      </div>
+
+      <!-- Precio / tarifa (si aplica) -->
+      <div style="display:flex; flex-direction:column; gap:5px;">
+        <div class="sk sk-d3" style="width:45%; height:11px;"></div>
+        <div class="sk sk-d4" style="width:60%; height:22px;"></div>
+      </div>
+
+      <!-- CTA Principal: WhatsApp -->
+      <!-- BLAZOR: onclick dispara waiver si !hasAcceptedWaiver, luego abre wa.me deeplink -->
+      <div class="sk-cta sk-d4" style="width:100%; height:48px;" aria-label="Contactar por WhatsApp — skeleton"></div>
+
+      <!-- CTA Secundario: Ver perfil completo / llamar -->
+      <div class="sk sk-d5" style="width:100%; height:40px; border-radius:8px;"></div>
+
+      <!-- Nota legal / waiver hint -->
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <div class="sk sk-d5" style="width:100%; height:10px;"></div>
+        <div class="sk sk-d6" style="width:85%; height:10px;"></div>
+      </div>
+
+      <!-- Compartir / guardar -->
+      <div style="display:flex; gap:8px; padding-top:8px; border-top:1px solid #f1f5f9;">
+        <div class="sk sk-d5" style="flex:1; height:36px; border-radius:8px;"></div>
+        <div class="sk sk-d6" style="flex:1; height:36px; border-radius:8px;"></div>
+      </div>
+    </div>
+
+  </div><!-- /detail-layout -->
+
+  <!-- ============================================================
+       SECCIÓN DE REVIEWS
+       BLAZOR: GET /api/v1/ratings?listingId=X — solo ratings aprobados por GM
+       ============================================================ -->
+  <div style="margin-top:40px; border-top:1px solid #f1f5f9; padding-top:32px;">
+    <!-- Título de sección -->
+    <div class="sk sk-d0" style="width:180px; height:22px; margin-bottom:20px;"></div>
+
+    <!-- 3 reviews placeholder -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- Review 1 -->
+      <div style="padding:16px; background:#fafafa; border-radius:10px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="sk sk-d1" style="width:36px; height:36px; border-radius:50%;"></div>
+          <div style="display:flex; flex-direction:column; gap:5px; flex:1;">
+            <div class="sk sk-d1" style="width:120px; height:13px;"></div>
+            <div style="display:flex; gap:3px;">
+              <div class="sk sk-star sk-d2"></div>
+              <div class="sk sk-star sk-d2"></div>
+              <div class="sk sk-star sk-d2"></div>
+              <div class="sk sk-star sk-d2"></div>
+              <div class="sk sk-star sk-d2"></div>
+            </div>
+          </div>
+          <div class="sk sk-d2" style="width:60px; height:11px;"></div>
+        </div>
+        <div class="sk sk-d3" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d3" style="width:88%; height:12px;"></div>
+      </div>
+
+      <!-- Review 2 -->
+      <div style="padding:16px; background:#fafafa; border-radius:10px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="sk sk-d2" style="width:36px; height:36px; border-radius:50%;"></div>
+          <div style="display:flex; flex-direction:column; gap:5px; flex:1;">
+            <div class="sk sk-d3" style="width:100px; height:13px;"></div>
+            <div style="display:flex; gap:3px;">
+              <div class="sk sk-star sk-d3"></div>
+              <div class="sk sk-star sk-d3"></div>
+              <div class="sk sk-star sk-d3"></div>
+              <div class="sk sk-star sk-d3"></div>
+              <div class="sk sk-star sk-d3"></div>
+            </div>
+          </div>
+          <div class="sk sk-d4" style="width:55px; height:11px;"></div>
+        </div>
+        <div class="sk sk-d4" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d5" style="width:72%; height:12px;"></div>
+      </div>
+
+      <!-- Review 3 -->
+      <div style="padding:16px; background:#fafafa; border-radius:10px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="sk sk-d4" style="width:36px; height:36px; border-radius:50%;"></div>
+          <div style="display:flex; flex-direction:column; gap:5px; flex:1;">
+            <div class="sk sk-d4" style="width:140px; height:13px;"></div>
+            <div style="display:flex; gap:3px;">
+              <div class="sk sk-star sk-d5"></div>
+              <div class="sk sk-star sk-d5"></div>
+              <div class="sk sk-star sk-d5"></div>
+              <div class="sk sk-star sk-d5"></div>
+              <div class="sk sk-star sk-d5"></div>
+            </div>
+          </div>
+          <div class="sk sk-d5" style="width:60px; height:11px;"></div>
+        </div>
+        <div class="sk sk-d5" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d6" style="width:95%; height:12px;"></div>
+        <div class="sk sk-d6" style="width:60%; height:12px;"></div>
+      </div>
+
+    </div><!-- /reviews -->
+  </div>
+
+</main>
+
+<!-- ================================================================
+     RESPONSIVE BREAKPOINT — desktop: 2 columnas
+     BLAZOR: aplica la clase directamente en el componente con md:grid-cols-[2fr,1fr]
+     ================================================================ -->
+<style>
+  @media (min-width: 768px) {
+    #detail-layout {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+  }
+</style>
+
+</body>
+</html>

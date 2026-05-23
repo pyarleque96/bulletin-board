@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Dells with notification">
+  <title>Bulletin Dells – Notification Badge (Dark)</title>
+  <rect width="512" height="512" rx="112" fill="#0F172A"/>
+  <g font-family="'Nunito','Poppins',system-ui,sans-serif" font-weight="900" letter-spacing="-8">
+    <text x="96" y="252" font-size="210" fill="#FFFFFF">B</text>
+    <text x="232" y="420" font-size="210" fill="#F39323">D</text>
+  </g>
+  <circle cx="208" cy="108" r="20" fill="#F39323"/>
+  <circle cx="420" cy="92" r="48" fill="#0F172A"/>
+  <circle cx="420" cy="92" r="36" fill="#EF4444"/>
+</svg>

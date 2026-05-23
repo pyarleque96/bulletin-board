@@ -1,0 +1,142 @@
+@using Bulletin.Board.Web.Client.States
+@implements IDisposable
+@inject AdminNavigationState AdminNav
+
+@if (_show)
+{
+    <div class="admin-progress-bar" role="progressbar" aria-label="Loading">
+        <div class="admin-progress-bar__thumb @_phaseClass"></div>
+    </div>
+}
+
+<style>
+    .admin-progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: transparent;
+        overflow: hidden;
+        z-index: 9999;
+        pointer-events: none;
+    }
+    .admin-progress-bar__thumb {
+        height: 100%;
+        width: 0%;
+        background: #fd8c1b;
+        border-radius: 0 9999px 9999px 0;
+        box-shadow: 0 0 8px rgba(253, 140, 27, 0.6);
+        opacity: 1;
+        transition: width 8s cubic-bezier(0.1, 0.7, 0.1, 1), opacity 250ms ease;
+    }
+    /* Phase 1: avanza lentamente a 80% — sugiere progreso sin completar nunca. */
+    .admin-progress-bar__thumb.is-running { width: 80%; }
+    /* Phase 2: salta a 100% rápido y se desvanece (cierre limpio del recorrido). */
+    .admin-progress-bar__thumb.is-finishing {
+        width: 100%;
+        opacity: 0;
+        transition: width 300ms ease-out, opacity 300ms ease-out 200ms;
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .admin-progress-bar__thumb {
+            transition: opacity 150ms ease;
+            width: 100%;
+            opacity: 0.6;
+        }
+        .admin-progress-bar__thumb.is-finishing { opacity: 0; }
+    }
+</style>
+
+@code {
+    // Umbral antes de mostrar la barra: navegaciones < 120ms no la disparan.
+    private const int ShowDelayMs = 120;
+    // Duración mínima visible una vez mostrada, para que el recorrido se aprecie.
+    private const int MinVisibleMs = 450;
+    // Duración del fade-out tras llegar a 100% (sincronizado con el CSS de arriba).
+    private const int FinishDurationMs = 500;
+
+    private bool _show;
+    private string _phaseClass = "";
+    private CancellationTokenSource? _showCts;
+    private CancellationTokenSource? _hideCts;
+    private DateTime _shownAt;
+
+    protected override void OnInitialized()
+    {
+        AdminNav.OnChange += HandleChange;
+    }
+
+    private async void HandleChange()
+    {
+        if (AdminNav.IsNavigating)
+        {
+            // Nueva navegación: cancelar cualquier cierre en curso.
+            _hideCts?.Cancel();
+            _showCts?.Cancel();
+            _showCts = new CancellationTokenSource();
+            var token = _showCts.Token;
+            try
+            {
+                await Task.Delay(ShowDelayMs, token);
+                if (token.IsCancellationRequested || !AdminNav.IsNavigating) return;
+
+                _show = true;
+                _phaseClass = "";
+                _shownAt = DateTime.UtcNow;
+                await InvokeAsync(StateHasChanged);
+
+                // Forzar reflow para que la transición width: 0% → 80% se anime
+                // (sin esto el navegador puede colapsar ambos estados en un solo frame).
+                await Task.Delay(16, token);
+                if (token.IsCancellationRequested) return;
+                _phaseClass = "is-running";
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (TaskCanceledException) { /* navegación rápida o cancelada */ }
+        }
+        else
+        {
+            _showCts?.Cancel();
+
+            if (!_show) return;
+
+            // Asegurar duración mínima visible para que la animación no se vea cortada.
+            var elapsed = (int)(DateTime.UtcNow - _shownAt).TotalMilliseconds;
+            var remaining = Math.Max(0, MinVisibleMs - elapsed);
+
+            _hideCts?.Cancel();
+            _hideCts = new CancellationTokenSource();
+            var token = _hideCts.Token;
+            try
+            {
+                if (remaining > 0)
+                {
+                    await Task.Delay(remaining, token);
+                    if (token.IsCancellationRequested) return;
+                }
+
+                // Fase de cierre: salta a 100% y fade-out.
+                _phaseClass = "is-finishing";
+                await InvokeAsync(StateHasChanged);
+
+                await Task.Delay(FinishDurationMs, token);
+                if (token.IsCancellationRequested) return;
+
+                _show = false;
+                _phaseClass = "";
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (TaskCanceledException) { /* otra navegación arrancó antes de cerrar */ }
+        }
+    }
+
+    public void Dispose()
+    {
+        AdminNav.OnChange -= HandleChange;
+        _showCts?.Cancel();
+        _showCts?.Dispose();
+        _hideCts?.Cancel();
+        _hideCts?.Dispose();
+    }
+}

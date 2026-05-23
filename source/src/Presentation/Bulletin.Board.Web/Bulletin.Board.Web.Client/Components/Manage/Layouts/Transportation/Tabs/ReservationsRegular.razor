@@ -1,0 +1,63 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ReservationsRegular (Transportation) — Lista de rides upcoming/past.
+   Regla #8: WhatsApp deep link + GmCopyNotice (GM recibe copia por email).
+
+   Datos: placeholder hasta API GET /api/v1/manage/listings/{id}/reservations
+   (BACKEND_AUDIT §1.1). El listing.WhatsAppNumber alimenta el wa.me.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Transportation.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-reservations"
+      role="tabpanel"
+      aria-labelledby="tab-reservations"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Transport_Reservations_Title"]</h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Transport_Reservations_Subtitle"]</p>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="@_localizer["Manage_Transport_Reservations_Filter_AriaLabel"]">
+            <button type="button"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer @(_filter == "upcoming" ? "bg-ink text-white" : "bg-slate-100 hover:bg-slate-200 text-ink")"
+                    @onclick="@(() => _filter = "upcoming")">
+                @_localizer["Manage_Transport_Reservations_Filter_Upcoming"]
+            </button>
+            <button type="button"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer @(_filter == "past" ? "bg-ink text-white" : "bg-slate-100 hover:bg-slate-200 text-ink")"
+                    @onclick="@(() => _filter = "past")">
+                @_localizer["Manage_Transport_Reservations_Filter_Past"]
+            </button>
+        </div>
+    </div>
+
+    @* GM copy notice — regla #8 *@
+    <div class="mb-5">
+        <GmCopyNotice />
+    </div>
+
+    @* Empty placeholder — TODO: API GET /api/v1/manage/listings/{id}/reservations *@
+    <ManageEmptyState Title="@_localizer["Manage_Transport_Reservations_Empty_Title"]"
+                      Description="@_localizer["Manage_Transport_Reservations_Empty_Description"]" />
+
+    @if (!string.IsNullOrWhiteSpace(Listing.WhatsAppNumber))
+    {
+        <div class="mt-6 flex items-center justify-center">
+            <WhatsAppCtaButton Phone="@Listing.WhatsAppNumber"
+                               Message="@($"Bulletin Dells · {Listing.TitleEn}")">
+                @_localizer["Manage_Transport_Reservations_ConfirmOnWhatsApp"]
+            </WhatsAppCtaButton>
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private string _filter = "upcoming";
+}

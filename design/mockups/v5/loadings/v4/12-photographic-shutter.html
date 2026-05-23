@@ -1,0 +1,286 @@
+<!--
+  SCREEN: 12 — Photographic Shutter
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga de galería de fotos / vista de detalle de listing con fotos
+  CONCEPTO: Apertura de cámara fotográfica (iris diaphragm) abriéndose y
+            cerrándose en SVG con clip-path, 6 hojas de apertura.
+            Al abrirse, revela el wordmark al centro.
+            Label "Capturing your marketplace · Capturando tu mercado"
+  HIGH-END: Cada hoja rota individualmente con transform-origin en el centro.
+            Timing: open → pause → close → open loop.
+            El efecto es de fotografía de alta gama, no de app común.
+  BLAZOR HOOK: Usar al cargar PhotoGallery.razor o antes de mostrar
+               la galería de fotos del proveedor (GM-approved).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Main intro ── */
+    .shutter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      transform: scale(0.9);
+      animation: wrap-in 0.8s cubic-bezier(0.32,0.72,0,1) 0.2s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; transform: scale(1); } }
+
+    /* ── Double-Bezel container ── */
+    .bezel-outer {
+      width: 12rem;
+      height: 12rem;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.025);
+      border: 1px solid rgba(30,41,59,0.06);
+      padding: 6px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 20px 56px -20px rgba(30,41,59,0.1);
+    }
+    .bezel-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #1e293b;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.04);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Shutter SVG */
+    .shutter-svg {
+      width: 9rem;
+      height: 9rem;
+    }
+
+    /* Each blade transforms around center */
+    .blade {
+      transform-origin: 60px 60px;
+      fill: #0f172a;
+    }
+
+    /* 6 blades, each rotated 60deg apart, animating open/close */
+    .blade-1 { animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.5s infinite; }
+    .blade-2 { transform: rotate(60deg);  animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.55s infinite; }
+    .blade-3 { transform: rotate(120deg); animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.60s infinite; }
+    .blade-4 { transform: rotate(180deg); animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.65s infinite; }
+    .blade-5 { transform: rotate(240deg); animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.70s infinite; }
+    .blade-6 { transform: rotate(300deg); animation: blade-open 4s cubic-bezier(0.4,0,0.2,1) 0.75s infinite; }
+
+    @keyframes blade-open {
+      /* Closed */
+      0%   { opacity: 1; }
+      /* Open */
+      25%  { opacity: 0.12; }
+      /* Hold open */
+      60%  { opacity: 0.12; }
+      /* Close */
+      85%  { opacity: 1; }
+      100% { opacity: 1; }
+    }
+
+    /* Center wordmark — visible when open */
+    .shutter-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 3;
+      animation: center-reveal 4s cubic-bezier(0.4,0,0.2,1) 0.5s infinite;
+    }
+    @keyframes center-reveal {
+      0%   { opacity: 0; }
+      28%  { opacity: 1; }
+      57%  { opacity: 1; }
+      82%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+
+    .center-bd {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      line-height: 1;
+    }
+    .center-sub {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-weight: 400;
+      font-size: 0.45rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-top: 0.2rem;
+    }
+
+    /* Outer ring of bezel-inner — subtle glow when open */
+    .iris-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      animation: ring-pulse 4s cubic-bezier(0.4,0,0.2,1) 0.5s infinite;
+      z-index: 4;
+      pointer-events: none;
+    }
+    @keyframes ring-pulse {
+      0%   { box-shadow: inset 0 0 0 0 rgba(253,140,27,0); }
+      28%  { box-shadow: inset 0 0 24px 4px rgba(253,140,27,0.12); }
+      57%  { box-shadow: inset 0 0 24px 4px rgba(253,140,27,0.08); }
+      85%  { box-shadow: inset 0 0 0 0 rgba(253,140,27,0); }
+      100% { box-shadow: inset 0 0 0 0 rgba(253,140,27,0); }
+    }
+
+    /* ── Labels ── */
+    .shutter-labels {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: lab-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.8s forwards;
+    }
+    @keyframes lab-in { to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .sub {
+      margin-top: 0.4rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    /* ── Halo ── */
+    .halo {
+      position: absolute;
+      width: 16rem;
+      height: 16rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253,140,27,0.04) 0%, transparent 65%);
+      pointer-events: none;
+      opacity: 0;
+      animation: halo-in 1.5s cubic-bezier(0.32,0.72,0,1) 0.4s forwards;
+    }
+    @keyframes halo-in { to { opacity: 1; } }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading photos · Cargando fotos">
+
+    <!-- Halo -->
+    <div class="halo" aria-hidden="true"></div>
+
+    <div class="shutter-wrap">
+
+      <!-- Double Bezel -->
+      <div class="bezel-outer" aria-hidden="true">
+        <div class="bezel-inner">
+
+          <!-- Iris ring glow -->
+          <div class="iris-ring"></div>
+
+          <!-- Shutter blades SVG -->
+          <svg class="shutter-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <!--
+              Iris diaphragm: 6 blades.
+              Each blade is a curved kite shape, pivoting around center.
+              When opacity decreases, the aperture "opens".
+            -->
+
+            <!-- Blade shape: starts from center, extends outward in a curved triangle -->
+            <!-- Blade 1 -->
+            <path class="blade blade-1"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+            <!-- Blade 2 -->
+            <path class="blade blade-2"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+            <!-- Blade 3 -->
+            <path class="blade blade-3"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+            <!-- Blade 4 -->
+            <path class="blade blade-4"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+            <!-- Blade 5 -->
+            <path class="blade blade-5"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+            <!-- Blade 6 -->
+            <path class="blade blade-6"
+              d="M60,60 L60,8 Q78,8 90,20 Q76,34 68,50 Z"/>
+
+            <!-- Lens outer ring -->
+            <circle cx="60" cy="60" r="58" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+
+            <!-- Center aperture circle -->
+            <circle cx="60" cy="60" r="14" fill="#1e293b" stroke="rgba(255,255,255,0.06)" stroke-width="0.75"/>
+          </svg>
+
+          <!-- Center reveal -->
+          <div class="shutter-center">
+            <div class="center-bd">BD</div>
+            <div class="center-sub">Bulletin Dells</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Labels -->
+      <div class="shutter-labels">
+        <p class="eyebrow">Capturing your marketplace · Capturando tu mercado</p>
+        <p class="sub">Bulletin Dells · GM-Approved Photos</p>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>

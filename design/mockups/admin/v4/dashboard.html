@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc', ink: '#0f172a', muted: '#64748b',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #050f1a; color: #e2e8f0; }
+
+    /* Radial gradient background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(249,115,22,0.08) 0%, transparent 50%);
+    }
+
+    /* Sidebar glass */
+    #sidebar {
+      transition: width 300ms cubic-bezier(0.32,0.72,0,1);
+      overflow: hidden;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: rgba(255,255,255,0.04);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      position: relative; z-index: 10;
+    }
+    #sidebar .label { transition: opacity 200ms cubic-bezier(0.32,0.72,0,1); }
+    #sidebar.collapsed .label { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; }
+    #sidebar.collapsed { width: 64px; }
+    #sidebar:not(.collapsed) { width: 256px; }
+
+    .nav-item { transition: background-color 150ms ease, color 150ms ease; border-radius: 0.5rem; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); }
+    .nav-item.active { background: rgba(96,165,250,0.18); color: #93c5fd; }
+
+    /* Glass card */
+    .glass-card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+    .glass-card-strong {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    /* Table rows */
+    tbody tr { transition: background-color 150ms ease; cursor: default; }
+    tbody tr:hover td { background-color: rgba(255,255,255,0.04); }
+
+    button { transition: all 200ms cubic-bezier(0.32,0.72,0,1); }
+    button:active { transform: scale(0.98); }
+
+    /* KPI card hover */
+    .kpi-card { transition: transform 300ms cubic-bezier(0.32,0.72,0,1), box-shadow 300ms cubic-bezier(0.32,0.72,0,1); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+    .text-ghost { color: rgba(226,232,240,0.5); }
+    .border-glass { border-color: rgba(255,255,255,0.08); }
+    .divide-glass > :not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.07); }
+  </style>
+</head>
+<body class="min-h-[100dvh] flex relative">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="flex flex-col min-h-[100dvh] flex-shrink-0">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-4 py-5" style="border-bottom: 1px solid rgba(255,255,255,0.08)">
+      <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0" style="box-shadow: 0 0 12px rgba(59,130,246,0.4)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span>
+    </div>
+
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer w-full text-left text-slate-400" style="border-bottom: 1px solid rgba(255,255,255,0.08)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+      <span class="label text-xs font-medium">Collapse</span>
+    </button>
+
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 cursor-pointer text-brand-300">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="label text-sm">Dashboard</span>
+      </a>
+      <a href="listings-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="label text-sm">Listings Queue</span>
+      </a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="label text-sm">Providers</span>
+      </a>
+      <a href="categories.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
+        <span class="label text-sm">Categories</span>
+      </a>
+      <a href="reviews-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="label text-sm">Reviews Queue</span>
+      </a>
+    </nav>
+
+    <div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.08)">
+      <div class="flex items-center gap-3 px-2 py-2">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0" style="box-shadow: 0 0 8px rgba(59,130,246,0.3)">GM</div>
+        <div class="label min-w-0">
+          <p class="text-xs font-medium text-white truncate">General Manager</p>
+          <p class="text-[11px] text-slate-500 truncate">admin@bulletindells.com</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-auto min-h-[100dvh] relative z-10">
+
+    <!-- Top bar -->
+    <header class="px-6 py-4 flex items-center justify-between sticky top-0 z-20" style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(5,15,26,0.8); border-bottom: 1px solid rgba(255,255,255,0.07)">
+      <div>
+        <h1 class="text-lg font-semibold text-white">Dashboard</h1>
+        <p class="text-xs text-slate-500">Sunday, May 4, 2026</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style="background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2); color: #4ade80">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+          System Operational
+        </span>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- KPI Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 1 -->
+        <div class="kpi-card glass-card rounded-2xl p-4 cursor-default">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(250,204,21,0.15); border: 1px solid rgba(250,204,21,0.2)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><circle cx="12" cy="14" r="3"/></svg>
+            </div>
+            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.2); color: #fbbf24">Urgent</span>
+          </div>
+          <p class="text-3xl font-mono font-semibold text-white tracking-tight">14</p>
+          <p class="text-xs text-slate-400 mt-1">Listings Pending</p>
+          <p class="text-[11px] mt-2 font-medium" style="color: #fbbf24">+3 since yesterday</p>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="kpi-card glass-card rounded-2xl p-4 cursor-default">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.2)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.2); color: #60a5fa">This week</span>
+          </div>
+          <p class="text-3xl font-mono font-semibold text-white tracking-tight">7</p>
+          <p class="text-xs text-slate-400 mt-1">New Providers</p>
+          <p class="text-[11px] mt-2 font-medium" style="color: #60a5fa">2 await verification</p>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="kpi-card glass-card rounded-2xl p-4 cursor-default">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.2)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.63 19.79 19.79 0 012.12 1 2 2 0 014.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            </div>
+            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.2); color: #4ade80">Today</span>
+          </div>
+          <p class="text-3xl font-mono font-semibold text-white tracking-tight">31</p>
+          <p class="text-xs text-slate-400 mt-1">Contact Events</p>
+          <p class="text-[11px] mt-2 font-medium" style="color: #4ade80">via WhatsApp</p>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="kpi-card glass-card rounded-2xl p-4 cursor-default">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(196,181,253,0.12); border: 1px solid rgba(196,181,253,0.2)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(196,181,253,0.12); border: 1px solid rgba(196,181,253,0.2); color: #c4b5fd">Pending</span>
+          </div>
+          <p class="text-3xl font-mono font-semibold text-white tracking-tight">9</p>
+          <p class="text-xs text-slate-400 mt-1">Reviews to Approve</p>
+          <p class="text-[11px] mt-2 font-medium" style="color: #c4b5fd">Oldest: 3 days ago</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="glass-card rounded-2xl p-4">
+        <h2 class="text-sm font-semibold text-white mb-3">Quick Actions</h2>
+        <div class="flex flex-wrap gap-2">
+          <a href="listings-queue.html" class="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-xl cursor-pointer hover:bg-brand-500 active:scale-[0.98]" style="box-shadow: 0 0 16px rgba(59,130,246,0.3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Review 14 Pending
+          </a>
+          <a href="reviews-queue.html" class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl cursor-pointer active:scale-[0.98] text-slate-300 hover:text-white" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Approve Reviews
+          </a>
+          <a href="providers.html" class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl cursor-pointer active:scale-[0.98] text-slate-300 hover:text-white" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Manage Providers
+          </a>
+          <a href="categories.html" class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl cursor-pointer active:scale-[0.98] text-slate-300 hover:text-white" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
+            Categories
+          </a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Recent Activity -->
+        <div class="lg:col-span-2 glass-card rounded-2xl overflow-hidden">
+          <div class="px-5 py-4 flex items-center justify-between" style="border-bottom: 1px solid rgba(255,255,255,0.07)">
+            <h2 class="text-sm font-semibold text-white">Recent Activity</h2>
+            <a href="listings-queue.html" class="text-xs text-brand-400 font-medium hover:text-brand-300">View all</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left" style="background: rgba(255,255,255,0.03)">
+                <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Listing</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Provider</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Time</th>
+              </tr>
+            </thead>
+            <tbody class="divide-glass">
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">Airport Shuttle — Premium</td><td class="px-4 py-3.5 text-slate-400">Ramirez Transport</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approved</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">2m ago</td></tr>
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">3BR Apt — Summer Season</td><td class="px-4 py-3.5 text-slate-400">Dells Housing Co.</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">18m ago</td></tr>
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">Nail Art Studio — Full Set</td><td class="px-4 py-3.5 text-slate-400">Linh's Beauty Bar</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Needs Changes</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">1h ago</td></tr>
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">Toyota Camry — Weekend</td><td class="px-4 py-3.5 text-slate-400">Dells Auto Rentals</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Rejected</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">2h ago</td></tr>
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">Lawn Mowing — Weekly</td><td class="px-4 py-3.5 text-slate-400">Garcia Landscaping</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approved</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">3h ago</td></tr>
+              <tr><td class="px-5 py-3.5 font-medium text-slate-200">AC Repair — Emergency</td><td class="px-4 py-3.5 text-slate-400">Midwest HVAC Pros</td><td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td><td class="px-4 py-3.5 text-slate-500 text-xs font-mono">4h ago</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Side stats -->
+        <div class="space-y-4">
+          <div class="glass-card rounded-2xl p-5">
+            <h3 class="text-sm font-semibold text-white mb-4">Provider Tiers</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-amber-400 font-medium">VIP</span><span class="font-mono text-white">8</span></div>
+                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)"><div class="h-full rounded-full bg-amber-400" style="width:18%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-brand-400 font-medium">Verified</span><span class="font-mono text-white">23</span></div>
+                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)"><div class="h-full rounded-full bg-brand-400" style="width:51%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-400 font-medium">Regular</span><span class="font-mono text-white">14</span></div>
+                <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)"><div class="h-full rounded-full bg-slate-500" style="width:31%"></div></div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-4">45 total providers</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <h3 class="text-sm font-semibold text-white mb-3">Top Categories</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-xs"><span class="text-slate-400">Housing</span><span class="font-mono font-medium text-white">17 listings</span></div>
+              <div class="flex justify-between items-center text-xs"><span class="text-slate-400">Car Rental</span><span class="font-mono font-medium text-white">11 listings</span></div>
+              <div class="flex justify-between items-center text-xs"><span class="text-slate-400">Airport Rides</span><span class="font-mono font-medium text-white">9 listings</span></div>
+              <div class="flex justify-between items-center text-xs"><span class="text-slate-400">Beauty &amp; Nails</span><span class="font-mono font-medium text-white">7 listings</span></div>
+              <div class="flex justify-between items-center text-xs"><span class="text-slate-400">Mechanics</span><span class="font-mono font-medium text-white">6 listings</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

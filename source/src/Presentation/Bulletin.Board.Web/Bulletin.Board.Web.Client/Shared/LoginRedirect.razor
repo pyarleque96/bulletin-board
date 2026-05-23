@@ -1,0 +1,21 @@
+@* LoginRedirect — rendered by AuthorizeRouteView's NotAuthorized template.
+   Redirects the user to /login preserving the current URL as ReturnUrl.
+   NavigateTo is called in OnInitialized (not in the render tree) to avoid
+   "Cannot navigate during rendering" exceptions. *@
+
+@inject NavigationManager Navigation
+
+@code {
+    // OnAfterRenderAsync runs only on the client (after JS interop is available),
+    // ensuring the redirect never fires during the Blazor Server circuit phase
+    // before WASM has loaded and resolved the real auth state.
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var returnUrl = Uri.EscapeDataString(Navigation.Uri);
+            Navigation.NavigateTo($"/login?ReturnUrl={returnUrl}", replace: true);
+        }
+        return Task.CompletedTask;
+    }
+}

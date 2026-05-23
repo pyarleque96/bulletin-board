@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skeleton — Home / Landing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #F8FAFC; }
+
+    /* Core shimmer */
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .sk {
+      background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    /* Cascade delays */
+    .sk-d1 { animation-delay: 0s; }
+    .sk-d2 { animation-delay: 0.1s; }
+    .sk-d3 { animation-delay: 0.2s; }
+    .sk-d4 { animation-delay: 0.3s; }
+    .sk-d5 { animation-delay: 0.4s; }
+    .sk-d6 { animation-delay: 0.5s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body aria-busy="true">
+
+<!-- NAV SKELETON -->
+<nav style="background:white; border-bottom:1px solid #F1F5F9; padding:16px 24px;">
+  <div style="max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <!-- Logo rect -->
+    <div class="sk sk-d1" style="width:140px; height:28px;"></div>
+
+    <!-- Nav items — hidden on mobile -->
+    <div style="display:flex; gap:24px; align-items:center;" class="hidden md:flex">
+      <div class="sk sk-d2" style="width:70px; height:14px;"></div>
+      <div class="sk sk-d3" style="width:60px; height:14px;"></div>
+      <div class="sk sk-d4" style="width:80px; height:14px;"></div>
+    </div>
+
+    <!-- CTA button rect -->
+    <div class="sk sk-d5" style="width:100px; height:36px; border-radius:999px;"></div>
+  </div>
+</nav>
+
+<!-- HERO SKELETON -->
+<section style="padding:64px 24px 80px; background:white;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div style="max-width:640px;">
+      <!-- Eyebrow tag -->
+      <div class="sk sk-d1" style="width:120px; height:20px; border-radius:999px; margin-bottom:20px;"></div>
+
+      <!-- Title lines -->
+      <div class="sk sk-d2" style="height:52px; margin-bottom:12px; border-radius:8px;"></div>
+      <div class="sk sk-d3" style="height:52px; width:82%; margin-bottom:12px; border-radius:8px;"></div>
+      <div class="sk sk-d4" style="height:52px; width:65%; margin-bottom:32px; border-radius:8px;"></div>
+
+      <!-- Search bar -->
+      <div style="
+        display:flex;
+        gap:8px;
+        padding:8px;
+        background:#F8FAFC;
+        border-radius:16px;
+        border:1px solid #E2E8F0;
+      ">
+        <div class="sk sk-d5" style="flex:1; height:44px; border-radius:10px;"></div>
+        <div class="sk sk-d6" style="width:44px; height:44px; border-radius:10px; flex-shrink:0;"></div>
+        <div class="sk sk-d6" style="width:100px; height:44px; border-radius:999px; flex-shrink:0;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES GRID SKELETON -->
+<section style="padding:64px 24px; background:#F8FAFC;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <!-- Section title -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+      <div class="sk sk-d1" style="width:180px; height:24px; border-radius:6px;"></div>
+      <div class="sk sk-d2" style="width:80px; height:16px; border-radius:6px;"></div>
+    </div>
+
+    <!-- 2x4 categories grid -->
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;" class="md:grid-cols-4">
+      <!-- category card -->
+      <div style="background:white; border-radius:16px; padding:24px; border:1px solid #F1F5F9;">
+        <div class="sk sk-d1" style="width:48px; height:48px; border-radius:12px; margin-bottom:14px;"></div>
+        <div class="sk sk-d2" style="width:80px; height:14px; margin-bottom:8px;"></div>
+        <div class="sk sk-d3" style="width:50px; height:11px; border-radius:999px;"></div>
+      </div>
+      <div style="background:white; border-radius:16px; padding:24px; border:1px solid #F1F5F9;">
+        <div class="sk sk-d2" style="width:48px; height:48px; border-radius:12px; margin-bottom:14px;"></div>
+        <div class="sk sk-d3" style="width:72px; height:14px; margin-bottom:8px;"></div>
+        <div class="sk sk-d4" style="width:56px; height:11px; border-radius:999px;"></div>
+      </div>
+      <div style="background:white; border-radius:16px; padding:24px; border:1px solid #F1F5F9;">
+        <div class="sk sk-d3" style="width:48px; height:48px; border-radius:12px; margin-bottom:14px;"></div>
+        <div class="sk sk-d4" style="width:90px; height:14px; margin-bottom:8px;"></div>
+        <div class="sk sk-d5" style="width:44px; height:11px; border-radius:999px;"></div>
+      </div>
+      <div style="background:white; border-radius:16px; padding:24px; border:1px solid #F1F5F9;">
+        <div class="sk sk-d4" style="width:48px; height:48px; border-radius:12px; margin-bottom:14px;"></div>
+        <div class="sk sk-d5" style="width:66px; height:14px; margin-bottom:8px;"></div>
+        <div class="sk sk-d6" style="width:60px; height:11px; border-radius:999px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED LISTINGS SKELETON -->
+<section style="padding:64px 24px; background:white;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <!-- Section header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+      <div class="sk sk-d1" style="width:200px; height:24px;"></div>
+      <div class="sk sk-d2" style="width:90px; height:14px;"></div>
+    </div>
+
+    <!-- 3 featured listing cards -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- Listing card 1 -->
+      <div style="
+        background:#F8FAFC;
+        border-radius:16px;
+        border:1px solid #F1F5F9;
+        display:grid;
+        grid-template-columns:200px 1fr;
+        overflow:hidden;
+      " class="flex-col md:grid">
+        <!-- Image -->
+        <div class="sk sk-d1" style="aspect-ratio:4/3; border-radius:0; min-height:140px;"></div>
+        <!-- Info -->
+        <div style="padding:20px 24px; display:flex; flex-direction:column; gap:10px;">
+          <!-- Badge -->
+          <div class="sk sk-d2" style="width:56px; height:20px; border-radius:999px;"></div>
+          <!-- Title -->
+          <div class="sk sk-d3" style="height:18px; width:75%;"></div>
+          <!-- Description -->
+          <div class="sk sk-d4" style="height:13px; width:100%;"></div>
+          <div class="sk sk-d5" style="height:13px; width:88%;"></div>
+          <!-- Bottom row: rating + price -->
+          <div style="display:flex; gap:12px; align-items:center; margin-top:4px;">
+            <div class="sk sk-d5" style="width:80px; height:13px;"></div>
+            <div class="sk sk-d6" style="width:60px; height:13px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listing card 2 -->
+      <div style="
+        background:#F8FAFC;
+        border-radius:16px;
+        border:1px solid #F1F5F9;
+        display:grid;
+        grid-template-columns:200px 1fr;
+        overflow:hidden;
+      " class="flex-col md:grid">
+        <div class="sk sk-d2" style="aspect-ratio:4/3; border-radius:0; min-height:140px;"></div>
+        <div style="padding:20px 24px; display:flex; flex-direction:column; gap:10px;">
+          <div class="sk sk-d3" style="width:70px; height:20px; border-radius:999px;"></div>
+          <div class="sk sk-d4" style="height:18px; width:60%;"></div>
+          <div class="sk sk-d5" style="height:13px; width:100%;"></div>
+          <div class="sk sk-d6" style="height:13px; width:82%;"></div>
+          <div style="display:flex; gap:12px; align-items:center; margin-top:4px;">
+            <div class="sk sk-d6" style="width:80px; height:13px;"></div>
+            <div class="sk sk-d6" style="width:60px; height:13px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Listing card 3 -->
+      <div style="
+        background:#F8FAFC;
+        border-radius:16px;
+        border:1px solid #F1F5F9;
+        display:grid;
+        grid-template-columns:200px 1fr;
+        overflow:hidden;
+      " class="flex-col md:grid">
+        <div class="sk sk-d3" style="aspect-ratio:4/3; border-radius:0; min-height:140px;"></div>
+        <div style="padding:20px 24px; display:flex; flex-direction:column; gap:10px;">
+          <div class="sk sk-d4" style="width:48px; height:20px; border-radius:999px;"></div>
+          <div class="sk sk-d5" style="height:18px; width:70%;"></div>
+          <div class="sk sk-d6" style="height:13px; width:100%;"></div>
+          <div class="sk sk-d6" style="height:13px; width:90%;"></div>
+          <div style="display:flex; gap:12px; align-items:center; margin-top:4px;">
+            <div class="sk sk-d6" style="width:80px; height:13px;"></div>
+            <div class="sk sk-d6" style="width:60px; height:13px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Accessible live region -->
+<div role="status" class="sr-only" aria-live="polite">
+  Loading page content — Cargando contenido de la página
+</div>
+
+</body>
+</html>

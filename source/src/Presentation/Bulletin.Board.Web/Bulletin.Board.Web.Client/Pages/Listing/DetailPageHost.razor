@@ -1,0 +1,70 @@
+@page "/listing/detail/{Slug}"
+
+@using Bulletin.Board.Web.Client.Components.Listings.Detail
+@using Bulletin.Board.Web.Client.Models
+@using Microsoft.AspNetCore.Components
+
+@inject IListingsService _listings
+@inject IListingDetailLayoutResolver _resolver
+@inject NavigationManager _nav
+
+@* Host component for the public listing detail route. The actual layout is resolved at runtime
+   from (CategorySlug, Tier) — the page never branches on category. To plug in a new layout,
+   register it in Program.cs via .AddListingDetailLayouts(...). *@
+
+<PageTitle>@_pageTitle</PageTitle>
+
+@if (_loading)
+{
+    <div class="max-w-6xl mx-auto px-4 pt-24 pb-16">
+        <div class="animate-pulse space-y-6">
+            <div class="h-10 bg-slate-100 rounded-2xl w-2/3"></div>
+            <div class="h-72 md:h-96 bg-slate-100 rounded-3xl"></div>
+            <div class="h-40 bg-slate-100 rounded-3xl"></div>
+        </div>
+    </div>
+}
+else if (_listing is null)
+{
+    @* Listing not found / not approved / not public — degrade to NotFound page. *@
+    @* NavigateTo with replaceHistoryEntry so the broken slug doesn't pollute back-button history. *@
+}
+else
+{
+    <DynamicComponent Type="_layoutType" Parameters="_layoutParams" />
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+
+    private bool _loading = true;
+    private ListingDetailDto? _listing;
+    private Type _layoutType = default!;
+    private IDictionary<string, object> _layoutParams = new Dictionary<string, object>();
+    private string _pageTitle = "Loading… | Bulletin Dells";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading  = true;
+        _listing  = null;
+
+        if (string.IsNullOrWhiteSpace(Slug))
+        {
+            _nav.NavigateTo("/not-found", replace: true);
+            return;
+        }
+
+        _listing = await _listings.GetDetailBySlugAsync(Slug);
+        _loading = false;
+
+        if (_listing is null)
+        {
+            _nav.NavigateTo("/not-found", replace: true);
+            return;
+        }
+
+        _layoutType   = _resolver.Resolve(_listing.CategorySlug, _listing.Tier);
+        _layoutParams = new Dictionary<string, object> { ["Listing"] = _listing };
+        _pageTitle    = $"{_listing.TitleEn} | Bulletin Dells";
+    }
+}

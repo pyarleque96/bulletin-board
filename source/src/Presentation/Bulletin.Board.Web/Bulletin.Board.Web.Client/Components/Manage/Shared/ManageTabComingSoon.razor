@@ -1,0 +1,58 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@*
+    ManageTabComingSoon — Placeholder reutilizable para tabs cuyo backend o UI
+    aún no fue materializado pero que sí aparecen en la matriz canónica del
+    header. Evita que un click silenciosamente caiga al "default" del container
+    (regla #5 del CLAUDE de calidad UX: feedback visible siempre).
+
+    Uso:
+      <ManageTabComingSoon TabKey="inquiries"
+                           Title="@_localizer["Manage_ComingSoon_Inquiries_Title"]"
+                           Description="@_localizer["Manage_ComingSoon_Inquiries_Desc"]" />
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="@($"panel-{TabKey}")"
+      role="tabpanel"
+      aria-labelledby="@($"tab-{TabKey}")"
+      tabindex="0">
+
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-10 sm:p-14">
+        <div class="text-center max-w-md mx-auto">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 flex items-center justify-center mx-auto mb-5"
+                 aria-hidden="true">
+                <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+
+            <h2 class="text-lg font-semibold text-ink mb-2">@Title</h2>
+
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="text-sm text-muted leading-relaxed mb-6">@Description</p>
+            }
+
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-100 text-amber-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500" aria-hidden="true"></span>
+                @_localizer["Manage_ComingSoon_Badge"]
+            </span>
+        </div>
+    </div>
+</main>
+
+@code {
+    /// <summary>Tab key (matches header keys: photos, reviews, inquiries, analytics, etc.).</summary>
+    [Parameter, EditorRequired] public string TabKey { get; set; } = "";
+
+    /// <summary>Localized title — what the user clicked on (e.g. "Inquiries", "Analytics").</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>Optional localized supporting copy.</summary>
+    [Parameter] public string? Description { get; set; }
+}

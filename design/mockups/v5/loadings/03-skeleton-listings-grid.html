@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Skeleton Listings Grid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 03-skeleton-listings-grid.html
+    SPEC:   Skeleton placeholder para el grid de listados de proveedores
+            (página de búsqueda / categoría). Reemplaza a los ListingCard
+            reales mientras se carga la primera página de resultados desde
+            GET /api/v1/listings?category=X&page=1.
+    CUÁNDO: @if (listings == null) { <SkeletonGrid /> }
+            Se monta inmediatamente al navegar, antes de que llegue la data.
+    NOTAS:  - Cards mantienen espacio para badge de tier (VIP / Verified).
+            - La primera card es ancha (hierarchy destacado = VIP/GM).
+            - 6-8 cards en grid responsive 2-col (mobile) → 3-col (tablet)
+              → 4-col (desktop).
+    BLAZOR: Componente <SkeletonListingsGrid Count="8" />
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      min-height: 100dvh;
+    }
+
+    /* ---- Shimmer base ---- */
+    @keyframes shimmer {
+      0%   { background-position: -400% 0; }
+      100% { background-position: 400% 0; }
+    }
+
+    .sk {
+      background: linear-gradient(
+        90deg,
+        #e2e8f0 0%,
+        #e2e8f0 25%,
+        #f1f5f9 50%,
+        #e2e8f0 75%,
+        #e2e8f0 100%
+      );
+      background-size: 400% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    /* ---- Cascade de delays para sensación orgánica ---- */
+    .sk-d0 { animation-delay: 0s; }
+    .sk-d1 { animation-delay: 0.07s; }
+    .sk-d2 { animation-delay: 0.14s; }
+    .sk-d3 { animation-delay: 0.21s; }
+    .sk-d4 { animation-delay: 0.28s; }
+    .sk-d5 { animation-delay: 0.35s; }
+    .sk-d6 { animation-delay: 0.42s; }
+    .sk-d7 { animation-delay: 0.49s; }
+
+    /* ---- Card container ---- */
+    .sk-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    /* ---- Card destacada (primera — hierarchy alto) ---- */
+    .sk-card-featured {
+      border: 2px solid #fde8c8;   /* borde naranja suave — marca VIP/featured */
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* ---- Pill badge (tier) ---- */
+    .sk-badge {
+      height: 20px;
+      border-radius: 9999px;
+    }
+
+    /* ---- Star rating row ---- */
+    .sk-star {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sk {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        background: #e2e8f0;
+      }
+    }
+  </style>
+</head>
+<body aria-busy="true" aria-label="Cargando resultados / Loading results">
+
+<!-- ================================================================
+     NAVEGACIÓN SKELETON
+     ================================================================ -->
+<nav style="background:#ffffff; border-bottom:1px solid #f1f5f9; padding:14px 24px;">
+  <div style="max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+    <!-- Logo -->
+    <div class="sk sk-d0" style="width:148px; height:28px;"></div>
+    <!-- Searchbar -->
+    <div class="sk sk-d1" style="flex:1; max-width:480px; height:38px; border-radius:9999px;"></div>
+    <!-- Avatar / auth -->
+    <div class="sk sk-d2" style="width:36px; height:36px; border-radius:50%;"></div>
+  </div>
+</nav>
+
+<!-- ================================================================
+     FILTER BAR SKELETON
+     ================================================================ -->
+<div style="background:#ffffff; border-bottom:1px solid #f1f5f9; padding:12px 24px;">
+  <div style="max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:10px; overflow-x:auto;">
+    <!-- BLAZOR: Filtros (Categoría, Precio, Tier, Rating, Idioma) -->
+    <div class="sk sk-d0" style="width:100px; height:32px; border-radius:9999px; flex-shrink:0;"></div>
+    <div class="sk sk-d1" style="width:80px; height:32px; border-radius:9999px; flex-shrink:0;"></div>
+    <div class="sk sk-d2" style="width:90px; height:32px; border-radius:9999px; flex-shrink:0;"></div>
+    <div class="sk sk-d3" style="width:70px; height:32px; border-radius:9999px; flex-shrink:0;"></div>
+    <div class="sk sk-d4" style="width:95px; height:32px; border-radius:9999px; flex-shrink:0;"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     BREADCRUMB + CONTEO SKELETON
+     ================================================================ -->
+<div style="max-width:1280px; margin:0 auto; padding:20px 24px 8px;">
+  <div style="display:flex; align-items:center; gap:24px;">
+    <div class="sk sk-d0" style="width:200px; height:14px;"></div>
+    <div class="sk sk-d1" style="width:100px; height:14px;"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     GRID DE CARDS
+     BLAZOR: @foreach (var i in Enumerable.Range(0, Count)) { <SkeletonCard /> }
+     ================================================================ -->
+<main
+  style="max-width:1280px; margin:0 auto; padding:16px 24px 48px;"
+  role="status"
+  aria-label="Cargando listados de proveedores / Loading provider listings"
+>
+
+  <div style="
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  " class="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+  id="listings-grid"
+  >
+
+    <!-- ============================================================
+         CARD 0 — DESTACADA (hierarchy alto / GM Featured)
+         Ocupa 2 columnas en desktop para indicar jerarquía visual.
+         BLAZOR: class="col-span-2" si listings[0].IsGmFeatured || hierarchy > 100
+         ============================================================ -->
+    <article
+      class="sk-card-featured sk-d0"
+      style="grid-column: span 2;"
+      aria-hidden="true"
+    >
+      <!-- Foto hero ancha -->
+      <div class="sk sk-d0" style="width:100%; height:180px; border-radius:0;"></div>
+
+      <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+        <!-- Badges: tier VIP + verificado -->
+        <div style="display:flex; gap:6px; align-items:center;">
+          <!-- BLAZOR: ProviderTier == VIP → mostrar badge naranja -->
+          <div class="sk sk-badge sk-d1" style="width:44px; background:#fde8c8;"></div>
+          <!-- BLAZOR: IsVerified → mostrar badge slate -->
+          <div class="sk sk-badge sk-d1" style="width:64px;"></div>
+        </div>
+        <!-- Título / nombre del proveedor -->
+        <div class="sk sk-d1" style="width:75%; height:18px;"></div>
+        <!-- Descripción corta (2 líneas) -->
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div class="sk sk-d2" style="width:100%; height:13px;"></div>
+          <div class="sk sk-d3" style="width:85%; height:13px;"></div>
+        </div>
+        <!-- Rating row -->
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d3"></div>
+          <div class="sk sk-star sk-d3"></div>
+          <div class="sk sk-star sk-d3"></div>
+          <div class="sk sk-star sk-d3"></div>
+          <div class="sk sk-star sk-d3"></div>
+          <div class="sk sk-d4" style="width:36px; height:12px; margin-left:4px;"></div>
+        </div>
+        <!-- CTA WhatsApp -->
+        <div class="sk sk-d5" style="width:100%; height:40px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- ============================================================
+         CARDS 1–7 — REGULARES
+         BLAZOR: @foreach range(1,7) → <SkeletonCard IsFeatured="false" />
+         ============================================================ -->
+
+    <!-- Card 1 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d1" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:5px;">
+          <!-- Badge tier: Verified -->
+          <div class="sk sk-badge sk-d1" style="width:58px;"></div>
+        </div>
+        <div class="sk sk-d2" style="width:80%; height:16px;"></div>
+        <div class="sk sk-d3" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d3" style="width:70%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d4"></div>
+          <div class="sk sk-star sk-d4"></div>
+          <div class="sk sk-star sk-d4"></div>
+          <div class="sk sk-star sk-d4"></div>
+          <div class="sk sk-star sk-d4"></div>
+          <div class="sk sk-d5" style="width:30px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d5" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d2" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:5px;">
+          <div class="sk sk-badge sk-d2" style="width:50px;"></div>
+        </div>
+        <div class="sk sk-d3" style="width:65%; height:16px;"></div>
+        <div class="sk sk-d4" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d4" style="width:90%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-d5" style="width:28px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d6" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d3" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <!-- Sin badge (Regular) — espacio reservado para consistencia visual -->
+        <div style="height:20px;"></div>
+        <div class="sk sk-d3" style="width:90%; height:16px;"></div>
+        <div class="sk sk-d4" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d5" style="width:60%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-star sk-d5"></div>
+          <div class="sk sk-d6" style="width:32px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d6" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 4 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d4" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:5px;">
+          <div class="sk sk-badge sk-d4" style="width:44px; background:#fde8c8;"></div>
+          <div class="sk sk-badge sk-d4" style="width:60px;"></div>
+        </div>
+        <div class="sk sk-d5" style="width:70%; height:16px;"></div>
+        <div class="sk sk-d5" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d6" style="width:80%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-d7" style="width:34px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d7" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 5 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d5" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:5px;">
+          <div class="sk sk-badge sk-d5" style="width:56px;"></div>
+        </div>
+        <div class="sk sk-d5" style="width:85%; height:16px;"></div>
+        <div class="sk sk-d6" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d6" style="width:75%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-star sk-d6"></div>
+          <div class="sk sk-d7" style="width:30px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d7" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 6 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d6" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="height:20px;"></div>
+        <div class="sk sk-d6" style="width:60%; height:16px;"></div>
+        <div class="sk sk-d7" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d7" style="width:88%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-d7" style="width:26px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d7" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+    <!-- Card 7 -->
+    <article class="sk-card" aria-hidden="true">
+      <div class="sk sk-d7" style="width:100%; height:148px; border-radius:0;"></div>
+      <div style="padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:5px;">
+          <div class="sk sk-badge sk-d7" style="width:48px;"></div>
+        </div>
+        <div class="sk sk-d7" style="width:78%; height:16px;"></div>
+        <div class="sk sk-d7" style="width:100%; height:12px;"></div>
+        <div class="sk sk-d7" style="width:65%; height:12px;"></div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-star sk-d7"></div>
+          <div class="sk sk-d7" style="width:32px; height:11px; margin-left:4px;"></div>
+        </div>
+        <div class="sk sk-d7" style="width:100%; height:36px; border-radius:8px;"></div>
+      </div>
+    </article>
+
+  </div><!-- /grid -->
+
+</main>
+
+<!-- ================================================================
+     LEYENDA DE DISEÑO (solo para referencia del equipo — ocultar en prod)
+     ================================================================ -->
+<aside style="background:#fafafa; border-top:1px solid #f1f5f9; padding:20px 24px; font-family:monospace; font-size:11px; color:#94a3b8;">
+  <strong style="color:#1e293b;">Leyenda de jerarquía visual (skeleton):</strong><br/>
+  Card con borde naranja = hierarchy alto (GM/Featured) · Badge fondo naranja = VIP · Badge gris = Verified · Sin badge = Regular<br/>
+  BLAZOR: El orden real viene de: hierarchy DESC → IsGmFeatured DESC → ProviderTier DESC → AvgRating DESC → CreatedAt DESC
+</aside>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   PhotosTab (CarRental) — Tab Photos compartido Regular/VIP.
+     - Regular: dropzone + grid + filter pills (All/Public/Pending/Hidden) +
+                GM disclaimer banner.
+     - VIP:     bulk selection (checkbox per photo) + per-photo analytics
+                (views, CTR) + per-vehicle filter + footer "Unlimited photos,
+                bulk actions, per-photo analytics".
+
+   Reglas:
+     #4 (Photos) — GM disclaimer banner + PhotoStatusBadge en cada item.
+     #5 — PendingReviewTooltip en cualquier edición (delete/replace).
+
+   TODO: API GET /api/v1/listings/{id}/photos
+   TODO: API POST /api/v1/listings/{id}/photos (upload, returns Pending)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-photos"
+      role="tabpanel"
+      aria-labelledby="tab-photos"
+      tabindex="0">
+
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_CarRental_Photos_Title"]
+                @if (IsVip)
+                {
+                    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+                }
+            </h2>
+            <p class="text-sm text-muted mt-0.5">
+                @(IsVip
+                    ? _localizer["Manage_CarRental_Photos_Subtitle_Vip"]
+                    : _localizer["Manage_CarRental_Photos_Subtitle_Regular"])
+            </p>
+        </div>
+    </div>
+
+    @* GM disclaimer — Regla #4. *@
+    <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="note">
+        <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p class="text-xs text-ink leading-relaxed">@_localizer["Banner_GmDecidesPhotos"]</p>
+    </div>
+
+    @* Filter pills. *@
+    <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group" aria-label="@_localizer["Manage_CarRental_Photos_FilterAriaLabel"]">
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">@_localizer["Manage_Common_All"]</button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer" aria-pressed="false">@_localizer["Photo_Status_Public"]</button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer" aria-pressed="false">@_localizer["Photo_Status_Pending"]</button>
+        <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer" aria-pressed="false">@_localizer["Photo_Status_Hidden"]</button>
+        @if (IsVip)
+        {
+            <span class="text-slate-300 mx-1">|</span>
+            <select class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer border-0"
+                    aria-label="@_localizer["Manage_CarRental_Photos_FilterByVehicle"]">
+                <option>@_localizer["Manage_CarRental_Photos_AllVehicles"]</option>
+            </select>
+        }
+    </div>
+
+    @* Upload dropzone — TODO: wire to API POST /api/v1/listings/{id}/photos *@
+    <PendingReviewTooltip>
+        <label class="block mb-6 cursor-pointer">
+            <div class="border-2 border-dashed border-slate-300 rounded-3xl py-10 text-center hover:border-brand-400 hover:bg-brand-50/40 transition-colors">
+                <svg class="w-8 h-8 text-muted mx-auto mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p class="text-sm text-ink font-medium">@_localizer["Manage_CarRental_Photos_Dropzone_Title"]</p>
+                <p class="text-[11px] text-muted mt-1">@_localizer["Manage_CarRental_Photos_Dropzone_Subtitle"]</p>
+            </div>
+        </label>
+    </PendingReviewTooltip>
+
+    @* Grid placeholder — when API ready, render <li> per photo with <PhotoStatusBadge>. *@
+    <ManageEmptyState Title="@_localizer["Manage_CarRental_Photos_Empty_Title"]"
+                      Description="@_localizer["Manage_CarRental_Photos_Empty_Description"]" />
+
+    @if (!IsVip)
+    {
+        <div class="mt-8">
+            <VipUpsellBanner Tier="@Listing.Tier"
+                             Title="@(_localizer["Manage_CarRental_Photos_VipUpsell_Title"])">
+                <p class="text-sm text-white/90 mt-1">@_localizer["Manage_CarRental_Photos_VipUpsell_Body"]</p>
+            </VipUpsellBanner>
+        </div>
+    }
+    else
+    {
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_CarRental_VipFooter_Photos"]
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public bool IsVip { get; set; }
+}

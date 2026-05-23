@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board watermark">
+  <title>Bulletin Board – Watermark (Light bg, low opacity for overlay)</title>
+  <g opacity="0.18" fill="#101A3D" font-family="'Nunito','Poppins',system-ui,sans-serif" font-weight="900" letter-spacing="-6">
+    <text x="76" y="244" font-size="220">B</text>
+    <text x="244" y="424" font-size="220">B</text>
+    <circle cx="200" cy="92" r="22"/>
+  </g>
+</svg>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Circular Progress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 10-circular-progress.html
+    SPEC:   Progreso circular SVG con stroke-dashoffset animado de 0→100%.
+            Número porcentual animado en el centro (0→100 en JS).
+            Borde interior gris claro; arco de progreso naranja con
+            linecap round para esquinas suaves.
+    CUÁNDO: Inicialización de Blazor WASM (booteo de la SPA).
+            Puede mostrar progreso real si se conecta a Blazor's
+            OnDownloadProgressChanged o LoadingProgress.
+    BLAZOR HOOK: El atributo data-progress="X" del SVG container
+                 acepta valores 0–100 inyectados desde JS interop.
+                 Reemplazar setInterval simulado con eventos reales de
+                 carga de Blazor.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      pointer-events: none;
+    }
+
+    /* Contenedor SVG */
+    .ring-wrap {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      opacity: 0;
+      animation: ring-intro 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes ring-intro {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .ring-svg {
+      width: 120px;
+      height: 120px;
+      transform: rotate(-90deg);
+    }
+
+    .ring-track {
+      fill: none;
+      stroke: #f1f5f9;
+      stroke-width: 8;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: #fd8c1b;
+      stroke-width: 8;
+      stroke-linecap: round;
+      /* circumference ≈ 2π×46 ≈ 289 */
+      stroke-dasharray: 289;
+      stroke-dashoffset: 289;
+      animation: arc-fill 2.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.4s forwards;
+      transition: stroke-dashoffset 0.05s linear;
+    }
+    @keyframes arc-fill {
+      from { stroke-dashoffset: 289; }
+      to   { stroke-dashoffset: 0; }
+    }
+
+    /* Porcentaje al centro */
+    .pct-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .pct-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .pct-sign {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    /* Texto debajo */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.45s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .ring-wrap, .label { animation: none; opacity: 1; }
+      .ring-progress { animation: none; stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="ring-wrap" id="ringWrap">
+      <svg class="ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ring-track" cx="50" cy="50" r="46" />
+        <circle class="ring-progress" id="ringArc" cx="50" cy="50" r="46" />
+      </svg>
+      <div class="pct-label" aria-hidden="true">
+        <span class="pct-number" id="pctNum">0</span>
+        <span class="pct-sign">%</span>
+      </div>
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Initializing</p>
+      <p class="text-xs text-slate-400 mt-0.5">Iniciando plataforma…</p>
+    </div>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: reemplazar con eventos reales de Blazor OnDownloadProgressChanged */
+    const numEl = document.getElementById('pctNum');
+    const arc   = document.getElementById('ringArc');
+    const CIRC  = 289;
+    let current = 0;
+    const duration = 2800; // ms — igual que la animación CSS
+    const start = performance.now();
+
+    function easeInOut(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    function tick(now) {
+      const elapsed = now - start - 400; // mismo delay que la animación
+      if (elapsed < 0) { requestAnimationFrame(tick); return; }
+      const t = Math.min(elapsed / duration, 1);
+      const e = easeInOut(t);
+      current = Math.round(e * 100);
+      numEl.textContent = current;
+      arc.style.strokeDashoffset = CIRC * (1 - e);
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  </script>
+
+</body>
+</html>

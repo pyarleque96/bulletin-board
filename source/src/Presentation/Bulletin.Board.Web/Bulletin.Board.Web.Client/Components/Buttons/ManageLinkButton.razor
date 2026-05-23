@@ -1,0 +1,109 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Wrapper <a href> para acciones de navegación en el panel Manage.
+    Mismas variantes visuales que ManageActionButton para consistencia visual
+    garantizada entre <a> y <button> en las barras de acción.
+
+    Variantes (Variant):
+      Primary   — bg-brand-500, acción principal (Manage, New Listing).
+      Secondary — borde brand, acción complementaria (Back, Edit-with-border).
+      Default   — borde slate, acción neutra (Edit, View public, Pause nav).
+      Danger    — hover rojo, acción destructiva de navegación.
+      Ghost     — solo texto brand, links livianos (Manage vehicles →, See all →).
+
+    Tamaños (Size):
+      Medium  — px-4 py-2.5 text-sm  (~40px alto — cumple WCAG táctil)
+      Small   — px-3 py-2   text-xs  (8px 12px — header CTA en /manage)
+      Compact — px-3 py-1.5 text-xs  (6px 12px — acciones dentro de cards)
+*@
+
+<a href="@Href"
+   @attributes="MergedAttributes">
+    @ChildContent
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "#";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Primary | Secondary | Default | Danger | Ghost</summary>
+    [Parameter] public string Variant { get; set; } = "Primary";
+
+    /// <summary>Medium | Small</summary>
+    [Parameter] public string Size { get; set; } = "Medium";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        "Compact" => "px-3 py-1.5 text-xs",
+        "Small"   => "px-3 py-2 text-xs",
+        _         => "px-4 py-2.5 text-sm"
+    };
+
+    private string VariantClass => Variant switch
+    {
+        "Primary" =>
+            "bg-[#f97316] text-white font-semibold " +
+            "hover:bg-[#ea580c] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.40)] " +
+            "active:translate-y-0 active:scale-[0.98] " +
+            "focus-visible:ring-[#f97316]",
+
+        "Secondary" =>
+            "text-[#1E293B] border border-slate-300 font-medium bg-transparent " +
+            "hover:bg-slate-100 hover:border-[#1E293B] hover:text-[#0f172a] hover:-translate-y-px " +
+            "active:translate-y-0 active:scale-[0.98] " +
+            "focus-visible:ring-[#1E293B]",
+
+        "Danger" =>
+            "text-muted border border-slate-200 font-medium bg-white " +
+            "hover:bg-red-50 hover:border-red-200 hover:text-red-600 " +
+            "active:scale-[0.98] " +
+            "focus-visible:ring-red-400",
+
+        "Ghost" =>
+            "text-brand-500 font-medium " +
+            "hover:text-brand-700 " +
+            "focus-visible:ring-brand-400",
+
+        _ => // Default
+            "text-muted border border-slate-200 font-medium bg-white " +
+            "hover:bg-slate-50 hover:border-slate-300 hover:text-ink " +
+            "active:scale-[0.98] " +
+            "focus-visible:ring-slate-400",
+    };
+
+    private string ComputedClass =>
+        $"inline-flex items-center justify-center gap-1.5 rounded-xl {SizeClass} {VariantClass} " +
+        "transition-[transform,box-shadow,background-color,border-color,color] duration-200 " +
+        "[transition-timing-function:cubic-bezier(0.32,0.72,0,1)] " +
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
+        "cursor-pointer no-underline";
+
+    private IReadOnlyDictionary<string, object> MergedAttributes
+    {
+        get
+        {
+            var merged = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            string extraClass = string.Empty;
+            if (AdditionalAttributes is not null)
+            {
+                foreach (var kv in AdditionalAttributes)
+                {
+                    if (string.Equals(kv.Key, "class", StringComparison.OrdinalIgnoreCase))
+                    {
+                        extraClass = kv.Value?.ToString() ?? string.Empty;
+                        continue;
+                    }
+                    merged[kv.Key] = kv.Value;
+                }
+            }
+            merged["class"] = string.IsNullOrWhiteSpace(extraClass)
+                ? ComputedClass
+                : $"{ComputedClass} {extraClass}";
+            return merged;
+        }
+    }
+}

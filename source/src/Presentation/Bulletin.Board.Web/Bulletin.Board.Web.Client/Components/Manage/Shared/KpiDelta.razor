@@ -1,0 +1,83 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+@inject IStringLocalizer<SharedResource> _localizer
+
+@*
+    KpiDelta — chip de delta porcentual (▲/▼/–) con color determinista del API.
+    Pensado para reusar en Analytics (vs prev period) e Inquiries-VIP (KPIs).
+
+    Reglas: el color y el chevron salen exclusivamente del signo de Value
+    (deltaPct del API). Nunca inventamos signos. Si Value es null se renderiza
+    un guión neutral.
+*@
+
+<span class="text-[11px] mt-1 flex items-center gap-1 font-medium @ColorClass" aria-label="@AccessibleText">
+    @if (Value is null)
+    {
+        <span aria-hidden="true">–</span>
+    }
+    else if (Value.Value > 0)
+    {
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="18 15 12 9 6 15"/>
+        </svg>
+    }
+    else if (Value.Value < 0)
+    {
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+        </svg>
+    }
+    else
+    {
+        <span aria-hidden="true" class="text-muted">–</span>
+    }
+
+    <span class="tabular-nums">@FormatValue()</span>
+
+    @if (!string.IsNullOrEmpty(HintText))
+    {
+        <span class="text-muted font-normal">@HintText</span>
+    }
+</span>
+
+@code {
+    /// <summary>Delta porcentual del API. null = oculto/loading.</summary>
+    [Parameter] public double? Value { get; set; }
+
+    /// <summary>Sufijo (default %).</summary>
+    [Parameter] public string Suffix { get; set; } = "%";
+
+    /// <summary>Texto secundario al lado (e.g. "vs prev period").</summary>
+    [Parameter] public string? HintText { get; set; }
+
+    private string ColorClass => Value switch
+    {
+        null            => "text-muted",
+        var v when v > 0 => "text-emerald-600",
+        var v when v < 0 => "text-red-600",
+        _                => "text-muted",
+    };
+
+    private string FormatValue()
+    {
+        if (Value is null) return "—";
+        var v    = Value.Value;
+        var sign = v > 0 ? "+" : "";
+        return $"{sign}{v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)}{Suffix}";
+    }
+
+    private string AccessibleText
+    {
+        get
+        {
+            if (Value is null) return _localizer["Manage_Analytics_VsPrev"];
+            var v = Value.Value;
+            var directionKey = v > 0 ? "Manage_Analytics_Delta_Up"
+                              : v < 0 ? "Manage_Analytics_Delta_Down"
+                              : "Manage_Analytics_Delta_Flat";
+            return $"{_localizer[directionKey]} {FormatValue()}";
+        }
+    }
+}

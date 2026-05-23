@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Morphing Blob</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 19-morphing-blob.html
+    SPEC:   Blob orgánico naranja que morphea continuamente (border-radius
+            animado entre 6 formas distintas). Está envuelto en un blur
+            gaussiano suave (filter: blur) que da sensación premium de luz
+            ambiental. Debajo del blur hay una versión nítida pequeña del
+            blob como "núcleo". El conjunto crea profundidad y calidez sin
+            ser oscuro ni neón. Texto en slate oscuro, muy centrado.
+    CUÁNDO: Pantalla de espera larga sin progreso medible: envío de
+            formularios de contacto, generación de email al GM,
+            procesamiento de rating.
+    BLAZOR HOOK: Componente <BlobLoader Visible="@isPending" />.
+                 Sin JS requerido — animación puro CSS.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      pointer-events: none;
+    }
+
+    /* Contenedor del blob */
+    .blob-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: blob-intro 0.7s ease-out 0.2s forwards;
+    }
+    @keyframes blob-intro {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Halo de blur — capa exterior grande y difusa */
+    .blob-halo {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: #fde8c8;
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      filter: blur(22px);
+      opacity: 0.85;
+      animation: morph 7s ease-in-out infinite, blob-intro 0.7s ease-out 0.2s both;
+    }
+
+    /* Núcleo naranja nítido */
+    .blob-core {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      background: #fd8c1b;
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      animation: morph 6s ease-in-out infinite 0.8s, blob-intro 0.7s ease-out 0.3s both;
+    }
+
+    /* Punto brillante en el centro */
+    .blob-shine {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: rgba(255,255,255,0.55);
+      border-radius: 50%;
+      top: 14px;
+      left: 18px;
+      filter: blur(3px);
+    }
+
+    /* Morphing keyframes — 6 formas distintas */
+    @keyframes morph {
+      0%    { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+      14%   { border-radius: 30% 70% 60% 40% / 50% 60% 30% 60%; }
+      28%   { border-radius: 50% 50% 70% 30% / 30% 70% 50% 50%; }
+      42%   { border-radius: 70% 30% 40% 60% / 60% 40% 70% 30%; }
+      57%   { border-radius: 40% 60% 50% 50% / 70% 30% 60% 40%; }
+      71%   { border-radius: 30% 70% 30% 70% / 40% 60% 40% 60%; }
+      85%   { border-radius: 55% 45% 65% 35% / 45% 65% 35% 55%; }
+      100%  { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    }
+
+    /* Texto */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.6s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .blob-container, .label { animation: none; opacity: 1; }
+      .blob-halo, .blob-core { animation: none; border-radius: 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="blob-container">
+      <div class="blob-halo" aria-hidden="true"></div>
+      <div class="blob-core" aria-hidden="true">
+        <div class="blob-shine"></div>
+      </div>
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Please wait</p>
+      <p class="text-xs text-slate-400 mt-0.5">Por favor espera…</p>
+    </div>
+  </div>
+
+</body>
+</html>

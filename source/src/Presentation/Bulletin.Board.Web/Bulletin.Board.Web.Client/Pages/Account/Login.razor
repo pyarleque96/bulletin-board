@@ -1,0 +1,235 @@
+@page "/login"
+@layout AuthLayout
+@using Bulletin.Board.Web.Client.Layout
+
+<PageTitle>Sign in · Iniciar sesión — Bulletin Dells</PageTitle>
+
+<div class="w-full max-w-[400px]">
+
+    <!-- Header -->
+    <div class="form-enter mb-7">
+        <h1 class="text-white font-bold tracking-tight mb-1" style="font-size:3rem;">
+            @_localizer["Login_WelcomeTitle"]
+        </h1>
+        <p class="text-white/40 text-xs">
+            @_localizer["Login_WelcomeSubtitle"]
+        </p>
+    </div>
+
+    <!-- Registration success banner -->
+    <AlertBanner Variant="success" CssClass="form-enter-d1 mb-5" Message="@(Registered ? _localizer["Login_AccountCreated"].Value : null)" />
+
+    <!-- Session-expired banner (shown when interceptor redirects here with reason=expired) -->
+    <AlertBanner Variant="warning" CssClass="form-enter-d1 mb-5" Message="@(_sessionExpired ? _localizer["Login_SessionExpired"].Value : null)" />
+
+    <!-- Error banner -->
+    <AlertBanner Variant="error" CssClass="form-enter-d1 mb-5" Message="@_errorMessage" />
+
+    <!-- Form -->
+    <div class="form-enter-d1 space-y-4">
+
+        <!-- Email / Phone -->
+        <div class="form-enter" style="animation-delay:0.05s;">
+            <AppTextInput InputId="login-email"
+                          Label="@_localizer["Login_EmailOrPhone"]"
+                          Type="text"
+                          Value="@_email"
+                          ValueChanged="v => _email = v"
+                          Placeholder="@_localizer["Login_EmailPlaceholder"]"
+                          AutoComplete="username"
+                          HasError="@_emailError"
+                          ErrorMessage="@_localizer["Login_EmailRequired"]">
+                <LeadingIcon>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,12 2,6"/>
+                    </svg>
+                </LeadingIcon>
+            </AppTextInput>
+        </div>
+
+        <!-- Password -->
+        <div class="form-enter" style="animation-delay:0.1s;">
+            <div class="flex justify-between items-center" style="margin-bottom:0.3rem;">
+                <label class="field-label" style="margin-bottom:0;">@_localizer["Login_Password"]</label>
+                <LinkButton Text="@_localizer["Login_ForgotPassword"]" Href="/forgot-password" Variant="brand" />
+            </div>
+            <AppTextInput InputId="login-password"
+                          Type="password"
+                          ShowPasswordText="@_showPassword"
+                          Value="@_password"
+                          ValueChanged="v => _password = v"
+                          Placeholder="@_localizer["Login_PasswordPlaceholder"]"
+                          AutoComplete="current-password"
+                          HasError="@_passwordError"
+                          ErrorMessage="@_localizer["Login_PasswordRequired"]">
+                <LeadingIcon>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                </LeadingIcon>
+                <TrailingContent>
+                    <IconButton Variant="ghost"
+                                AriaLabel="@_passwordToggleLabel"
+                                OnClick="() => _showPassword = !_showPassword"
+                                CssClass="absolute right-1 top-1/2 -translate-y-1/2">
+                        <Icon>
+                            @if (_showPassword)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            }
+                        </Icon>
+                    </IconButton>
+                </TrailingContent>
+            </AppTextInput>
+        </div>
+
+        <!-- Remember me -->
+        <div class="form-enter" style="animation-delay:0.15s;">
+            <AppCheckbox InputId="login-remember"
+                         Label="@_localizer["Login_RememberMe"]"
+                         Value="@_rememberMe"
+                         ValueChanged="v => _rememberMe = v"
+                         WrapperClass="pt-0.5" />
+        </div>
+
+        <!-- Submit -->
+        <div class="pt-1 form-enter" style="animation-delay:0.2s;">
+            <AccentButton Text="@_localizer["Login_SubmitBtn"]"
+                          OnClick="HandleLogin"
+                          IsLoading="@_loading"
+                          Disabled="@_loading" />
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="form-enter-d2 mt-3 mb-2.5">
+        <AuthDivider Text="@_localizer["Auth_OrContinueWith"]" />
+    </div>
+
+    <!-- Google -->
+    <div class="form-enter-d2">
+        <SocialButton Text="@_localizer["Auth_ContinueGoogle"]">
+            <Icon>
+                <svg width="16" height="16" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+            </Icon>
+        </SocialButton>
+    </div>
+
+    <!-- Footer links -->
+    <div class="flex items-center justify-between mt-3">
+        <LinkButton Href="/" Variant="white-dim" CssClass="text-xs">
+            &larr; @_localizer["Auth_BackToSite"]
+        </LinkButton>
+        <p class="text-white/32 text-xs">
+            @_localizer["Login_NoAccount"]
+            <LinkButton Text="@_localizer["Login_CreateAccount"]" Href="/register" Variant="accent" CssClass="ml-0.5 font-semibold" />
+        </p>
+    </div>
+
+</div>
+
+@code {
+    [Inject] private IAuthService AuthService { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private IStringLocalizer<SharedResource> _localizer { get; set; } = default!;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Registered { get; set; }
+
+    /// <summary>
+    /// Set to "expired" by AuthenticatedHttpHandler when a silent refresh fails,
+    /// triggering the soft "your session expired" banner.
+    /// </summary>
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Reason { get; set; }
+
+    private string _email = "";
+    private string _password = "";
+    private bool _rememberMe;
+    private bool _showPassword;
+    private bool _loading;
+    private string? _errorMessage;
+
+    private bool _emailError;
+    private bool _passwordError;
+
+    private bool _sessionExpired => string.Equals(Reason, "expired", StringComparison.OrdinalIgnoreCase);
+
+    private string _passwordToggleLabel  => _showPassword  ? _localizer["Login_HidePassword"].Value : _localizer["Login_ShowPassword"].Value;
+
+    private async Task HandleLogin()
+    {
+        _errorMessage = null;
+        _emailError = false;
+        _passwordError = false;
+
+        if (string.IsNullOrWhiteSpace(_email))    _emailError    = true;
+        if (string.IsNullOrWhiteSpace(_password)) _passwordError = true;
+        if (_emailError || _passwordError) return;
+
+        _loading = true;
+
+        try
+        {
+            var success = await AuthService.LoginAsync(_email, _password, _rememberMe);
+
+            if (success)
+            {
+                var token = AuthService.GetCurrentToken();
+                if (token is not null)
+                {
+                    var provider = (BulletinAuthStateProvider)AuthStateProvider;
+                    provider.NotifyUserLoggedIn(token);
+                }
+
+                string target;
+                if (ReturnUrl is not null)
+                {
+                    target = ReturnUrl;
+                }
+                else
+                {
+                    var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                    target = authState.User.IsInRole("Admin") ? "/admin" : "/manage";
+                }
+
+                Navigation.NavigateTo(target, forceLoad: true, replace: true);
+            }
+            else
+            {
+                _errorMessage = AuthService.LastError
+                    ?? _localizer["Login_InvalidCredentials"].Value;
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+}

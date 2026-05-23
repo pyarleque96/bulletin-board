@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board with notification">
+  <title>Bulletin Board – Notification Badge (Light)</title>
+  <rect width="512" height="512" rx="112" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <g font-family="'Nunito','Poppins',system-ui,sans-serif" font-weight="900" letter-spacing="-6">
+    <text x="92" y="256" font-size="210" fill="#101A3D">B</text>
+    <text x="244" y="424" font-size="210" fill="#F39323">B</text>
+  </g>
+  <circle cx="208" cy="108" r="20" fill="#F39323"/>
+  <!-- Red unread dot, top-right -->
+  <circle cx="420" cy="92" r="48" fill="#FFFFFF"/>
+  <circle cx="420" cy="92" r="36" fill="#DC2626"/>
+</svg>

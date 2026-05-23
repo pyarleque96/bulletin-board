@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maria's Beauty Salon — Bulletin Dells</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body:    ['Open Sans', 'sans-serif'],
+          },
+          colors: {
+            primary:        '#1D4ED8',
+            'primary-light':'#3B82F6',
+            'primary-dark': '#1E3A8A',
+            cta:            '#F97316',
+            'cta-dark':     '#EA580C',
+            success:        '#16A34A',
+            warning:        '#D97706',
+            danger:         '#DC2626',
+            neutral:        '#F8FAFC',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Open Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6, .font-heading { font-family: 'Poppins', sans-serif; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<!-- ============================================================
+  BLAZOR BINDING NOTES — detail-generic.razor
+  This template works for: Housing, Beauty, Jobs, Auto Repair,
+  Airport Rides, Transport, and any other non-date-range listing.
+
+  Key differences from detail-car-rental.razor:
+  - No date range picker
+  - Price label varies by category ($35/service, $550/mo, $17/hr, etc.)
+  - Provider tier: Regular, Verified, or VIP (no crown icon for non-SDVIP)
+  - "Hours & Availability" section replaces date picker
+  - Featured services list instead of vehicle features
+
+  @code {
+    ListingId, Listing, Provider, Reviews, RelatedListings
+    bool IsVip = Listing.Provider.Tier >= ProviderTier.VIP
+    bool IsVerified = Listing.Provider.IsVerified
+  }
+============================================================ -->
+<body class="bg-neutral text-gray-800 min-h-screen">
+
+  <!-- Navbar -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="/" class="flex items-center gap-3 cursor-pointer" aria-label="Bulletin Dells Home">
+          <div class="size-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div>
+            <span class="font-heading font-700 text-lg text-primary leading-none block">Bulletin Dells</span>
+            <span class="text-xs text-gray-500 leading-none hidden sm:block">Wisconsin Dells, WI</span>
+          </div>
+        </a>
+        <div class="hidden md:flex flex-1 max-w-xl mx-6">
+          <div class="relative w-full">
+            <label for="search-nav" class="sr-only">Search</label>
+            <input id="search-nav" type="search" placeholder="Search services..." class="w-full h-10 pl-10 pr-4 rounded-full border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 placeholder:text-gray-400" />
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all duration-200 cursor-pointer min-h-[36px]" aria-label="Switch language">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            ES
+          </button>
+          <a href="/submit-listing" class="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-cta text-white text-sm font-semibold hover:bg-cta-dark transition-all duration-200 cursor-pointer min-h-[36px]">
+            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Post Listing
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-5">
+      <ol class="flex items-center gap-1.5 text-sm text-gray-500" role="list">
+        <li role="listitem"><a href="/" class="hover:text-primary transition-colors cursor-pointer">Home</a></li>
+        <li role="listitem" aria-hidden="true"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></li>
+        <!-- BLAZOR: @Listing.CategoryName / @Listing.CategoryNameEs -->
+        <li role="listitem"><a href="/category/beauty" class="hover:text-primary transition-colors cursor-pointer">Beauty / Belleza</a></li>
+        <li role="listitem" aria-hidden="true"><svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></li>
+        <li role="listitem" class="text-gray-800 font-medium truncate max-w-[200px]" aria-current="page">Maria's Beauty Salon</li>
+      </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- LEFT COLUMN -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Tier badges row -->
+        <!-- BLAZOR: conditionally show tier badge based on Provider.Tier -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- VIP badge (show only if VIP or Super Duper VIP) -->
+          <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-300 rounded-full px-3 py-1">
+            <svg class="size-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span class="text-xs font-heading font-700 text-blue-800 uppercase tracking-wide">VIP</span>
+          </div>
+          <!-- Verified badge (show if Provider.IsVerified) -->
+          <div class="flex items-center gap-1.5 bg-success/10 border border-success/30 rounded-full px-3 py-1">
+            <svg class="size-3.5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span class="text-xs font-medium text-success">Verified Provider</span>
+          </div>
+          <!-- Category chip -->
+          <div class="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1">
+            <span class="text-xs text-gray-600">Beauty / Belleza</span>
+          </div>
+        </div>
+
+        <!-- Title + Rating -->
+        <div>
+          <h1 class="font-heading font-700 text-2xl sm:text-3xl text-gray-900 leading-tight mb-2">
+            Maria's Beauty Salon
+          </h1>
+          <p class="text-sm text-gray-500 italic mb-3">Salón de Belleza de Maria — Wisconsin Dells</p>
+
+          <div class="flex items-center flex-wrap gap-4">
+            <div class="flex items-center gap-2" role="img" aria-label="4.8 out of 5 stars, 18 verified reviews">
+              <div class="flex gap-0.5">
+                <svg class="size-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-5 text-amber-400/40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <span class="font-heading font-600 text-gray-800">4.8</span>
+              <a href="#reviews" class="text-sm text-primary hover:underline cursor-pointer">(18 verified reviews)</a>
+            </div>
+            <button type="button" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer" aria-label="Share listing">
+              <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+
+
+        <!-- Photo Gallery — same pattern as car rental, GM-approved only -->
+        <section aria-label="Listing photos">
+          <div class="aspect-[16/9] sm:aspect-[4/3] bg-linear-to-br from-pink-100 to-purple-100 rounded-2xl overflow-hidden relative mb-3">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <svg class="size-20 text-pink-300/50" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <div class="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">1 / 4 photos</div>
+            <div class="absolute bottom-3 left-3 bg-success/90 text-white text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
+              <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              GM Approved Photos
+            </div>
+          </div>
+          <div class="flex gap-2 overflow-x-auto pb-1">
+            <button type="button" class="shrink-0 size-16 sm:size-20 rounded-xl overflow-hidden border-2 border-primary cursor-pointer" aria-label="Photo 1 — selected" aria-pressed="true">
+              <div class="w-full h-full bg-linear-to-br from-pink-200 to-purple-200"></div>
+            </button>
+            <button type="button" class="shrink-0 size-16 sm:size-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-gray-300 transition-all cursor-pointer opacity-80 hover:opacity-100" aria-label="Photo 2">
+              <div class="w-full h-full bg-linear-to-br from-rose-100 to-pink-200"></div>
+            </button>
+            <button type="button" class="shrink-0 size-16 sm:size-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-gray-300 transition-all cursor-pointer opacity-80 hover:opacity-100" aria-label="Photo 3">
+              <div class="w-full h-full bg-linear-to-br from-violet-100 to-purple-200"></div>
+            </button>
+            <button type="button" class="shrink-0 size-16 sm:size-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-gray-300 transition-all cursor-pointer opacity-80 hover:opacity-100" aria-label="Photo 4">
+              <div class="w-full h-full bg-linear-to-br from-fuchsia-100 to-pink-200"></div>
+            </button>
+          </div>
+        </section>
+
+
+        <!-- About section -->
+        <section aria-labelledby="about-heading" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+          <h2 id="about-heading" class="font-heading font-600 text-lg text-gray-900 mb-4">About / Acerca de</h2>
+
+          <p class="text-sm text-gray-700 leading-relaxed mb-3">
+            Maria's Beauty Salon offers professional hair, nail, and makeup services right here in Wisconsin Dells. Walk-ins welcome! We serve both English and Spanish speaking clients. J1 students and seasonal workers — you're always welcome here.
+          </p>
+          <p class="text-sm text-gray-500 leading-relaxed italic mb-5">
+            El Salón de Belleza de Maria ofrece servicios profesionales de cabello, uñas y maquillaje en Wisconsin Dells. ¡Se aceptan sin cita! Atendemos a clientes en inglés y español. Estudiantes J1 y trabajadores de temporada son siempre bienvenidos.
+          </p>
+
+          <!-- Services list -->
+          <div>
+            <h3 class="font-heading font-600 text-sm text-gray-800 mb-3">Services Offered / Servicios</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <!-- BLAZOR: @foreach(var service in Listing.Services) -->
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Haircuts / Cortes
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Color / Tinte
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Nails / Uñas
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Makeup / Maquillaje
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Braids / Trenzas
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2">
+                <svg class="size-4 text-pink-400 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Walk-ins Welcome
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ============================================================
+          COMPONENT: AvailabilityInfo (generic — no date picker)
+          Shows hours/schedule instead of date selector
+          For listing types: housing → show availability/move-in date
+          For jobs → show schedule/hours
+          For services → show operating hours
+        ============================================================ -->
+        <section aria-labelledby="availability-heading" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+          <h2 id="availability-heading" class="font-heading font-600 text-lg text-gray-900 mb-4">
+            Hours &amp; Availability / Horario y Disponibilidad
+          </h2>
+
+          <!-- BLAZOR: render dynamically from Listing.Schedule -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+
+            <div class="bg-success/10 border border-success/20 rounded-xl p-3 text-center">
+              <p class="text-xs font-heading font-600 text-success uppercase tracking-wide mb-1">Monday–Friday</p>
+              <p class="text-sm font-medium text-gray-800">9am – 7pm</p>
+            </div>
+            <div class="bg-success/10 border border-success/20 rounded-xl p-3 text-center">
+              <p class="text-xs font-heading font-600 text-success uppercase tracking-wide mb-1">Saturday</p>
+              <p class="text-sm font-medium text-gray-800">9am – 5pm</p>
+            </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+              <p class="text-xs font-heading font-600 text-gray-500 uppercase tracking-wide mb-1">Sunday</p>
+              <p class="text-sm text-gray-400">Closed</p>
+            </div>
+
+          </div>
+
+          <!-- Walk-in note -->
+          <div class="mt-4 flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3">
+            <svg class="size-4 text-primary shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            <p class="text-xs text-blue-700 leading-relaxed">
+              Walk-ins welcome anytime during hours. For specific appointments, contact via WhatsApp. / Puedes llegar sin cita durante el horario. Para citas específicas, escribe por WhatsApp.
+            </p>
+          </div>
+        </section>
+
+
+        <!-- Price table — BLAZOR: Listing.PricingItems (array) -->
+        <section aria-labelledby="pricing-heading" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+          <h2 id="pricing-heading" class="font-heading font-600 text-lg text-gray-900 mb-4">Pricing / Precios</h2>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm" role="table">
+              <thead>
+                <tr class="border-b border-gray-200">
+                  <th class="text-left font-heading font-600 text-gray-700 py-2 pr-4">Service / Servicio</th>
+                  <th class="text-right font-heading font-600 text-gray-700 py-2">Price / Precio</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <!-- BLAZOR: @foreach(var item in Listing.PricingItems) -->
+                <tr>
+                  <td class="py-3 pr-4 text-gray-700">Haircut / Corte de cabello</td>
+                  <td class="py-3 text-right font-medium text-gray-900">$25</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 text-gray-700">Hair Color / Tinte</td>
+                  <td class="py-3 text-right font-medium text-gray-900">$55+</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 text-gray-700">Manicure</td>
+                  <td class="py-3 text-right font-medium text-gray-900">$20</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 text-gray-700">Full Set Nails / Uñas acrílicas</td>
+                  <td class="py-3 text-right font-medium text-gray-900">$45</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 text-gray-700">Makeup / Maquillaje</td>
+                  <td class="py-3 text-right font-medium text-gray-900">$40+</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Prices may vary. Confirm via WhatsApp. / Los precios pueden variar. Confirmar por WhatsApp.</p>
+        </section>
+
+
+        <!-- Reviews section -->
+        <section id="reviews" aria-labelledby="reviews-heading" class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h2 id="reviews-heading" class="font-heading font-600 text-lg text-gray-900">
+                Reviews <span class="text-gray-500 font-400 text-base">(18)</span>
+              </h2>
+              <p class="text-xs text-success flex items-center gap-1 mt-1">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Verified contacts only / Solo contactos verificados
+              </p>
+            </div>
+            <div class="text-center">
+              <span class="font-heading font-700 text-4xl text-gray-900">4.8</span>
+              <div class="flex justify-center gap-0.5 mt-1">
+                <svg class="size-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg class="size-4 text-amber-400/40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <!-- Review 1 -->
+            <article class="pb-5 border-b border-gray-100" aria-label="Review by Sofia R.">
+              <div class="flex items-start gap-3 mb-2">
+                <div class="size-9 rounded-full bg-pink-100 flex items-center justify-center shrink-0" aria-hidden="true">
+                  <span class="font-heading font-600 text-pink-600 text-sm">SR</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <span class="font-medium text-sm text-gray-900">Sofia R.</span>
+                      <span class="ml-2 inline-flex items-center gap-0.5 bg-success/10 text-success text-xs font-medium px-2 py-0.5 rounded-full">
+                        <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Verified
+                      </span>
+                    </div>
+                    <time class="text-xs text-gray-400" datetime="2025-04-15">Apr 15, 2025</time>
+                  </div>
+                  <div class="flex gap-0.5 mt-1" role="img" aria-label="5 stars">
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm text-gray-700 leading-relaxed pl-12">
+                Maria is amazing! Got my nails and hair done for a night out. Super affordable and so friendly. Perfect for J1 students. / Maria es increíble, muy accesible y amable. Perfecto para estudiantes J1.
+              </p>
+            </article>
+
+            <!-- Review 2 -->
+            <article class="pb-5 border-b border-gray-100 last:border-0 last:pb-0" aria-label="Review by Carmen L.">
+              <div class="flex items-start gap-3 mb-2">
+                <div class="size-9 rounded-full bg-purple-100 flex items-center justify-center shrink-0" aria-hidden="true">
+                  <span class="font-heading font-600 text-purple-600 text-sm">CL</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <span class="font-medium text-sm text-gray-900">Carmen L.</span>
+                      <span class="ml-2 inline-flex items-center gap-0.5 bg-success/10 text-success text-xs font-medium px-2 py-0.5 rounded-full">
+                        <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Verified
+                      </span>
+                    </div>
+                    <time class="text-xs text-gray-400" datetime="2025-03-30">Mar 30, 2025</time>
+                  </div>
+                  <div class="flex gap-0.5 mt-1" role="img" aria-label="4 stars">
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg class="size-3.5 text-gray-200" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                </div>
+              </div>
+              <p class="text-sm text-gray-700 leading-relaxed pl-12">
+                Very professional. Wait time was a bit long without appointment, but the results were great. I'll be back! / Muy profesional. Resultados excelentes, regreso pronto.
+              </p>
+            </article>
+          </div>
+
+          <button type="button" class="mt-5 w-full py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:bg-gray-50 transition-colors cursor-pointer min-h-[44px]">
+            Show more reviews / Ver más reseñas
+          </button>
+        </section>
+
+      </div>
+
+
+      <!-- RIGHT COLUMN: Contact panel (no date picker) -->
+      <aside class="lg:col-span-1 space-y-5" aria-label="Contact panel">
+
+        <!-- Contact card -->
+        <div class="bg-white rounded-2xl border-2 border-blue-200 shadow-xl p-5 lg:sticky lg:top-20">
+
+          <!-- Price -->
+          <div class="flex items-baseline gap-1 mb-1">
+            <!-- BLAZOR: @Listing.PriceDisplay (@Listing.PriceFrom — @Listing.PriceUnit) -->
+            <span class="font-heading font-700 text-3xl text-primary">$25+</span>
+            <span class="text-gray-500 text-sm">/ service</span>
+          </div>
+          <p class="text-xs text-gray-400 mb-5">Price varies by service / El precio varía según el servicio</p>
+
+          <!-- Quick info summary -->
+          <div class="space-y-3 mb-5">
+            <!-- Availability indicator -->
+            <div class="flex items-center justify-between text-sm py-3 px-4 bg-success/10 border border-success/20 rounded-xl">
+              <div class="flex items-center gap-2">
+                <div class="size-2 rounded-full bg-success" aria-hidden="true"></div>
+                <span class="font-medium text-gray-800">Open Today</span>
+              </div>
+              <span class="text-gray-600">9am – 7pm</span>
+            </div>
+
+            <!-- Key details list -->
+            <div class="space-y-2">
+              <div class="flex items-center gap-2.5 text-sm text-gray-700 py-1.5">
+                <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Walk-ins welcome / Sin cita previa
+              </div>
+              <div class="flex items-center gap-2.5 text-sm text-gray-700 py-1.5">
+                <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                English &amp; Spanish spoken
+              </div>
+              <div class="flex items-center gap-2.5 text-sm text-gray-700 py-1.5">
+                <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Wisconsin Dells, WI
+              </div>
+            </div>
+          </div>
+
+          <!-- Waiver notice -->
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4" role="note">
+            <div class="flex items-start gap-2">
+              <svg class="size-4 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div>
+                <p class="text-xs font-medium text-amber-800 mb-0.5">Disclaimer</p>
+                <p class="text-xs text-amber-700 leading-relaxed">
+                  Bulletin Dells only connects users. Not responsible for services. / Solo conectamos usuarios. No prestamos servicios.
+                </p>
+                <a href="/legal" class="text-xs text-primary hover:underline mt-1 inline-block cursor-pointer">Read full →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- WhatsApp CTA — primary button -->
+          <a
+            href="https://wa.me/16089995678?text=Hi%20I%20saw%20Maria%27s%20Beauty%20Salon%20on%20Bulletin%20Dells.%20I%27d%20like%20to%20book%20a%20service."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-heading font-600 text-base transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg min-h-[52px]"
+            aria-label="Contact Maria's Beauty Salon via WhatsApp"
+          >
+            <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12.004 2C6.476 2 2 6.476 2 12.004c0 1.896.497 3.672 1.362 5.217L2 22l4.896-1.338A9.972 9.972 0 0 0 12.004 22C17.526 22 22 17.524 22 12.004 22 6.476 17.526 2 12.004 2zm0 18.004a8.004 8.004 0 0 1-4.069-1.117l-.292-.173-3.036.829.852-3.096-.19-.312A8.003 8.003 0 0 1 4 12.004C4 7.584 7.584 4 12.004 4c4.422 0 8.004 3.584 8.004 8.004 0 4.422-3.582 8-8.004 8z"/>
+            </svg>
+            Contact via WhatsApp
+          </a>
+
+          <p class="text-center text-xs text-gray-400 mt-2">Typically responds in under 30 min</p>
+        </div>
+
+
+        <!-- Provider card -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <h3 class="font-heading font-600 text-sm text-gray-800 mb-4 uppercase tracking-wide">Provider / Proveedor</h3>
+
+          <div class="flex items-center gap-3 mb-4">
+            <div class="size-12 rounded-full bg-linear-to-br from-pink-200 to-purple-300 flex items-center justify-center shrink-0" aria-hidden="true">
+              <span class="font-heading font-700 text-pink-800 text-base">MG</span>
+            </div>
+            <div>
+              <p class="font-heading font-600 text-gray-900 text-sm">Maria Garcia</p>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                <!-- VIP badge -->
+                <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                  <svg class="size-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  VIP
+                </span>
+                <span class="inline-flex items-center gap-1 bg-success/10 text-success text-xs font-medium px-2 py-0.5 rounded-full">
+                  <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Verified
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ul class="space-y-2.5 text-sm">
+            <li class="flex items-center gap-2 text-gray-600">
+              <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Wisconsin Dells, WI
+            </li>
+            <li class="flex items-center gap-2 text-gray-600">
+              <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Member since 2024
+            </li>
+            <li class="flex items-center gap-2 text-gray-600">
+              <svg class="size-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              ID &amp; Phone Verified
+            </li>
+          </ul>
+
+          <div class="mt-4 p-3 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-600"><span class="font-medium">Response time:</span> Under 30 minutes</p>
+            <p class="text-xs text-gray-500 mt-0.5 italic">Respuesta: menos de 30 minutos</p>
+          </div>
+        </div>
+
+        <!-- Report -->
+        <div class="text-center">
+          <button type="button" class="text-xs text-gray-400 hover:text-danger transition-colors cursor-pointer min-h-[44px] px-4">
+            <svg class="size-3.5 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Report this listing / Reportar
+          </button>
+        </div>
+
+      </aside>
+    </div>
+
+  </main>
+
+
+  <!-- Waiver modal (same structure as car rental — reuse WaiverModal.razor) -->
+  <div
+    id="waiver-modal"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="waiver-title"
+    style="display: none;"
+  >
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 sm:p-7">
+      <div class="flex items-center justify-center size-14 rounded-full bg-amber-100 mx-auto mb-4">
+        <svg class="size-7 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <h2 id="waiver-title" class="font-heading font-700 text-xl text-gray-900 text-center mb-2">Before You Continue</h2>
+      <p class="font-heading font-600 text-sm text-gray-500 text-center mb-4 italic">Antes de continuar</p>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-800 leading-relaxed space-y-2 max-h-40 overflow-y-auto">
+        <p><strong>Bulletin Dells</strong> only connects users with local service providers. We do not provide services and are not responsible for quality, pricing, or outcomes.</p>
+        <p class="italic text-amber-700"><strong>Bulletin Dells</strong> solo conecta usuarios con proveedores locales. No somos responsables por calidad, precio ni resultados.</p>
+      </div>
+      <div class="space-y-3">
+        <button type="button" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white font-heading font-600 text-base transition-all duration-200 cursor-pointer min-h-[52px] shadow-md">
+          <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.476 2 2 6.476 2 12.004c0 1.896.497 3.672 1.362 5.217L2 22l4.896-1.338A9.972 9.972 0 0 0 12.004 22C17.526 22 22 17.524 22 12.004 22 6.476 17.526 2 12.004 2zm0 18.004a8.004 8.004 0 0 1-4.069-1.117l-.292-.173-3.036.829.852-3.096-.19-.312A8.003 8.003 0 0 1 4 12.004C4 7.584 7.584 4 12.004 4c4.422 0 8.004 3.584 8.004 8.004 0 4.422-3.582 8-8.004 8z"/></svg>
+          I Understand — Continue
+        </button>
+        <button type="button" class="w-full py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer min-h-[44px]">
+          Cancel / Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="size-7 rounded-lg bg-primary flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <span class="font-heading font-700 text-white">Bulletin Dells</span>
+        </div>
+        <p class="text-xs text-gray-500 text-center">Platform connects users with providers. Not responsible for services. / Solo conectamos. No prestamos servicios.</p>
+        <a href="/" class="text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">Back to listings →</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

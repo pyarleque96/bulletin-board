@@ -1,0 +1,105 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppPhoneInput — input de teléfono con selector de prefijo de país.
+    Encapsula el patrón phone-prefix + phone-input-joined usado en Register.
+    Two-way binding separado para prefijo y número.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<div class="@WrapperClass">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="@LabelClass">
+            @Label
+        </label>
+    }
+
+    <div class="flex items-stretch" style="width:100%; overflow:hidden;">
+        <select @bind="CurrentPrefix"
+                class="phone-prefix"
+                aria-label="@_localizer["Phone_CountryCode"]"
+                disabled="@Disabled">
+            @foreach (var c in Countries)
+            {
+                <option value="@c.Code">@c.Flag @c.Code</option>
+            }
+        </select>
+
+        <input id="@InputId"
+               type="tel"
+               value="@PhoneNumber"
+               @oninput="OnPhoneInput"
+               placeholder="@Placeholder"
+               autocomplete="tel"
+               disabled="@Disabled"
+               required="@Required"
+               class="@PhoneInputClass"
+               aria-label="@_localizer["Phone_Number"]"
+               aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+               aria-invalid="@HasError" />
+    </div>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter] public string InputId { get; set; } = "phone";
+    [Parameter] public string Label { get; set; } = "";
+
+    [Parameter] public string Prefix { get; set; } = "+1";
+    [Parameter] public EventCallback<string> PrefixChanged { get; set; }
+
+    [Parameter] public string PhoneNumber { get; set; } = "";
+    [Parameter] public EventCallback<string> PhoneNumberChanged { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "608 555 0123";
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    [Parameter] public string WrapperClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+
+    [Parameter] public string LabelClass { get; set; } =
+        "block text-white/55 text-xs font-medium mb-1.5 uppercase tracking-wider";
+
+    private string PhoneInputClass =>
+        $"phone-input-joined{(HasError ? " error" : "")} {CssClass}".Trim();
+
+    private string CurrentPrefix
+    {
+        get => Prefix;
+        set => PrefixChanged.InvokeAsync(value);
+    }
+
+    private async Task OnPhoneInput(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? "";
+        await PhoneNumberChanged.InvokeAsync(val);
+    }
+
+    private static readonly CountryCode[] Countries =
+    [
+        new("+1",   "US", "🇺🇸"),
+        new("+52",  "MX", "🇲🇽"),
+        new("+502", "GT", "🇬🇹"),
+        new("+504", "HN", "🇭🇳"),
+        new("+503", "SV", "🇸🇻"),
+        new("+57",  "CO", "🇨🇴"),
+    ];
+
+    private record CountryCode(string Code, string Iso, string Flag);
+}

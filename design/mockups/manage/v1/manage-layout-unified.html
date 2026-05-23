@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage Section (Unified Layout)
+  =====================================================
+  Mockup: manage-layout-unified.html
+  Estado: Activo — vista de Vehículos seleccionada (default)
+  Responsive: mobile (375px) / tablet (768px) / desktop (1280px)
+  Accesibilidad: WCAG 2.1 AA
+  Bilingüe: EN / ES (comentados para binding Blazor)
+  =====================================================
+  ESTRUCTURA DEL LAYOUT (replica /browse):
+    1. Banda header — bg-white border-b border-slate-100 px-4 py-5 pt-24
+       a. Breadcrumb (idéntico al de /browse)
+       b. Título + descripción contextual
+       c. Sub-navegación (tabs segmented control escalable)
+    2. Área principal — max-w-6xl mx-auto px-4 py-8
+       (sin sidebar en esta sección; contenido ocupa full-width)
+  =====================================================
+  DATOS QUE ESPERA DEL BACKEND:
+    - ListingId: Guid
+    - ListingTitle: string (EN/ES)
+    - ListingStatus: Pending | Approved | Rejected | NeedsChanges
+    - CategorySlug: "car-rental"
+    - Vehicles: OwnerVehicleDto[]
+    - Reservations: ReservationRequestDto[]
+  =====================================================
+  BINDING POINTS (reemplazar JavaScript con Blazor):
+    - data-tab-active="vehicles|reservations" → @onclick en Blazor
+    - data-listing-id → [Parameter] ListingId
+    - Aria-selected en tabs → @bind o condicional en Blazor
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage — Bulletin Dells</title>
+  <!-- Tailwind CDN (solo para mockup — en Blazor usa tailwind.css compilado) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa',
+              300: '#fdba74', 400: '#fb923c', 500: '#f97316',
+              600: '#ea580c', 700: '#c2410c', 800: '#9a3412',
+            },
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          fontFamily: {
+            sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            soft: '0 4px 24px -4px rgba(30,41,59,0.08)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Replica exacta de app.css — sección de badges y glows */
+    .badge-sdvip { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+    .badge-vip   { background: linear-gradient(135deg,#fb923c,#f97316); }
+
+    /* Skeleton shimmer (replica Browse) */
+    .skeleton {
+      background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Tab indicator — slide activo */
+    .manage-tab[aria-selected="true"] {
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .manage-tab[aria-selected="true"]::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0; height: 2px;
+      background: #f97316;
+      border-radius: 2px 2px 0 0;
+    }
+    .manage-tab {
+      position: relative;
+      transition: color 0.15s ease;
+    }
+    .manage-tab:hover { color: #0f172a; }
+
+    /* Card hover (replica Browse) */
+    .card-hover {
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1),
+                  box-shadow 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px -8px rgba(30,41,59,0.14);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<!-- =====================================================
+     NAVBAR PLACEHOLDER
+     En Blazor: <NavBar /> — solo representado visualmente
+     ===================================================== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]"
+       style="backdrop-filter:blur(20px);">
+    <a href="/" class="flex items-center gap-2 no-underline" aria-label="Bulletin Dells — inicio">
+      <span class="font-bold text-base tracking-tight text-ink">Bulletin Dells</span>
+    </a>
+    <div class="flex items-center gap-1">
+      <!-- Lang toggle placeholder -->
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <!-- User avatar placeholder -->
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold ml-2" aria-label="User account">P</div>
+    </div>
+  </div>
+</nav>
+
+<!-- =====================================================
+     1. BANDA HEADER — replica exacta de /browse
+        Patrón: bg-white border-b border-slate-100 px-4 py-5 pt-24
+        max-w-6xl mx-auto (mismo container que Browse)
+     ===================================================== -->
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Breadcrumb — estructura idéntica a BrowseListings.razor líneas 22-34 -->
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">
+        Home
+        <!-- ES: Inicio -->
+      </a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">
+        My Listings
+        <!-- ES: Mis Anuncios -->
+      </a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+      <!-- data-binding: @listing.TitleEn / @listing.TitleEs según idioma -->
+      <span class="text-ink font-medium" aria-current="page">Dells Premier Car Rentals</span>
+    </nav>
+
+    <!-- Título + status badge -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">
+            Manage
+            <!-- ES: Gestionar -->
+          </h1>
+          <!-- data-binding: StatusBadgeClass(@listing.Status) -->
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+            Approved
+            <!-- ES: Aprobado -->
+          </span>
+        </div>
+        <!-- data-binding: @listing.TitleEn | @listing.TitleEs -->
+        <p class="text-sm text-muted mt-1">
+          Dells Premier Car Rentals
+          <!-- ES: Renta de Autos Premier Dells -->
+          <span class="text-slate-300 mx-1.5">·</span>
+          Car Rental
+          <!-- ES: Renta de Autos -->
+        </p>
+      </div>
+
+      <!-- CTA secundario — ver listing público -->
+      <a href="/listing/detail/dells-premier-car-rentals"
+         class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-xl transition-colors duration-150 cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Public view
+        <!-- ES: Ver público -->
+      </a>
+    </div>
+
+    <!-- =====================================================
+         SUB-NAVEGACIÓN (Segmented Tab Control)
+         =====================================================
+         Patrón: tabs horizontales con indicador de borde inferior naranja.
+         Escalable: agregar más entidades es solo añadir un <button> más.
+         ARIA: role="tablist" con aria-selected en cada tab.
+         Blazor: @onclick="() => SetTab("vehicles")" + aria-selected="@(_tab == "vehicles")"
+         ===================================================== -->
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px"
+         role="tablist"
+         aria-label="Manage sections / Secciones de gestión">
+
+      <!-- Tab: Vehicles / Vehículos -->
+      <button type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-vehicles"
+              id="tab-vehicles"
+              class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg"
+              data-tab-target="vehicles">
+        <!-- SVG: car icon -->
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+            <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+          </svg>
+          Vehicles
+          <!-- ES: Vehículos -->
+          <!-- data-binding: badge con count @_vehicles.Count -->
+          <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="3 vehicles">3</span>
+        </span>
+      </button>
+
+      <!-- Tab: Reservations / Reservas -->
+      <button type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-reservations"
+              id="tab-reservations"
+              class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg"
+              data-tab-target="reservations">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Reservations
+          <!-- ES: Reservas -->
+          <!-- data-binding: badge con count pendientes @_pendingCount — solo si > 0 -->
+          <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="2 pending reservations">2</span>
+        </span>
+      </button>
+
+      <!--
+        ESCALABILIDAD: Para agregar "Photos", "Analytics", etc., copiar el bloque
+        <button> anterior con el nuevo id/aria-controls/data-tab-target correspondiente.
+        El indicador naranja es CSS puro — no requiere cambios en el resto del layout.
+      -->
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     2. ÁREA PRINCIPAL — replica max-w-6xl de /browse
+        Contenido fluye DEBAJO del header, no flota en el centro.
+     ===================================================== -->
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- ===================================================
+       PANEL: VEHICLES (tab activo)
+       aria-labelledby="tab-vehicles"
+       En Blazor: @if (_activeTab == "vehicles") { ... }
+       =================================================== -->
+  <section id="panel-vehicles"
+           role="tabpanel"
+           aria-labelledby="tab-vehicles"
+           tabindex="0">
+
+    <!-- Sub-header del panel con acción primaria -->
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <h2 class="text-base font-semibold text-ink">
+          Your fleet
+          <!-- ES: Tu flota -->
+        </h2>
+        <p class="text-sm text-muted mt-0.5">
+          Editing any vehicle sends the listing back to GM for re-approval.
+          <!-- ES: Editar un vehículo regresa el anuncio a revisión del GM. -->
+        </p>
+      </div>
+      <!-- data-binding: @onclick="StartCreate" disabled="@_busy" -->
+      <button type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer"
+              aria-label="Add a new vehicle / Agregar nuevo vehículo">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add vehicle
+        <!-- ES: Agregar vehículo -->
+      </button>
+    </div>
+
+    <!-- Estado: Error (conditional — solo si @_errorMessage != null) -->
+    <!--
+    <div role="alert" class="mb-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm">
+      Error message here
+    </div>
+    -->
+
+    <!-- =====================================================
+         VEHICLE LIST — state: loaded (3 vehicles)
+         data-binding: @foreach (var v in _vehicles) { }
+         ===================================================== -->
+    <ul class="space-y-4" role="list" aria-label="Vehicle list / Lista de vehículos">
+
+      <!-- Vehicle Card 1 — active -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- data-binding: @v.Name -->
+              <h3 class="font-semibold text-ink">Toyota Corolla 2022</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                active
+                <!-- ES: activo -->
+              </span>
+            </div>
+            <!-- data-binding: @FormatSpecs(v) — "4 passengers · Automatic · A/C" -->
+            <p class="text-muted text-xs mt-0.5">4 passengers · Automatic · A/C</p>
+            <p class="text-ink text-sm mt-1 font-medium">
+              $39/day
+              <!-- data-binding: @FormatRate(v.DailyRateCents)/day -->
+              <span class="text-muted text-xs">· $230/wk</span>
+              <!-- data-binding: @FormatRate(v.WeeklyRateCents.Value)/wk (si HasValue) -->
+            </p>
+          </div>
+          <!-- Actions -->
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button"
+                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer"
+                    aria-label="Edit Toyota Corolla 2022">
+              Edit
+              <!-- ES: Editar -->
+            </button>
+            <button type="button"
+                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer"
+                    aria-label="Deactivate Toyota Corolla 2022">
+              Deactivate
+              <!-- ES: Desactivar -->
+            </button>
+            <button type="button"
+                    class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors duration-150 cursor-pointer"
+                    aria-label="Delete Toyota Corolla 2022">
+              Delete
+              <!-- ES: Eliminar -->
+            </button>
+          </div>
+        </div>
+
+        <!-- Availability section (collapsed by default) -->
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold text-ink">
+              Availability
+              <!-- ES: Disponibilidad -->
+            </h4>
+            <!-- data-binding: @onclick="() => ToggleCalendar(v.Id)" -->
+            <button type="button"
+                    class="text-xs text-brand-500 hover:text-brand-700 transition-colors duration-150 cursor-pointer"
+                    aria-expanded="false"
+                    aria-controls="calendar-v1">
+              Manage availability
+              <!-- ES: Gestionar disponibilidad -->
+            </button>
+          </div>
+          <!-- Calendar panel: hidden by default — data-binding: @if (_calendarOpen.Contains(v.Id)) { <VehicleCalendar /> } -->
+          <div id="calendar-v1" class="hidden">
+            <!-- <VehicleCalendar VehicleId="v.Id" IsEditor="true" ... /> -->
+          </div>
+        </div>
+
+        <!-- Photos section -->
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h4 class="text-sm font-semibold text-ink">
+              Photos (3)
+              <!-- ES: Fotos (3) -->
+            </h4>
+            <!-- data-binding: Upload button via <InputFile /> -->
+            <label class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium cursor-pointer transition-colors duration-150">
+              Upload photo
+              <!-- ES: Subir foto -->
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" aria-label="Upload vehicle photo" />
+            </label>
+          </div>
+
+          <!-- Photo grid — data-binding: @foreach (var p in v.Photos) { } -->
+          <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" role="list">
+            <!-- Photo 1 — primary, public -->
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/car-photo-1/400/225"
+                     alt="Toyota Corolla 2022 — primary photo"
+                     class="w-full h-full object-cover"
+                     loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2 flex gap-1 flex-wrap">
+                <!-- data-binding: @if (p.IsPrimary) { ... } -->
+                <span class="text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">primary</span>
+                <!-- data-binding: p.IsPublic ? green : slate -->
+                <span class="text-[9px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">public</span>
+              </div>
+              <!-- Hover actions -->
+              <div class="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                <button type="button" class="px-2 py-1 rounded-lg bg-white/95 text-red-700 text-[10px] font-semibold cursor-pointer" aria-label="Remove photo">
+                  Remove
+                  <!-- ES: Eliminar -->
+                </button>
+              </div>
+            </li>
+            <!-- Photo 2 — pending GM approval -->
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/car-photo-2/400/225"
+                     alt="Toyota Corolla 2022 interior"
+                     class="w-full h-full object-cover"
+                     loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2">
+                <span class="text-[9px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">pending GM</span>
+              </div>
+              <div class="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                <button type="button" class="px-2 py-1 rounded-lg bg-white/95 text-ink text-[10px] font-semibold cursor-pointer" aria-label="Make primary photo">
+                  Make primary
+                  <!-- ES: Hacer principal -->
+                </button>
+                <button type="button" class="px-2 py-1 rounded-lg bg-white/95 text-red-700 text-[10px] font-semibold cursor-pointer" aria-label="Remove photo">
+                  Remove
+                </button>
+              </div>
+            </li>
+            <!-- Photo 3 — public -->
+            <li class="rounded-2xl overflow-hidden border border-slate-100 relative group">
+              <div class="aspect-video bg-slate-100">
+                <img src="https://picsum.photos/seed/car-photo-3/400/225"
+                     alt="Toyota Corolla 2022 exterior"
+                     class="w-full h-full object-cover"
+                     loading="lazy" />
+              </div>
+              <div class="absolute top-2 left-2">
+                <span class="text-[9px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">public</span>
+              </div>
+              <div class="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                <button type="button" class="px-2 py-1 rounded-lg bg-white/95 text-ink text-[10px] font-semibold cursor-pointer">Make primary</button>
+                <button type="button" class="px-2 py-1 rounded-lg bg-white/95 text-red-700 text-[10px] font-semibold cursor-pointer">Remove</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Vehicle Card 2 — inactive -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover opacity-80">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">Honda Civic 2020</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                inactive
+                <!-- ES: inactivo -->
+              </span>
+            </div>
+            <p class="text-muted text-xs mt-0.5">5 passengers · Manual · A/C</p>
+            <p class="text-ink text-sm mt-1 font-medium">$34/day</p>
+          </div>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Edit</button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-medium transition-colors duration-150 cursor-pointer">
+              Reactivate
+              <!-- ES: Reactivar -->
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors duration-150 cursor-pointer">Delete</button>
+          </div>
+        </div>
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-ink">Availability</h4>
+            <button type="button" class="text-xs text-brand-500 hover:text-brand-700 transition-colors duration-150 cursor-pointer">Manage availability</button>
+          </div>
+        </div>
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold text-ink">Photos (0)</h4>
+            <label class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium cursor-pointer transition-colors duration-150">
+              Upload photo
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" aria-label="Upload vehicle photo" />
+            </label>
+          </div>
+          <p class="text-muted text-xs">
+            No photos yet.
+            <!-- ES: Sin fotos aún. -->
+          </p>
+        </div>
+      </li>
+
+      <!-- Vehicle Card 3 — active, no photos -->
+      <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-semibold text-ink">Nissan Sentra 2021</h3>
+              <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+            </div>
+            <p class="text-muted text-xs mt-0.5">4 passengers · Automatic</p>
+            <p class="text-ink text-sm mt-1 font-medium">$29/day <span class="text-muted text-xs">· $165/wk · $560/mo</span></p>
+          </div>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Edit</button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Deactivate</button>
+            <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium transition-colors duration-150 cursor-pointer">Delete</button>
+          </div>
+        </div>
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-ink">Availability</h4>
+            <button type="button" class="text-xs text-brand-500 hover:text-brand-700 transition-colors duration-150 cursor-pointer">Manage availability</button>
+          </div>
+        </div>
+        <div class="mt-5 border-t border-slate-100 pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold text-ink">Photos (0)</h4>
+            <label class="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium cursor-pointer transition-colors duration-150">
+              Upload photo
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" aria-label="Upload vehicle photo" />
+            </label>
+          </div>
+          <p class="text-muted text-xs">No photos yet.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- =====================================================
+       PANEL: RESERVATIONS (tab inactivo — oculto)
+       aria-labelledby="tab-reservations"
+       En Blazor: @if (_activeTab == "reservations") { ... }
+       Este panel se muestra aquí comentado para referencia visual.
+       En el segundo mockup (manage-reservations-panel.html) está
+       el estado completo del panel de reservaciones.
+       ===================================================== -->
+  <section id="panel-reservations"
+           role="tabpanel"
+           aria-labelledby="tab-reservations"
+           tabindex="0"
+           class="hidden">
+    <!-- Contenido del panel Reservations → ver manage-reservations-panel.html -->
+  </section>
+
+</div><!-- /max-w-6xl -->
+
+<!-- =====================================================
+     ESTADO VACÍO — referencia visual (sin vehículos)
+     data-binding: @else if (_vehicles is null || _vehicles.Count == 0) { ... }
+     ===================================================== -->
+<!--
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="bg-white rounded-3xl border border-dashed border-slate-200 p-10 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+        <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+      </svg>
+    </div>
+    <p class="font-medium text-ink text-sm mb-1">No vehicles yet</p>
+    <p class="text-muted text-xs mb-4">Add your first vehicle to start receiving reservations.</p>
+    <button type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold cursor-pointer transition-colors duration-150">
+      Add vehicle
+    </button>
+  </div>
+</div>
+-->
+
+<!-- Tab switching script (reemplazar en Blazor por @onclick y condicional de visibilidad) -->
+<script>
+  document.querySelectorAll('[role="tab"]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tabTarget;
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.classList.remove('text-ink');
+        t.classList.add('text-muted');
+      });
+      tab.setAttribute('aria-selected', 'true');
+      tab.classList.add('text-ink');
+      tab.classList.remove('text-muted');
+      document.querySelectorAll('[role="tabpanel"]').forEach(p => p.classList.add('hidden'));
+      const panel = document.getElementById('panel-' + target);
+      if (panel) panel.classList.remove('hidden');
+    });
+  });
+</script>
+
+</body>
+</html>

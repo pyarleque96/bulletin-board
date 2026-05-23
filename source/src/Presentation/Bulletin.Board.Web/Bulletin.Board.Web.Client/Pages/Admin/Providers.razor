@@ -1,0 +1,563 @@
+@page "/admin/providers"
+@layout AdminLayout
+@attribute [Authorize(Roles = "Admin")]
+
+@using Bulletin.Board.Web.Client.Components.Admin
+@using Bulletin.Board.Web.Client.States
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAdminService AdminService
+@inject AdminNavigationState AdminNav
+
+<PageTitle>Providers — Bulletin Dells Admin</PageTitle>
+
+
+@* ── Toast ── *@
+<AppToast Message="@_toastMessage" Variant="@_toastVariant" OnDismiss="DismissToast" />
+
+@* ── Page body — flex column ocupando toda la altura disponible ── *@
+@if (!_isLoading || !AdminNav.IsNavigating)
+{
+<div class="flex flex-col" style="height:calc(100vh - 64px); overflow:hidden;">
+    <div class="flex-1 p-6 flex flex-col overflow-hidden min-h-0">
+
+        @* ── Info banner ── *@
+        <PageNoticeBanner IsVisible="@_bannerVisible"
+                          Variant="info"
+                          Title="Provider hierarchy controls search ranking"
+                          Description="Higher hierarchy values appear first in all searches, regardless of tier. Set 9000+ to always pin a provider to the top."
+                          OnDismiss="() => _bannerVisible = false" />
+
+        @* ── AdminDataTable — ocupa el espacio restante ── *@
+        <AdminDataTable IsLoading="@_isLoading"
+                        HasError="@_hasError"
+                        IsEmpty="@(_providers is not null && _providers.Items.Length == 0)"
+                        EmptyMessage="No providers found"
+                        OnRetry="LoadProvidersAsync"
+                        CurrentPage="@_currentPage"
+                        TotalPages="@(_providers?.TotalPages ?? 1)"
+                        OnPageChanged="GoToPage">
+
+            <ToolbarContent>
+
+                @* Tier filter *@
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-muted" for="filter-tier">Tier</label>
+                    <select id="filter-tier"
+                            value="@_filterTier"
+                            @onchange="OnTierFilterChanged"
+                            class="text-xs border border-slate-200 rounded-lg px-3 py-2 text-ink bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All tiers</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Verified">Verified</option>
+                        <option value="VIP">VIP</option>
+                    </select>
+                </div>
+
+                @* Verification filter *@
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-medium text-muted" for="filter-verification">Verification</label>
+                    <select id="filter-verification"
+                            value="@_filterVerification"
+                            @onchange="OnVerificationFilterChanged"
+                            class="text-xs border border-slate-200 rounded-lg px-3 py-2 text-ink bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All statuses</option>
+                        <option value="Verified">Verified</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+
+                @* Sort select *@
+                <select @bind="_sortMode"
+                        @bind:after="OnSortChanged"
+                        class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-muted focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        aria-label="Sort providers">
+                    <option value="hierarchy-desc">Sort: Highest Hierarchy</option>
+                    <option value="hierarchy-asc">Sort: Lowest Hierarchy</option>
+                    <option value="tier-desc">Sort: VIP First</option>
+                    <option value="listings-desc">Sort: Most Listings</option>
+                    <option value="createdAt-desc">Sort: Newest First</option>
+                </select>
+
+                @* Recompute trending — applies hierarchy changes to /listings/top immediately
+                   instead of waiting for the hourly background job. *@
+                <button type="button"
+                        @onclick="RecomputeTrending"
+                        disabled="@_isRecomputing"
+                        class="inline-flex items-center gap-2 border border-amber-200 bg-amber-50 hover:bg-amber-100 disabled:opacity-60 disabled:cursor-not-allowed text-amber-800 text-sm font-medium rounded-lg px-3 py-2 transition-colors"
+                        title="Force-recompute trending_score across all approved listings. Used after editing hierarchies so the change reflects in /listings/top without waiting for the next hourly run.">
+                    @if (_isRecomputing)
+                    {
+                        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                        <span>Recomputing…</span>
+                    }
+                    else
+                    {
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="23 4 23 10 17 10" />
+                            <polyline points="1 20 1 14 7 14" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                        <span>Recompute trending</span>
+                    }
+                </button>
+
+            </ToolbarContent>
+
+            <FooterLeft>
+                <p class="text-xs text-muted">
+                    Showing @(_providers?.Items.Length ?? 0) of @(_providers?.TotalCount ?? 0) providers
+                </p>
+            </FooterLeft>
+
+            <HeaderContent>
+                <th scope="col"
+                    class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-5 py-1 align-middle">
+                    Provider
+                </th>
+                <th scope="col"
+                    class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle cursor-pointer hover:text-ink select-none"
+                    @onclick='() => SetSort("tier")'
+                    aria-sort="@GetAriaSort("tier")">
+                    <span class="flex items-center gap-1">
+                        Tier
+                        <SortIcon Column="tier" CurrentSort="@_sortMode" />
+                    </span>
+                </th>
+                <th scope="col"
+                    class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle cursor-pointer hover:text-ink select-none"
+                    @onclick='() => SetSort("hierarchy")'
+                    aria-sort="@GetAriaSort("hierarchy")">
+                    <span class="flex items-center gap-1">
+                        Hierarchy
+                        <SortIcon Column="hierarchy" CurrentSort="@_sortMode" />
+                    </span>
+                </th>
+                <th scope="col"
+                    class="text-left text-xs font-semibold text-muted uppercase tracking-wider px-4 py-1 align-middle hidden md:table-cell">
+                    Verifications
+                </th>
+                <th scope="col"
+                    class="text-right text-xs font-semibold text-muted uppercase tracking-wider px-5 py-1 align-middle">
+                    Actions
+                </th>
+            </HeaderContent>
+
+            <RowContent>
+                @foreach (var provider in _providers?.Items ?? [])
+                {
+                    var currentHierarchy = _hierarchyEdits.TryGetValue(provider.Id, out var h) ? h : provider.Hierarchy;
+                    var fullName = BuildFullName(provider);
+                    var initials = BuildInitials(provider);
+
+                    <tr class="prov-row group">
+                        @* Provider *@
+                        <td class="px-5 py-1 align-middle">
+                            <div class="flex flex-col">
+                                <p class="text-xs font-semibold text-ink leading-tight">@fullName</p>
+                                <p class="text-[11px] text-muted leading-tight">@provider.WhatsAppNumber</p>
+                            </div>
+                        </td>
+
+                        @* Tier badge *@
+                        <td class="px-4 py-1 align-middle">
+                            <TierBadge Tier="@provider.Tier" />
+                        </td>
+
+                        @* Hierarchy input + Save *@
+                        <td class="px-4 py-1 align-middle">
+                            <div class="flex items-center gap-2">
+                                <input type="number"
+                                       value="@currentHierarchy"
+                                       @onchange="(e) => OnHierarchyInputChanged(provider.Id, e)"
+                                       min="0" max="9999"
+                                       class="w-16 text-xs border @(currentHierarchy >= 9000 ? "border-amber-300" : "border-slate-200") rounded-md px-1.5 py-0.5 text-center font-semibold @(currentHierarchy >= 9000 ? "text-amber-700" : "") focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       aria-label="Hierarchy value" />
+                                <button @onclick="() => SaveHierarchy(provider)"
+                                        disabled="@_isBusy"
+                                        class="text-xs text-blue-600 font-medium hover:text-blue-700 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-30"
+                                        aria-label="Save hierarchy">
+                                    Save
+                                </button>
+                            </div>
+                        </td>
+
+                        @* Verifications (per-requirement, real flags) *@
+                        <td class="px-4 py-1 align-middle hidden md:table-cell">
+                            <div class="flex items-center gap-1">
+                                @VerificationDot(provider.PhoneVerified, "Phone")
+                                @VerificationDot(provider.IdVerified, "ID/Passport")
+                                @VerificationDot(provider.SocialVerified, "Social media")
+                            </div>
+                        </td>
+
+                        @* Actions dropdown *@
+                        <td class="px-5 py-1 align-middle text-right">
+                            <AdminActionMenu>
+                                <a href="@($"/admin/listings?providerId={provider.Id}&providerName={Uri.EscapeDataString(fullName)}")"
+                                   class="block w-full text-left text-sm px-3 py-2 hover:bg-slate-50 cursor-pointer text-ink">
+                                    View listings
+                                </a>
+                                <button type="button"
+                                        class="block w-full text-left text-sm px-3 py-2 hover:bg-rose-50 cursor-pointer text-rose-600"
+                                        @onclick="() => DisableProvider(provider)">
+                                    Disable provider
+                                </button>
+                            </AdminActionMenu>
+                        </td>
+                    </tr>
+                }
+            </RowContent>
+
+        </AdminDataTable>
+
+        @* ── VIP confirm modal ── *@
+        <VipConfirmModal IsOpen="_vipModalOpen"
+                         IsCurrentlyVip="_vipTargetIsCurrentlyVip"
+                         EntityKindLabel="Provider"
+                         EntityName="@(_vipTargetProvider?.WhatsAppNumber ?? string.Empty)"
+                         IsBusy="_vipModalBusy"
+                         ErrorMessage="@_vipModalError"
+                         OnCancel="CloseVipModal"
+                         OnConfirm="ConfirmVipChange" />
+
+        @* ── Legend — se mantiene exactamente como está ── *@
+        <div class="mt-4 flex flex-wrap items-center gap-6 text-xs text-muted">
+            <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-2.5 h-2.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </span>
+                Phone verified
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-2.5 h-2.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </span>
+                ID/Passport verified
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-2.5 h-2.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </span>
+                Social media verified
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 bg-amber-50 border border-amber-300 rounded-sm"></span>
+                Hierarchy 9000+ = always appears first
+            </div>
+        </div>
+
+    </div>
+</div>
+}
+
+@code {
+    // ── Constantes ─────────────────────────────────────────────────────────────
+    private const int PageSize = 15;
+
+    // ── Estado de datos ────────────────────────────────────────────────────────
+    private PagedResult<AdminProviderDto>? _providers;
+    private bool _isLoading = true;
+    private bool _hasError  = false;
+    private bool _isBusy    = false;
+
+    // ── Banner ─────────────────────────────────────────────────────────────────
+    private bool _bannerVisible = false;
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    private string?      _toastMessage = null;
+    private ToastVariant _toastVariant = ToastVariant.Success;
+
+    // ── Filtros ────────────────────────────────────────────────────────────────
+    private string _filterTier         = "";
+    private string _filterVerification = "";
+
+    // ── Sort ───────────────────────────────────────────────────────────────────
+    // _sortMode: la opción del select ("hierarchy-desc", "tier-desc", etc.)
+    // _sortBy / _sortDir: los dos valores que se pasan a la API
+    private string _sortMode = "hierarchy-desc";
+    private string _sortBy   = "hierarchy";
+    private string _sortDir  = "desc";
+
+    // ── Paginación ─────────────────────────────────────────────────────────────
+    private int _currentPage = 1;
+
+    // ── Ediciones en vuelo ─────────────────────────────────────────────────────
+    private readonly Dictionary<Guid, int>    _hierarchyEdits = new();
+
+    // ── VIP modal state ────────────────────────────────────────────────────────
+    private bool _vipModalOpen;
+    private bool _vipModalBusy;
+    private string? _vipModalError;
+    private bool _vipTargetIsCurrentlyVip;
+    private AdminProviderDto? _vipTargetProvider;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+    // BFF cookie auth — works the same in SSR, Server-interactive, and WASM.
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProvidersAsync();
+        AdminNav.MarkNavigationDone();
+    }
+
+    // ── Carga de datos ─────────────────────────────────────────────────────────
+    private async Task LoadProvidersAsync()
+    {
+        _isLoading = true;
+        _hasError  = false;
+        try
+        {
+            _providers = await AdminService.GetProvidersAsync(
+                string.IsNullOrEmpty(_filterTier) ? null : _filterTier,
+                string.IsNullOrEmpty(_filterVerification) ? null : _filterVerification,
+                _currentPage,
+                PageSize,
+                sortBy: _sortBy,
+                sortDir: _sortDir);
+        }
+        catch
+        {
+            _hasError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    // ── Handlers de filtros ────────────────────────────────────────────────────
+    private async Task OnTierFilterChanged(ChangeEventArgs e)
+    {
+        _filterTier  = e.Value?.ToString() ?? "";
+        _currentPage = 1;
+        await LoadProvidersAsync();
+    }
+
+    private async Task OnVerificationFilterChanged(ChangeEventArgs e)
+    {
+        _filterVerification = e.Value?.ToString() ?? "";
+        _currentPage        = 1;
+        await LoadProvidersAsync();
+    }
+
+    // ── Sort ───────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Llamado por @bind:after del select de sort.
+    /// Descompone _sortMode ("hierarchy-desc") en _sortBy + _sortDir para la API.
+    /// </summary>
+    private async Task OnSortChanged()
+    {
+        (_sortBy, _sortDir) = _sortMode switch
+        {
+            "hierarchy-asc"  => ("hierarchy",  "asc"),
+            "tier-desc"      => ("tier",       "desc"),
+            "listings-desc"  => ("listings",   "desc"),
+            "createdAt-desc" => ("createdAt",  "desc"),
+            _                => ("hierarchy",  "desc"),  // hierarchy-desc (default)
+        };
+        _currentPage = 1;
+        await LoadProvidersAsync();
+    }
+
+    /// <summary>
+    /// SetSort — toggle asc/desc al clickar encabezado de columna (igual que Categories).
+    /// Actualiza _sortMode para que SortIcon reciba el valor correcto.
+    /// </summary>
+    private async Task SetSort(string column)
+    {
+        if (_sortMode == column + "-asc" || _sortMode == column)
+            _sortMode = column + "-desc";
+        else if (_sortMode == column + "-desc")
+            _sortMode = column + "-asc";
+        else
+            _sortMode = column + "-desc";
+
+        await OnSortChanged();
+    }
+
+    private string GetAriaSort(string column) =>
+        _sortMode == column + "-asc"  ? "ascending"  :
+        _sortMode == column + "-desc" ? "descending" :
+        "none";
+
+    // ── Paginación ─────────────────────────────────────────────────────────────
+    private async Task GoToPage(int page)
+    {
+        _currentPage = Math.Max(1, page);
+        await LoadProvidersAsync();
+    }
+
+    // ── Disable provider (placeholder) ────────────────────────────────────────
+    private void DisableProvider(AdminProviderDto provider)
+    {
+        ShowToast("Disable provider is not implemented yet.", ToastVariant.Error);
+    }
+
+    private static string BuildFullName(AdminProviderDto p)
+    {
+        var name = string.Join(' ',
+            new[] { p.FirstName, p.LastName }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+        return string.IsNullOrWhiteSpace(name) ? "—" : name;
+    }
+
+    private static string BuildInitials(AdminProviderDto p)
+    {
+        var first = string.IsNullOrWhiteSpace(p.FirstName) ? "" : p.FirstName![..1];
+        var last = string.IsNullOrWhiteSpace(p.LastName) ? "" : p.LastName![..1];
+        var initials = (first + last).ToUpperInvariant();
+        return string.IsNullOrEmpty(initials) ? "?" : initials;
+    }
+
+    // ── Hierarchy ─────────────────────────────────────────────────────────────
+    private void OnHierarchyInputChanged(Guid providerId, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+            _hierarchyEdits[providerId] = value;
+    }
+
+    private async Task SaveHierarchy(AdminProviderDto provider)
+    {
+        var value = _hierarchyEdits.TryGetValue(provider.Id, out var h) ? h : provider.Hierarchy;
+        _isBusy = true;
+        try
+        {
+            await AdminService.SetProviderHierarchyAsync(provider.Id, value);
+        }
+        catch
+        {
+            ShowToast("Failed to save hierarchy. Please try again.", ToastVariant.Error);
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    // ── Trending recompute ────────────────────────────────────────────────────
+    private bool _isRecomputing;
+
+    private async Task RecomputeTrending()
+    {
+        if (_isRecomputing) return;
+        _isRecomputing = true;
+        try
+        {
+            var result = await AdminService.RecomputeTrendingAsync();
+            if (result is null)
+                ShowToast("Recompute returned no result.", ToastVariant.Error);
+            else
+                ShowToast($"Recomputed {result.Affected} listings in {result.DurationMs}ms.", ToastVariant.Success);
+        }
+        catch
+        {
+            ShowToast("Failed to recompute trending. Please try again.", ToastVariant.Error);
+        }
+        finally
+        {
+            _isRecomputing = false;
+        }
+    }
+
+    // ── VIP modal handlers ─────────────────────────────────────────────────────
+    private void OpenVipModal(AdminProviderDto provider, bool intent)
+    {
+        _vipTargetProvider = provider;
+        _vipTargetIsCurrentlyVip = provider.IsVipNow;
+        _vipModalError = null;
+        _vipModalOpen = true;
+    }
+
+    private void CloseVipModal()
+    {
+        _vipModalOpen = false;
+        _vipModalBusy = false;
+        _vipModalError = null;
+        _vipTargetProvider = null;
+    }
+
+    private async Task ConfirmVipChange(VipConfirmModal.VipConfirmPayload payload)
+    {
+        if (_vipTargetProvider is null) return;
+
+        _vipModalBusy = true;
+        _vipModalError = null;
+        try
+        {
+            var reauth = await AdminService.ReauthAsync(payload.Password);
+            if (reauth is null)
+            {
+                _vipModalError = "Invalid password.";
+                return;
+            }
+
+            if (_vipTargetIsCurrentlyVip)
+            {
+                await AdminService.RevokeProviderVipAsync(_vipTargetProvider.Id,
+                    new RevokeVipRequest(payload.Reason), reauth.ReauthToken);
+                ShowToast("VIP revoked.", ToastVariant.Success);
+            }
+            else
+            {
+                await AdminService.GrantProviderVipAsync(_vipTargetProvider.Id,
+                    new GrantVipRequest(payload.Until, payload.Indefinite, payload.Reason), reauth.ReauthToken);
+                ShowToast("VIP granted.", ToastVariant.Success);
+            }
+
+            _vipModalOpen = false;
+            await LoadProvidersAsync();
+        }
+        catch (Exception ex)
+        {
+            _vipModalError = $"Failed: {ex.Message}";
+        }
+        finally
+        {
+            _vipModalBusy = false;
+        }
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    private void ShowToast(string message, ToastVariant variant = ToastVariant.Success)
+    {
+        _toastMessage = message;
+        _toastVariant = variant;
+    }
+
+    private void DismissToast() => _toastMessage = null;
+
+    // ── Verification dot (per-requirement) ─────────────────────────────────────
+    private RenderFragment VerificationDot(bool ok, string label) => __builder =>
+    {
+        var bg = ok ? "bg-green-100" : "bg-slate-100";
+        var fg = ok ? "text-green-600" : "text-slate-400";
+        var title = ok ? $"{label} verified" : $"{label} not verified";
+        var path = ok ? "M5 13l4 4L19 7" : "M6 18L18 6M6 6l12 12";
+
+        __builder.OpenElement(0, "span");
+        __builder.AddAttribute(1, "class", $"w-5 h-5 rounded-full flex items-center justify-center {bg}");
+        __builder.AddAttribute(2, "title", title);
+        __builder.OpenElement(3, "svg");
+        __builder.AddAttribute(4, "class", $"w-3 h-3 {fg}");
+        __builder.AddAttribute(5, "fill", "none");
+        __builder.AddAttribute(6, "viewBox", "0 0 24 24");
+        __builder.AddAttribute(7, "stroke", "currentColor");
+        __builder.AddAttribute(8, "stroke-width", "2.5");
+        __builder.AddAttribute(9, "aria-hidden", "true");
+        __builder.OpenElement(10, "path");
+        __builder.AddAttribute(11, "stroke-linecap", "round");
+        __builder.AddAttribute(12, "stroke-linejoin", "round");
+        __builder.AddAttribute(13, "d", path);
+        __builder.CloseElement();
+        __builder.CloseElement();
+        __builder.CloseElement();
+    };
+}

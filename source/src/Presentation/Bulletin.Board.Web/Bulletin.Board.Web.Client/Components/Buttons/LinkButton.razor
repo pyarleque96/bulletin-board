@@ -1,0 +1,75 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Appears as a link but behaves as a button (no navigation).
+    Used for: "Forgot password?", "Create one · Regístrate", footer language toggle EN/ES,
+    "View details" inline text, "Back to Bulletin Dells".
+    Renders an <a> tag with href when Href is provided; otherwise a <button>.
+*@
+
+@if (!string.IsNullOrEmpty(Href))
+{
+    <a href="@Href"
+       class="@ComputedClass"
+       aria-label="@(string.IsNullOrEmpty(AriaLabel) ? null : AriaLabel)">
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            <span>@Text</span>
+        }
+        @ChildContent
+    </a>
+}
+else
+{
+    <button
+        type="@Type"
+        class="@ComputedClass"
+        @onclick="HandleClick"
+        disabled="@Disabled"
+        aria-label="@(string.IsNullOrEmpty(AriaLabel) ? null : AriaLabel)">
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            <span>@Text</span>
+        }
+        @ChildContent
+    </button>
+}
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>When set, renders as an anchor tag instead of button.</summary>
+    [Parameter] public string? Href { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Color variant: "brand" | "accent" | "muted" | "white-dim"</summary>
+    [Parameter] public string Variant { get; set; } = "brand";
+
+    private string ColorClass => Variant switch
+    {
+        "accent"    => "text-accent hover:text-orange-400",
+        "muted"     => "text-muted hover:text-ink",
+        "white-dim" => "text-white/20 hover:text-white/40",
+        _           => "text-brand-500 hover:text-brand-700"
+    };
+
+    private string ComputedClass =>
+        $"inline-flex items-center gap-1 {ColorClass} font-medium text-sm " +
+        "transition-colors duration-200 " +
+        "disabled:opacity-50 disabled:cursor-not-allowed " +
+        "cursor-pointer underline-offset-2 hover:underline " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled) return;
+        await OnClick.InvokeAsync();
+    }
+}

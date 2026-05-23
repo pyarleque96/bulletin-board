@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Wisconsin Dells Local Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3B82F6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            'soft': '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift': '0 12px 40px -8px rgba(30,41,59,0.14)',
+            'float': '0 24px 64px -12px rgba(30,41,59,0.18)',
+          },
+          transitionTimingFunction: {
+            'spring': 'cubic-bezier(0.32,0.72,0,1)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    .hero-bg {
+      background: linear-gradient(145deg, #071526 0%, #0D1E33 45%, #132840 80%, #1A3350 100%);
+    }
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 70px 70px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes float-card {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .float-card {
+      animation: float-card 6s ease-in-out infinite;
+    }
+    .float-card-delay {
+      animation: float-card 5s ease-in-out infinite;
+      animation-delay: 1.2s;
+    }
+    .float-card-alt {
+      animation: float-card 7s ease-in-out infinite;
+      animation-delay: 0.6s;
+    }
+    .grain-overlay {
+      position: fixed; inset: 0; z-index: 50; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+    .nav-pill {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .nav-pill.nav-dark {
+      background: rgba(7, 21, 38, 0.80);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 24px -4px rgba(0,0,0,0.35);
+    }
+    .nav-pill.nav-dark .nav-logo-text { color: white; transition: color 0.4s ease; }
+    .nav-pill.nav-dark .nav-link { color: rgba(255,255,255,0.75); transition: color 0.2s, background 0.2s; }
+    .nav-pill.nav-dark .nav-link:hover { color: white; background: rgba(255,255,255,0.10); }
+    .nav-pill.nav-dark .nav-lang-btn { color: rgba(255,255,255,0.75); }
+    .nav-pill.nav-dark .nav-lang-btn:hover { color: white; background: rgba(255,255,255,0.10); }
+    .hero-wave {
+      opacity: 1;
+    }
+    .vip-glow {
+      box-shadow: 0 0 0 1px rgba(249,115,22,0.3), 0 8px 32px -4px rgba(249,115,22,0.2);
+    }
+    .sdvip-glow {
+      box-shadow: 0 0 0 1px rgba(234,179,8,0.4), 0 8px 32px -4px rgba(234,179,8,0.25);
+    }
+    .card-hover {
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 24px 64px -12px rgba(30,41,59,0.18); }
+    .btn-primary {
+      transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s cubic-bezier(0.32,0.72,0,1);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(249,115,22,0.4); }
+    .btn-primary:active { transform: translateY(0) scale(0.98); }
+    .search-ring:focus-within { box-shadow: 0 0 0 3px rgba(59,130,246,0.4); }
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s cubic-bezier(0.32,0.72,0,1), transform 0.7s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .badge-sdvip { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .badge-vip { background: linear-gradient(135deg, #fb923c, #f97316); }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <!-- Grain texture overlay (fixed, pointer-events-none) -->
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       NAVBAR — floating pill, detached from top edge
+       ============================================================ -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center justify-between" aria-label="Main navigation">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5 cursor-pointer" aria-label="Bulletin Dells home">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shadow-soft flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="nav-logo-text font-semibold text-ink tracking-tight text-sm hidden sm:block transition-colors duration-300">Bulletin Dells</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <ul class="hidden md:flex items-center gap-1" role="list">
+        <li><a href="#categories" class="nav-link px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Browse</a></li>
+        <li><a href="#featured" class="nav-link px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Featured</a></li>
+        <li><a href="#trust" class="nav-link px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">How it works</a></li>
+        <!-- ES: <li><a href="#">Navegar / Destacados / Cómo funciona</a></li> -->
+      </ul>
+
+      <!-- Language Toggle + CTA -->
+      <div class="flex items-center gap-2">
+        <button class="nav-lang-btn hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+        <a href="#" class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full btn-primary cursor-pointer" aria-label="List your business">
+          List your business
+          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============================================================
+         HERO — asymmetric split: left text / right visual
+         ============================================================ -->
+    <section class="hero-bg min-h-[115dvh] flex items-center pt-24 pb-28 px-4 relative overflow-hidden" aria-labelledby="hero-headline">
+      <!-- Grid texture overlay -->
+      <div class="hero-grid-lines" aria-hidden="true"></div>
+      <!-- Background decorative orbs -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-white/5 blur-3xl"></div>
+        <div class="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-white/8 blur-2xl"></div>
+        <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/4 blur-xl"></div>
+      </div>
+
+      <div class="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
+        <!-- Left column: copy + search -->
+        <div class="space-y-8">
+          <!-- Eyebrow tag -->
+          <div class="inline-flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full bg-white/15 text-white/90 text-[10px] uppercase tracking-[0.2em] font-medium border border-white/20 backdrop-blur-sm">
+              Wisconsin Dells, WI
+              <!-- ES: Wisconsin Dells, WI -->
+            </span>
+          </div>
+
+          <!-- Headline -->
+          <div class="space-y-4">
+            <h1 id="hero-headline" class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight">
+              Find trusted local<br />services — fast.
+              <!-- ES: Encuentra servicios locales de confianza, rapido. -->
+            </h1>
+            <p class="text-lg text-white/70 leading-relaxed max-w-[52ch]">
+              The bilingual marketplace connecting Wisconsin Dells with verified local providers. Housing, rides, mechanics, beauty — all in one place.
+              <!-- ES: El marketplace bilingue que conecta Wisconsin Dells con proveedores locales verificados. -->
+            </p>
+          </div>
+
+          <!-- Search bar -->
+          <div class="space-y-3">
+            <div class="search-ring rounded-2xl bg-white shadow-float overflow-hidden transition-shadow duration-300" role="search">
+              <div class="flex items-center">
+                <div class="pl-4 pr-2 flex-shrink-0" aria-hidden="true">
+                  <svg class="w-5 h-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <label for="hero-search" class="sr-only">Search services in Wisconsin Dells</label>
+                <input
+                  id="hero-search"
+                  type="search"
+                  placeholder="Car rental, housing, mechanic..."
+                  class="flex-1 py-4 px-2 text-ink placeholder-muted/60 bg-transparent border-none outline-none text-base"
+                  aria-label="Search services in Wisconsin Dells"
+                />
+                <!-- ES: placeholder="Renta de autos, vivienda, mecanico..." -->
+                <button class="m-2 flex items-center gap-2 bg-accent text-white font-medium px-5 py-2.5 rounded-xl btn-primary text-sm cursor-pointer" type="submit">
+                  Search
+                  <!-- ES: Buscar -->
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick category pills -->
+            <div class="flex flex-wrap gap-2" aria-label="Quick category filters">
+              <span class="text-white/50 text-xs self-center">Popular:</span>
+              <!-- ES: Populares: -->
+              <button class="px-3 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors duration-200 cursor-pointer">Car Rental</button>
+              <button class="px-3 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors duration-200 cursor-pointer">Housing</button>
+              <button class="px-3 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors duration-200 cursor-pointer">Airport Rides</button>
+              <button class="px-3 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors duration-200 cursor-pointer">Mechanics</button>
+            </div>
+          </div>
+
+          <!-- Trust signals row -->
+          <div class="flex items-center gap-6 pt-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span class="text-white/70 text-xs">GM-verified listings</span>
+              <!-- ES: Listings verificados por GM -->
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span class="text-white/70 text-xs">Bilingual EN / ES</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span class="text-white/70 text-xs">Local community</span>
+              <!-- ES: Comunidad local -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: featured listing cards preview (staggered) -->
+        <div class="hidden lg:block relative" aria-label="Featured listings preview" aria-hidden="true">
+          <!-- Card stack — decorative, visual only -->
+          <div class="relative h-[480px]">
+            <!-- Background card (rotation) -->
+            <div class="absolute top-8 right-4 w-72 h-44 rounded-2xl bg-white/10 border border-white/15 rotate-3 backdrop-blur-sm float-card-alt"></div>
+            <!-- Middle card -->
+            <div class="absolute top-4 right-0 w-72 h-44 rounded-2xl bg-white/15 border border-white/20 -rotate-1 backdrop-blur-sm float-card-delay"></div>
+            <!-- Front card: Super Duper VIP listing -->
+            <div class="absolute top-0 left-0 w-[340px] rounded-2xl overflow-hidden shadow-float float-card" style="background: rgba(255,255,255,0.95)">
+              <div class="h-36 bg-gradient-to-br from-slate-700 to-slate-900 relative">
+                <img src="https://picsum.photos/seed/dells-cars-hero/680/288" alt="" class="w-full h-full object-cover opacity-80" loading="lazy" />
+                <div class="absolute top-2 left-2 badge-sdvip text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  Super Duper VIP
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="font-semibold text-ink text-sm">Dells Premier Car Rentals</h3>
+                <p class="text-xs text-muted mt-0.5">Wisconsin Dells · Car Rental</p>
+                <div class="flex items-center gap-2 mt-3">
+                  <div class="flex">
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </div>
+                  <span class="text-xs text-muted">4.9 (127 reviews)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Second card: VIP listing -->
+            <div class="absolute bottom-8 right-0 w-64 rounded-2xl overflow-hidden shadow-lift float-card-delay" style="background: rgba(255,255,255,0.95)">
+              <div class="h-24 bg-gradient-to-br from-slate-600 to-slate-800 relative">
+                <img src="https://picsum.photos/seed/dells-housing/512/192" alt="" class="w-full h-full object-cover opacity-80" loading="lazy" />
+                <div class="absolute top-2 left-2 badge-vip text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  VIP
+                </div>
+              </div>
+              <div class="p-3">
+                <h3 class="font-semibold text-ink text-xs">Cozy Dells Housing</h3>
+                <p class="text-[10px] text-muted mt-0.5">Affordable seasonal rooms</p>
+              </div>
+            </div>
+
+            <!-- Stats floating badge -->
+            <div class="absolute bottom-0 left-0 bg-white rounded-2xl shadow-lift px-4 py-3 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-ink">340+ verified listings</p>
+                <p class="text-[10px] text-muted">across 12 categories</p>
+                <!-- ES: 340+ listings verificados · en 12 categorias -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wave separator -->
+      <div id="hero-wave" class="hero-wave absolute bottom-0 left-0 right-0 overflow-hidden leading-none" aria-hidden="true" style="line-height:0">
+        <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px;">
+          <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="#F8FAFC"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CATEGORIES GRID — Asymmetric bento
+         ============================================================ -->
+    <section id="categories" class="py-24 px-4 bg-surface" aria-labelledby="categories-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="mb-14">
+          <div class="inline-flex items-center gap-2 mb-4">
+            <span class="px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-[10px] uppercase tracking-[0.2em] font-semibold">
+              Browse by category
+              <!-- ES: Explorar por categoria -->
+            </span>
+          </div>
+          <h2 id="categories-heading" class="text-3xl md:text-4xl font-bold text-ink tracking-tight">
+            Everything you need,<br />right here in Dells.
+            <!-- ES: Todo lo que necesitas, aqui mismo en Dells. -->
+          </h2>
+          <p class="mt-4 text-muted text-lg max-w-[50ch] leading-relaxed">
+            From daily essentials to seasonal services — find verified local providers in seconds.
+            <!-- ES: Desde necesidades diarias hasta servicios de temporada — encuentra proveedores verificados en segundos. -->
+          </p>
+        </div>
+
+        <!-- Bento asymmetric grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 auto-rows-[140px]">
+          <!-- Car Rental — spans 2 cols, 2 rows -->
+          <a href="#" class="col-span-2 row-span-2 rounded-3xl overflow-hidden relative group cursor-pointer card-hover" aria-label="Browse Car Rentals">
+            <img src="https://picsum.photos/seed/car-rental-dells/600/560" alt="" class="w-full h-full object-cover" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 p-5">
+              <span class="text-[10px] text-white/70 uppercase tracking-wider font-medium">Category</span>
+              <h3 class="text-white font-bold text-xl mt-1">Car Rental</h3>
+              <!-- ES: Renta de Autos -->
+              <p class="text-white/70 text-sm mt-1">Daily & weekly rates</p>
+            </div>
+          </a>
+
+          <!-- Housing -->
+          <a href="#" class="col-span-2 row-span-1 rounded-3xl overflow-hidden relative group cursor-pointer card-hover bg-brand-900" aria-label="Browse Housing">
+            <img src="https://picsum.photos/seed/housing-dells/600/280" alt="" class="w-full h-full object-cover opacity-60" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-900/90 to-transparent"></div>
+            <div class="absolute inset-0 flex items-center p-5">
+              <div>
+                <h3 class="text-white font-bold text-lg">Housing</h3>
+                <!-- ES: Vivienda -->
+                <p class="text-white/70 text-sm">Rooms & rentals</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- Airport Rides -->
+          <a href="#" class="col-span-2 row-span-1 rounded-3xl overflow-hidden relative group cursor-pointer card-hover bg-slate-800" aria-label="Browse Airport Rides">
+            <img src="https://picsum.photos/seed/airport-rides/600/280" alt="" class="w-full h-full object-cover opacity-50" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-800/90 to-transparent"></div>
+            <div class="absolute inset-0 flex items-center p-5">
+              <div>
+                <h3 class="text-white font-bold text-lg">Airport Rides</h3>
+                <!-- ES: Rides al Aeropuerto -->
+                <p class="text-white/70 text-sm">To & from MSN / MKE</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- Mechanics -->
+          <a href="#" class="col-span-2 row-span-1 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-4 px-5 group cursor-pointer card-hover" aria-label="Browse Mechanics">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-200 transition-colors duration-200">
+              <svg class="w-6 h-6 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-ink text-sm">Mechanics</h3>
+              <!-- ES: Mecanicos -->
+              <p class="text-muted text-xs mt-0.5">Auto repair & service</p>
+            </div>
+          </a>
+
+          <!-- Beauty -->
+          <a href="#" class="col-span-2 row-span-1 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-4 px-5 group cursor-pointer card-hover" aria-label="Browse Beauty services">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0 group-hover:bg-rose-200 transition-colors duration-200">
+              <svg class="w-6 h-6 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-ink text-sm">Beauty & Wellness</h3>
+              <!-- ES: Belleza y Bienestar -->
+              <p class="text-muted text-xs mt-0.5">Hair, nails & more</p>
+            </div>
+          </a>
+
+          <!-- Jobs -->
+          <a href="#" class="col-span-2 row-span-1 rounded-2xl bg-brand-50 border border-brand-100 flex items-center gap-4 px-5 group cursor-pointer card-hover" aria-label="Browse Jobs">
+            <div class="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-200 transition-colors duration-200">
+              <svg class="w-6 h-6 text-brand-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-ink text-sm">Jobs</h3>
+              <!-- ES: Empleos -->
+              <p class="text-muted text-xs mt-0.5">Seasonal & year-round</p>
+            </div>
+          </a>
+
+          <!-- See all button -->
+          <a href="#" class="col-span-2 row-span-1 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center gap-2 group cursor-pointer hover:border-brand-300 hover:bg-brand-50 transition-colors duration-300" aria-label="View all categories">
+            <span class="text-sm font-medium text-muted group-hover:text-brand-600 transition-colors duration-200">View all categories</span>
+            <!-- ES: Ver todas las categorias -->
+            <svg class="w-4 h-4 text-muted group-hover:text-brand-600 group-hover:translate-x-1 transition-all duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FEATURED LISTINGS — VIP hierarchy showcase
+         ============================================================ -->
+    <section id="featured" class="py-24 px-4 bg-white" aria-labelledby="featured-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <div class="inline-flex items-center gap-2 mb-4">
+              <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] uppercase tracking-[0.2em] font-semibold">Featured</span>
+              <!-- ES: Destacados -->
+            </div>
+            <h2 id="featured-heading" class="text-3xl md:text-4xl font-bold text-ink tracking-tight">
+              Top local providers
+              <!-- ES: Mejores proveedores locales -->
+            </h2>
+          </div>
+          <a href="#" class="flex items-center gap-2 text-brand-500 text-sm font-medium hover:text-brand-700 transition-colors duration-200 cursor-pointer self-start sm:self-auto">
+            View all listings
+            <!-- ES: Ver todos los listings -->
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- Tier annotation -->
+        <div class="flex flex-wrap items-center gap-3 mb-8" role="legend" aria-label="Listing tier legend">
+          <span class="text-xs text-muted">Listing tiers:</span>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full badge-sdvip text-white text-[10px] font-bold uppercase tracking-wide">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Super Duper VIP
+          </span>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full badge-vip text-white text-[10px] font-bold uppercase tracking-wide">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            VIP
+          </span>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium uppercase tracking-wide">Verified</span>
+        </div>
+
+        <!-- Listings grid: SDVIP first (large), then VIP, then regular -->
+        <div class="space-y-4">
+          <!-- SUPER DUPER VIP — full width hero card -->
+          <article class="rounded-3xl overflow-hidden border-2 border-amber-300 sdvip-glow bg-white card-hover cursor-pointer" aria-label="Super Duper VIP listing: Dells Premier Car Rentals">
+            <div class="grid grid-cols-1 md:grid-cols-5">
+              <div class="md:col-span-2 h-48 md:h-auto relative">
+                <img src="https://picsum.photos/seed/sdvip-main/800/500" alt="Dells Premier Car Rentals fleet" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-3 left-3">
+                  <span class="inline-flex items-center gap-1 badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-soft">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Super Duper VIP
+                  </span>
+                </div>
+              </div>
+              <div class="md:col-span-3 p-6 md:p-8 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <h3 class="text-xl font-bold text-ink">Dells Premier Car Rentals</h3>
+                      <p class="text-muted text-sm mt-1 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Wisconsin Dells, WI
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <div class="flex" aria-label="Rating: 4.9 out of 5">
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </div>
+                      <span class="text-sm font-semibold text-ink">4.9</span>
+                      <span class="text-muted text-xs">(127)</span>
+                    </div>
+                  </div>
+                  <p class="mt-4 text-muted leading-relaxed text-sm">
+                    Wisconsin Dells' most trusted car rental service. Daily, weekly, and seasonal rates. Pick-up at your location or our downtown lot. Verified provider with 5+ years serving the community.
+                    <!-- ES: El servicio de renta de autos mas confiable de Wisconsin Dells. Tarifas diarias, semanales y de temporada. -->
+                  </p>
+                  <div class="flex flex-wrap gap-2 mt-4">
+                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">Daily rates from $39</span>
+                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs flex items-center gap-1">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      ID Verified
+                    </span>
+                    <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">EN / ES</span>
+                  </div>
+                </div>
+                <div class="mt-6 flex items-center gap-3">
+                  <a href="#" class="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2.5 rounded-full btn-primary text-sm cursor-pointer transition-colors duration-200">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2.5a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 16.5A7.5 7.5 0 1 1 11.5 4a7.5 7.5 0 0 1 0 15z"/></svg>
+                    Contact via WhatsApp
+                    <!-- ES: Contactar por WhatsApp -->
+                  </a>
+                  <a href="#" class="text-sm text-brand-500 hover:text-brand-700 font-medium cursor-pointer transition-colors duration-200">View details</a>
+                  <!-- ES: Ver detalles -->
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- VIP grid: 2 columns -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- VIP 1 -->
+            <article class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer" aria-label="VIP listing: Delavan Rides">
+              <div class="h-36 relative">
+                <img src="https://picsum.photos/seed/rides-dells/600/288" alt="Airport ride service vehicle" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-2 left-2">
+                  <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    VIP
+                  </span>
+                </div>
+              </div>
+              <div class="p-5">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 class="font-bold text-ink">Delavan Airport Rides</h3>
+                    <p class="text-muted text-xs mt-0.5">To MSN · MKE · ORD</p>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span class="text-xs font-semibold">4.7</span>
+                    <span class="text-muted text-[10px]">(83)</span>
+                  </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                  <a href="#" class="flex-1 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a href="#" class="flex-1 flex items-center justify-center text-xs font-medium text-brand-600 hover:text-brand-800 border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">Details</a>
+                  <!-- ES: Detalles -->
+                </div>
+              </div>
+            </article>
+
+            <!-- VIP 2 -->
+            <article class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer" aria-label="VIP listing: Marisol Beauty Studio">
+              <div class="h-36 relative">
+                <img src="https://picsum.photos/seed/beauty-dells/600/288" alt="Marisol Beauty Studio interior" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-2 left-2">
+                  <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    VIP
+                  </span>
+                </div>
+              </div>
+              <div class="p-5">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 class="font-bold text-ink">Marisol Beauty Studio</h3>
+                    <p class="text-muted text-xs mt-0.5">Hair · Nails · Waxing</p>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span class="text-xs font-semibold">4.8</span>
+                    <span class="text-muted text-[10px]">(61)</span>
+                  </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                  <a href="#" class="flex-1 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a href="#" class="flex-1 flex items-center justify-center text-xs font-medium text-brand-600 hover:text-brand-800 border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">Details</a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         TRUST / HOW IT WORKS
+         ============================================================ -->
+    <section id="trust" class="py-24 px-4 bg-surface" aria-labelledby="trust-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 mb-4">
+            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] uppercase tracking-[0.2em] font-semibold">
+              How it works
+              <!-- ES: Como funciona -->
+            </span>
+          </div>
+          <h2 id="trust-heading" class="text-3xl md:text-4xl font-bold text-ink tracking-tight">
+            Built on trust, moderated by humans.
+            <!-- ES: Construido con confianza, moderado por humanos. -->
+          </h2>
+          <p class="mt-4 text-muted max-w-[52ch] mx-auto leading-relaxed">
+            Every listing is reviewed and approved by our GM. Every provider goes through identity verification before going VIP.
+            <!-- ES: Cada listing es revisado y aprobado por nuestro GM. Cada proveedor pasa por verificacion de identidad. -->
+          </p>
+        </div>
+
+        <!-- Steps: Z-Zag layout -->
+        <div class="space-y-12">
+          <!-- Step 1 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="space-y-4 fade-up">
+              <div class="w-12 h-12 rounded-2xl bg-brand-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <h3 class="text-xl font-bold text-ink">Search & discover</h3>
+              <!-- ES: Busca y descubre -->
+              <p class="text-muted leading-relaxed">Browse verified listings by category, location, or rating. Bilingual interface — use it in English or Spanish, whichever you prefer.</p>
+              <!-- ES: Explora listings verificados por categoria, ubicacion o rating. Interfaz bilingue en ingles o espanol. -->
+            </div>
+            <div class="rounded-3xl overflow-hidden shadow-soft bg-white p-1.5 border border-slate-100 fade-up">
+              <img src="https://picsum.photos/seed/step-search/800/500" alt="" class="w-full h-full object-cover rounded-2xl" loading="lazy" aria-hidden="true" />
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="rounded-3xl overflow-hidden shadow-soft bg-white p-1.5 border border-slate-100 order-last md:order-first fade-up">
+              <img src="https://picsum.photos/seed/step-contact/800/500" alt="" class="w-full h-full object-cover rounded-2xl" loading="lazy" aria-hidden="true" />
+            </div>
+            <div class="space-y-4 fade-up">
+              <div class="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+              </div>
+              <h3 class="text-xl font-bold text-ink">Contact via WhatsApp</h3>
+              <!-- ES: Contactar por WhatsApp -->
+              <p class="text-muted leading-relaxed">Connect directly with providers via WhatsApp. No account required to browse. First contact triggers a quick safety waiver so everyone is protected.</p>
+              <!-- ES: Conecta directamente con proveedores via WhatsApp. No necesitas cuenta para explorar. -->
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="space-y-4 fade-up">
+              <div class="w-12 h-12 rounded-2xl bg-amber-400 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <h3 class="text-xl font-bold text-ink">GM-moderated quality</h3>
+              <!-- ES: Calidad moderada por el GM -->
+              <p class="text-muted leading-relaxed">Every listing is manually reviewed. Every rating is verified. Only users who actually contacted a provider can leave a review — no fake ratings.</p>
+              <!-- ES: Cada listing es revisado manualmente. Cada rating es verificado. Solo usuarios que contactaron pueden opinar. -->
+            </div>
+            <div class="rounded-3xl overflow-hidden shadow-soft bg-white p-1.5 border border-slate-100 fade-up">
+              <img src="https://picsum.photos/seed/step-verify/800/500" alt="" class="w-full h-full object-cover rounded-2xl" loading="lazy" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CTA — Become a provider
+         ============================================================ -->
+    <section class="py-24 px-4" aria-labelledby="cta-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="rounded-3xl hero-bg p-10 md:p-16 relative overflow-hidden">
+          <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+            <div class="absolute top-0 right-0 w-80 h-80 rounded-full bg-white/5 blur-3xl translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white/5 blur-2xl -translate-x-1/4 translate-y-1/4"></div>
+          </div>
+          <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 id="cta-heading" class="text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
+                Grow your local business with Bulletin Dells.
+                <!-- ES: Haz crecer tu negocio local con Bulletin Dells. -->
+              </h2>
+              <p class="mt-4 text-white/70 leading-relaxed">
+                Join hundreds of verified providers reaching thousands of Wisconsin Dells residents, J1 students, and seasonal workers — in English and Spanish.
+                <!-- ES: Unete a cientos de proveedores verificados llegando a miles de residentes de Wisconsin Dells. -->
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3 md:items-start lg:items-center md:justify-start lg:justify-end">
+              <a href="#" class="flex items-center justify-center gap-2 bg-white text-ink font-semibold px-7 py-3.5 rounded-full btn-primary text-sm cursor-pointer">
+                List your business
+                <!-- ES: Publica tu negocio -->
+                <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                </span>
+              </a>
+              <a href="#" class="flex items-center justify-center gap-2 border border-white/30 text-white font-medium px-7 py-3.5 rounded-full text-sm hover:bg-white/10 transition-colors duration-200 cursor-pointer">
+                Learn about VIP
+                <!-- ES: Conoce el VIP -->
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="bg-ink text-white/60 py-16 px-4" role="contentinfo">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div class="col-span-1 sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="font-semibold text-white">Bulletin Dells</span>
+          </div>
+          <p class="text-sm leading-relaxed max-w-[28ch]">Bilingual local marketplace for Wisconsin Dells, WI.</p>
+          <!-- ES: Marketplace local bilingue para Wisconsin Dells, WI. -->
+        </div>
+        <div>
+          <h4 class="text-white text-sm font-semibold mb-4 uppercase tracking-wider text-[11px]">Browse</h4>
+          <!-- ES: Explorar -->
+          <ul class="space-y-2 text-sm" role="list">
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Car Rentals</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Housing</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Airport Rides</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Mechanics</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Beauty & Wellness</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white text-sm font-semibold mb-4 uppercase tracking-wider text-[11px]">Providers</h4>
+          <!-- ES: Proveedores -->
+          <ul class="space-y-2 text-sm" role="list">
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">List your business</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">VIP program</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Verification</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Provider dashboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white text-sm font-semibold mb-4 uppercase tracking-wider text-[11px]">Legal</h4>
+          <ul class="space-y-2 text-sm" role="list">
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Terms of Service</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200 cursor-pointer">Disclaimer</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40">
+        <p>2026 Bulletin Dells. Wisconsin Dells, WI. Platform connects, does not provide services.</p>
+        <!-- ES: 2026 Bulletin Dells. La plataforma conecta, no presta servicios directamente. -->
+        <div class="flex items-center gap-4">
+          <button class="hover:text-white/70 transition-colors duration-200 cursor-pointer">EN</button>
+          <span class="text-white/20">|</span>
+          <button class="hover:text-white/70 transition-colors duration-200 cursor-pointer">ES</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal for fade-up elements
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    } else {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+    }
+    // NavPill dark/light based on scroll position relative to hero
+    const navEl = document.querySelector('[aria-label="Main navigation"]');
+    const heroSection = document.querySelector('section[aria-labelledby="hero-headline"]');
+    function updateNav() {
+      const heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+      if (window.scrollY < heroBottom * 0.85) {
+        navEl.classList.add('nav-dark');
+      } else {
+        navEl.classList.remove('nav-dark');
+      }
+    }
+    updateNav();
+    window.addEventListener('scroll', updateNav, { passive: true });
+
+    // NOTE: Replace JS behaviors above with Blazor @ref / IntersectionObserver interop or CSS-only approach in Blazor implementation
+  </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+@* TASK-42/43/44: ListingCard — variantes hero (top-ranked), grid (VIP), row (Verified)
+   No @rendermode — componente hijo, hereda del padre. *@
+
+@using Bulletin.Board.Web.Client.Models
+@using System.Globalization
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+@if (Variant == "hero")
+{
+    @* ── TASK-42: Hero card — top-ranked listing (high hierarchy + VIP) ── *@
+    <article class="rounded-3xl overflow-hidden border-2 border-amber-300 sdvip-glow bg-white card-hover cursor-pointer"
+             aria-label="@_localizer["Browse_TierSdVip"]: @GetTitle()">
+        <div class="grid grid-cols-1 md:grid-cols-5">
+
+            @* Left: image (col-span-2 of 5) *@
+            <div class="md:col-span-2 h-56 md:h-auto relative">
+                @if (!string.IsNullOrEmpty(Card.CoverPhotoUrl))
+                {
+                    <img src="@Card.CoverPhotoUrl"
+                         alt="@GetTitle()"
+                         class="w-full h-full object-cover"
+                         loading="lazy" />
+                }
+                else
+                {
+                    <div class="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                }
+                @* Gradient overlay on image for better badge legibility *@
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" aria-hidden="true"></div>
+                @* Top-ranked badge — amber gradient *@
+                <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center gap-1 badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-soft">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        @_localizer["Browse_TierSdVip"]
+                    </span>
+                </div>
+            </div>
+
+            @* Right: content (col-span-3 of 5) *@
+            <div class="md:col-span-3 p-6 md:p-8 flex flex-col justify-between">
+                <div>
+                    @* Title + location row *@
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                        <div>
+                            <h3 class="text-xl font-bold text-ink">
+                                @GetTitle()
+                            </h3>
+                            <p class="text-muted text-sm mt-1 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                @Card.Location
+                            </p>
+                        </div>
+                        <RatingStars Score="(double)Card.Rating" Count="Card.ReviewCount" Compact="false" />
+                    </div>
+
+                    @* Description truncated *@
+                    <p class="mt-4 text-muted leading-relaxed text-sm line-clamp-3">
+                        @GetDescription()
+                    </p>
+
+                    @* Tags: price, languages, verifications *@
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        @if (Card.DailyRate.HasValue)
+                        {
+                            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">
+                                @_localizer["Listing_From"] $@Card.DailyRate.Value.ToString("F0")/@_localizer["Listing_Day"]
+                            </span>
+                        }
+                        @if (Card.IdVerified)
+                        {
+                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs flex items-center gap-1">
+                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                                @_localizer["Listing_IdVerified"]
+                            </span>
+                        }
+                        @if (Card.PhoneVerified)
+                        {
+                            <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center gap-1">
+                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.65a16 16 0 0 0 8.28 8.28l1.27-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 24 18z"/>
+                                </svg>
+                                @_localizer["Listing_PhoneVerified"]
+                            </span>
+                        }
+                        @if (Card.Languages.Length > 0)
+                        {
+                            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">
+                                @string.Join(" / ", Card.Languages)
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                @* Action buttons *@
+                <div class="mt-6 flex items-center gap-3 flex-wrap">
+                    <WhatsAppButton WhatsAppNumber="@Card.WhatsAppNumber"
+                                    Text="@_localizer["Action_ContactWhatsApp"]"
+                                    Size="pill"
+                                    AriaLabel="@_localizer["Action_ContactWhatsApp"]" />
+                    <LinkButton Text="@_localizer["Action_ViewDetails"]"
+                                Href="@($"/listings/{Card.Id}")"
+                                Variant="brand" />
+                </div>
+            </div>
+        </div>
+    </article>
+}
+else if (Variant == "grid")
+{
+    @* ── TASK-43: Grid card — VIP listing (vertical, 2-col grid) ── *@
+    <article class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer"
+             aria-label="VIP listing: @GetTitle()">
+
+        @* Image with VIP badge *@
+        <div class="h-36 relative">
+            @if (!string.IsNullOrEmpty(Card.CoverPhotoUrl))
+            {
+                <img src="@Card.CoverPhotoUrl"
+                     alt="@GetTitle()"
+                     class="w-full h-full object-cover"
+                     loading="lazy" />
+            }
+            else
+            {
+                <div class="w-full h-full bg-gradient-to-br from-slate-600 to-slate-800"></div>
+            }
+            <div class="absolute top-2 left-2">
+                <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    VIP
+                </span>
+            </div>
+        </div>
+
+        @* Content *@
+        <div class="p-5">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-ink truncate">
+                        @GetTitle()
+                    </h3>
+                    <p class="text-muted text-xs mt-0.5 truncate">
+                        @Card.Location · @Card.CategorySlug
+                    </p>
+                    @if (Card.DailyRate.HasValue)
+                    {
+                        <p class="text-ink text-xs font-semibold mt-1">
+                            @_localizer["Listing_From"] $@Card.DailyRate.Value.ToString("F0")/@_localizer["Listing_Day"]
+                        </p>
+                    }
+                </div>
+                <RatingStars Score="(double)Card.Rating" Count="Card.ReviewCount" Compact="true" />
+            </div>
+
+            @* Action buttons *@
+            <div class="mt-4 flex gap-2">
+                <WhatsAppButton WhatsAppNumber="@Card.WhatsAppNumber"
+                                Text="WhatsApp"
+                                Size="compact"
+                                AriaLabel="@_localizer["Action_ContactWhatsApp"]" />
+                <LinkButton Text="@_localizer["Action_Details"]"
+                            Href="@($"/listings/{Card.Id}")"
+                            Variant="brand"
+                            CssClass="flex-1 justify-center border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl text-xs" />
+            </div>
+        </div>
+    </article>
+}
+else
+{
+    @* ── TASK-44: Row card — Verified listing (horizontal compact) ── *@
+    <article class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-soft card-hover cursor-pointer"
+             aria-label="@_localizer["Listing_VerifiedListing"]: @GetTitle()">
+
+        @* Thumbnail square *@
+        <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+            @if (!string.IsNullOrEmpty(Card.CoverPhotoUrl))
+            {
+                <img src="@Card.CoverPhotoUrl"
+                     alt="@GetTitle()"
+                     class="w-full h-full object-cover"
+                     loading="lazy" />
+            }
+            else
+            {
+                <div class="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
+            }
+        </div>
+
+        @* Content *@
+        <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    @* Verified badge *@
+                    <BadgePill Tier="Verified" />
+                    <h3 class="font-semibold text-ink text-sm mt-1 truncate">
+                        @GetTitle()
+                    </h3>
+                    <p class="text-muted text-xs mt-0.5 flex items-center gap-1 truncate">
+                        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        @Card.Location
+                    </p>
+                </div>
+                <LinkButton Text="@_localizer["Action_Details"]"
+                            Href="@($"/listings/{Card.Id}")"
+                            Variant="brand"
+                            AriaLabel="@GetDetailsAriaLabel()"
+                            CssClass="flex-shrink-0 whitespace-nowrap text-xs" />
+            </div>
+            <div class="mt-2">
+                <RatingStars Score="(double)Card.Rating" Count="Card.ReviewCount" Compact="true" />
+            </div>
+        </div>
+    </article>
+}
+
+@code {
+    [Parameter, EditorRequired] public ListingCardDto Card    { get; set; } = default!;
+    [Parameter]                 public string         Variant { get; set; } = "grid";
+
+    private string GetTitle()
+    {
+        var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return culture == "es" ? Card.TitleEs : Card.TitleEn;
+    }
+
+    private string GetDescription()
+    {
+        var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return culture == "es" ? Card.DescriptionEs : Card.DescriptionEn;
+    }
+
+    private string GetDetailsAriaLabel()
+    {
+        var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return culture == "es"
+            ? $"Ver detalles de {Card.TitleEs}"
+            : $"View details for {Card.TitleEn}";
+    }
+}

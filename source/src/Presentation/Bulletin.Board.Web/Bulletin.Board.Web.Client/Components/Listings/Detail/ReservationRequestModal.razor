@@ -1,0 +1,202 @@
+@* Reservation request modal. Auth-gated: if the user is not authenticated, the parent
+   should not render this component. The component itself does NOT enforce auth — that's
+   the parent's responsibility (the API will also reject anonymous calls). *@
+@using Bulletin.Board.Web.Client.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IListingsService _listings
+@inject AuthenticationStateProvider _authState
+@inject NavigationManager _nav
+
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center px-4"
+         style="background: rgba(15,23,42,0.6); backdrop-filter: blur(8px);">
+        <div class="bg-white rounded-3xl shadow-float max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-lg font-bold text-ink">Request reservation</h2>
+                    <p class="text-xs text-muted mt-0.5">@VehicleName</p>
+                </div>
+                <button type="button" @onclick="OnCloseInternal" disabled="@_busy" aria-label="Close"
+                        class="text-muted hover:text-ink p-1 rounded-lg hover:bg-slate-100">✕</button>
+            </div>
+
+            @if (!_authChecked)
+            {
+                <p class="text-muted text-sm">Loading…</p>
+            }
+            else if (!_isAuthenticated)
+            {
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 text-sm text-amber-800">
+                    You need to <strong>sign in</strong> to submit a reservation request.
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" @onclick="GoLogin"
+                            class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold">
+                        Sign in
+                    </button>
+                    <button type="button" @onclick="OnCloseInternal"
+                            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-sm">
+                        Cancel
+                    </button>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="_form" OnValidSubmit="SubmitAsync" FormName="reservation-form" class="space-y-3">
+                    <DataAnnotationsValidator />
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="text-xs font-medium text-ink">From</span>
+                            <InputDate @bind-Value="_form.StartDate" min="@_today.ToString("yyyy-MM-dd")"
+                                       class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                        </label>
+                        <label class="block">
+                            <span class="text-xs font-medium text-ink">To</span>
+                            <InputDate @bind-Value="_form.EndDate" min="@_today.ToString("yyyy-MM-dd")"
+                                       class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Your name</span>
+                        <InputText @bind-Value="_form.RequesterName" maxlength="160"
+                                   class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="block">
+                            <span class="text-xs font-medium text-ink">Email</span>
+                            <InputText @bind-Value="_form.RequesterEmail" type="email" maxlength="200"
+                                       class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                        </label>
+                        <label class="block">
+                            <span class="text-xs font-medium text-ink">Phone <span class="text-muted">(optional)</span></span>
+                            <InputText @bind-Value="_form.RequesterPhone" maxlength="30"
+                                       class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-xs font-medium text-ink">Comment <span class="text-muted">(optional)</span></span>
+                        <InputTextArea @bind-Value="_form.Comment" maxlength="1000" rows="3"
+                                       class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+                    </label>
+
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                            @_errorMessage
+                        </div>
+                    }
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-800 leading-relaxed">
+                        <strong>Platform disclaimer:</strong> Bulletin Dells connects you with this provider but does
+                        not guarantee, endorse, or provide any service. Confirm all terms directly with the provider.
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button type="button" @onclick="OnCloseInternal" disabled="@_busy"
+                                class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-sm disabled:opacity-50">
+                            Cancel
+                        </button>
+                        <button type="submit" disabled="@_busy"
+                                class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold disabled:opacity-50">
+                            @(_busy ? "Submitting…" : "Submit request")
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public Guid VehicleId { get; set; }
+    [Parameter] public string VehicleName { get; set; } = string.Empty;
+    [Parameter] public DateOnly? PrefilledStart { get; set; }
+    [Parameter] public DateOnly? PrefilledEnd { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<Guid> OnSubmitted { get; set; }
+
+    private FormModel _form = new();
+    private bool _authChecked;
+    private bool _isAuthenticated;
+    private bool _busy;
+    private string? _errorMessage;
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsOpen) return;
+
+        var state = await _authState.GetAuthenticationStateAsync();
+        _isAuthenticated = state.User.Identity?.IsAuthenticated == true;
+        _authChecked = true;
+
+        if (_isAuthenticated)
+        {
+            _form = new FormModel
+            {
+                StartDate = (PrefilledStart ?? _today.AddDays(1)).ToDateTime(TimeOnly.MinValue),
+                EndDate = (PrefilledEnd ?? _today.AddDays(2)).ToDateTime(TimeOnly.MinValue),
+                RequesterName = state.User.Identity?.Name ?? string.Empty,
+                RequesterEmail = state.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty
+            };
+        }
+        _errorMessage = null;
+    }
+
+    private async Task SubmitAsync()
+    {
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            var req = new CreateReservationRequest(
+                StartDate: DateOnly.FromDateTime(_form.StartDate),
+                EndDate: DateOnly.FromDateTime(_form.EndDate),
+                RequesterName: _form.RequesterName,
+                RequesterEmail: _form.RequesterEmail,
+                RequesterPhone: string.IsNullOrWhiteSpace(_form.RequesterPhone) ? null : _form.RequesterPhone,
+                Comment: string.IsNullOrWhiteSpace(_form.Comment) ? null : _form.Comment);
+
+            var id = await _listings.CreateReservationAsync(VehicleId, req);
+            if (id is null)
+            {
+                _errorMessage = "Couldn't submit. The dates may conflict with an existing blackout, or the listing may be unavailable.";
+                return;
+            }
+
+            await OnSubmitted.InvokeAsync(id.Value);
+            await OnCloseInternal();
+        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private Task OnCloseInternal() => OnClose.InvokeAsync();
+
+    private void GoLogin() => _nav.NavigateTo("/login?return=" + Uri.EscapeDataString(_nav.Uri));
+
+    private sealed class FormModel
+    {
+        public DateTime StartDate { get; set; } = DateTime.Today.AddDays(1);
+        public DateTime EndDate { get; set; } = DateTime.Today.AddDays(2);
+        public string RequesterName { get; set; } = string.Empty;
+        public string RequesterEmail { get; set; } = string.Empty;
+        public string? RequesterPhone { get; set; }
+        public string? Comment { get; set; }
+    }
+}

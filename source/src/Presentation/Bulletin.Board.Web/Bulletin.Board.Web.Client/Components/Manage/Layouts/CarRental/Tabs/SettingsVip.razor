@@ -1,0 +1,124 @@
+@* SettingsVip (Car Rental) — Regular + VIP additions:
+   Auto-reply templates (content), Quiet hours (safe), Reply SLA (safe),
+   Promotion windows (content), Analytics export (safe), Dynamic pricing rules (content),
+   Insurance disclaimer (content). *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-3xl mx-auto px-4 py-8 w-full" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="0">
+
+    <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="alert">
+        <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        <p class="text-xs text-ink leading-relaxed">@_localizer["Manage_Settings_Banner_Mixed"]</p>
+    </div>
+
+    @* Visibility *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_Visibility_Title"])" PillType="safe" />
+        <div class="space-y-3">
+            <label class="flex items-start justify-between gap-3"><span><span class="text-sm text-ink font-medium block">@_localizer["Manage_Settings_Visibility_Pause"]</span><span class="text-[11px] text-muted">@_localizer["Manage_Settings_Visibility_Pause_Help"]</span></span><ToggleSwitch /></label>
+            <label class="flex items-start justify-between gap-3"><span><span class="text-sm text-ink font-medium block">@_localizer["Manage_Settings_Visibility_HidePhone"]</span><span class="text-[11px] text-muted">@_localizer["Manage_Settings_Visibility_HidePhone_Help"]</span></span><ToggleSwitch Checked="true" /></label>
+        </div>
+    </section>
+
+    @* Listing details *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_Details_Title"])" PillType="content" />
+        <BilingualInput LabelKey="Manage_Settings_Field_Title" ValueEn="@Listing.TitleEn" ValueEs="@Listing.TitleEs" />
+        <div class="mt-4"><BilingualInput LabelKey="Manage_Settings_Field_Description" Multiline="true" Rows="3" ValueEn="@Listing.DescriptionEn" ValueEs="@Listing.DescriptionEs" /></div>
+    </section>
+
+    @* Contact *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_Contact_Title"])" PillType="content" />
+        <div class="space-y-4">
+            <div><label class="block text-xs font-semibold text-ink mb-1.5">@_localizer["Manage_Settings_Contact_Whatsapp"]</label><input type="tel" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-semibold text-ink mb-1.5">@_localizer["Manage_Settings_Contact_Email"]</label><input type="email" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" /></div>
+            <div><label class="block text-xs font-semibold text-ink mb-1.5">@_localizer["Manage_Settings_Contact_TimeZone"]</label><select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"><option>America/Chicago (CST)</option></select></div>
+        </div>
+    </section>
+
+    @* Notifications *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_Notifications_Title"])" PillType="safe" />
+        <div class="space-y-3">
+            <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">@_localizer["Manage_Settings_Notif_Email_Inquiries"]</span><ToggleSwitch Checked="true" /></label>
+            <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">@_localizer["Manage_Settings_Notif_Email_NewReview"]</span><ToggleSwitch Checked="true" /></label>
+            <div class="mt-2"><GmCopyNotice /></div>
+        </div>
+    </section>
+
+    @* Language *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_Language_Title"])" PillType="safe" />
+        <select class="w-full max-w-xs rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"><option>@_localizer["Manage_Settings_Language_Auto"]</option><option>@_localizer["Manage_Settings_Language_English"]</option><option>@_localizer["Manage_Settings_Language_Spanish"]</option><option>@_localizer["Manage_Settings_Language_Both"]</option></select>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_VipAutoReply_Title"])" PillType="content" IsVipSection="true" />
+        <p class="text-xs text-muted">@_localizer["Manage_Common_NotConfigured"]</p>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_VipQuietHours_Title"])" PillType="safe" IsVipSection="true" />
+        <div class="grid grid-cols-2 gap-3 max-w-sm">
+            <div><label class="block text-[11px] font-semibold text-ink mb-1">@_localizer["Manage_Settings_VipQuietHours_From"]</label><input type="time" value="22:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" /></div>
+            <div><label class="block text-[11px] font-semibold text-ink mb-1">@_localizer["Manage_Settings_VipQuietHours_To"]</label><input type="time" value="07:00" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" /></div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_VipSla_Title"])" PillType="safe" IsVipSection="true" />
+        <div class="flex items-center gap-3 flex-wrap">
+            <input type="number" value="15" min="5" max="240" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <span class="text-sm text-muted">@_localizer["Manage_Settings_VipSla_Minutes"]</span>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">@_localizer["Manage_Settings_VipSla_FastBadge"]</span>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_VipPromotion_Title"])" PillType="content" IsVipSection="true" />
+        <p class="text-xs text-muted">@_localizer["Manage_Common_NotConfigured"]</p>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_VipAnalytics_Title"])" PillType="safe" IsVipSection="true" />
+        <label class="flex items-center justify-between gap-3"><span class="text-sm text-ink">@_localizer["Manage_Settings_VipAnalytics_Weekly"]</span><ToggleSwitch Checked="true" /></label>
+    </section>
+
+    @* Car-rental-specific VIP: Dynamic pricing rules *@
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_CarRental_Vip_DynamicPricing_Title"])"
+                               Subtitle="@(_localizer["Manage_Settings_CarRental_Vip_DynamicPricing_Subtitle"])"
+                               PillType="content" IsVipSection="true" />
+        <div class="space-y-3">
+            <div class="flex items-center gap-3 flex-wrap"><span class="text-sm text-ink flex-1">@_localizer["Manage_Settings_CarRental_Vip_DynamicPricing_Weekend"]</span><input type="number" step="0.05" value="1.25" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right" /><span class="text-sm text-muted">×</span></div>
+            <div class="flex items-center gap-3 flex-wrap"><span class="text-sm text-ink flex-1">@_localizer["Manage_Settings_CarRental_Vip_DynamicPricing_HighSeason"]</span><input type="number" step="0.05" value="1.40" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right" /><span class="text-sm text-muted">×</span></div>
+            <div class="flex items-center gap-3 flex-wrap"><span class="text-sm text-ink flex-1">@_localizer["Manage_Settings_CarRental_Vip_DynamicPricing_LastMinute"]</span><input type="number" step="0.05" value="1.15" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm text-right" /><span class="text-sm text-muted">×</span></div>
+        </div>
+    </section>
+
+    @* Car-rental-specific VIP: Insurance disclaimer *@
+    <section class="bg-white rounded-3xl border border-vip-100 shadow-soft p-5 mb-6">
+        <SettingsSectionHeader Title="@(_localizer["Manage_Settings_CarRental_Vip_Insurance_Title"])"
+                               Subtitle="@(_localizer["Manage_Settings_CarRental_Vip_Insurance_Subtitle"])"
+                               PillType="content" IsVipSection="true" />
+        <BilingualInput LabelKey="Manage_Settings_CarRental_Vip_Insurance_Text" Multiline="true" Rows="3" />
+    </section>
+
+    <div class="sticky bottom-4 z-10 bg-white rounded-3xl border border-slate-200 shadow-soft p-4 flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-[11px] text-muted leading-relaxed flex-1 min-w-[200px]"><strong class="text-ink">@_localizer["Manage_Settings_Save_Content_Title"]</strong> @_localizer["Manage_Settings_Save_Mixed_Body"]</p>
+        <div class="flex items-center gap-2">
+            <button type="button" class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink cursor-pointer">@_localizer["Manage_Common_Cancel"]</button>
+            <PendingReviewTooltip><button type="button" class="text-xs px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold cursor-pointer">@_localizer["Manage_Common_SaveChanges"]</button></PendingReviewTooltip>
+        </div>
+    </div>
+
+    <DangerZoneCard Subtitle="@(_localizer["Manage_CarRental_Settings_Danger_Subtitle"])" />
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

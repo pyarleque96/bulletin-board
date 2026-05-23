@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>500 — Server Error | Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e3a8a' },
+            cta:   { 400:'#fb923c', 500:'#f97316', 600:'#ea580c' },
+            error: { 50:'#fef2f2', 100:'#fee2e2', 400:'#f87171', 500:'#ef4444', 600:'#dc2626', 700:'#b91c1c' },
+            amber: { 50:'#fffbeb', 100:'#fef3c7', 400:'#fbbf24', 500:'#f59e0b', 600:'#d97706', 700:'#b45309' },
+            ink:   '#1e293b',
+            surface: '#f8fafc',
+          },
+          keyframes: {
+            'fade-up': { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            'blink': { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.25' } },
+            'progress': { '0%': { width: '0%' }, '100%': { width: '73%' } },
+          },
+          animation: {
+            'fade-up': 'fade-up 0.6s cubic-bezier(0.32,0.72,0,1) forwards',
+            'blink': 'blink 1.4s ease-in-out infinite',
+            'progress': 'progress 2.5s cubic-bezier(0.32,0.72,0,1) 0.5s forwards',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .delay-1 { animation-delay: 0.08s; }
+    .delay-2 { animation-delay: 0.18s; }
+    .delay-3 { animation-delay: 0.30s; }
+    .delay-4 { animation-delay: 0.42s; }
+    .delay-5 { animation-delay: 0.56s; }
+    .opacity-0-init { opacity: 0; }
+    /* Double-bezel */
+    .bezel-outer {
+      background: rgba(0,0,0,0.025);
+      border: 1px solid rgba(30,41,59,0.07);
+      border-radius: 1.25rem;
+      padding: 6px;
+    }
+    .bezel-inner {
+      background: #ffffff;
+      border-radius: calc(1.25rem - 6px);
+      border: 1px solid rgba(30,41,59,0.05);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    /* Error bezel — red tinted */
+    .bezel-outer-error {
+      background: rgba(239,68,68,0.04);
+      border: 1px solid rgba(239,68,68,0.12);
+      border-radius: 1.25rem;
+      padding: 6px;
+    }
+    .bezel-inner-error {
+      background: #fef2f2;
+      border-radius: calc(1.25rem - 6px);
+      border: 1px solid rgba(239,68,68,0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    /* Progress bar track */
+    .progress-bar-width { width: 0%; }
+    /* Timeline dot */
+    .timeline-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 3px;
+    }
+    .step-active .timeline-dot { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+    .step-done .timeline-dot { background: #16a34a; }
+    .step-pending .timeline-dot { background: #cbd5e1; }
+  </style>
+</head>
+<body class="bg-surface min-h-[100dvh] flex flex-col">
+
+  <!-- Sticky nav -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200/80">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2" aria-label="Bulletin Dells home">
+        <div class="w-7 h-7 rounded-lg bg-brand-700 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M3 3h10M3 6h7M3 9h9M3 12h5"/>
+          </svg>
+        </div>
+        <span class="font-bold text-ink tracking-tight">Bulletin Dells</span>
+      </a>
+      <!-- Live status badge -->
+      <div class="flex items-center gap-2 bg-error-50 border border-error-100 rounded-full px-3 py-1.5">
+        <span class="w-2 h-2 rounded-full bg-error-500 animate-blink flex-shrink-0" aria-hidden="true"></span>
+        <span class="text-xs font-semibold text-error-700">System issue / Fallo del sistema</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main: 2-col layout -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-12 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+
+    <!-- Left col: error info -->
+    <div>
+      <p class="opacity-0-init animate-fade-up text-xs uppercase tracking-[0.18em] text-error-500 font-semibold mb-3">
+        Error 500 &mdash; Internal Server Error
+      </p>
+
+      <h1 class="opacity-0-init animate-fade-up delay-1 text-4xl font-black tracking-tighter text-ink leading-tight mb-3">
+        Oops. We broke something.
+        <span class="block text-2xl font-medium text-slate-400 mt-1">Algo se rompio de nuestro lado.</span>
+      </h1>
+
+      <p class="opacity-0-init animate-fade-up delay-2 text-base text-slate-500 leading-relaxed mb-2 max-w-[48ch]">
+        An unexpected error occurred on our server. This isn&rsquo;t your fault &mdash; our team has been notified automatically and is working on a fix.
+      </p>
+      <p class="opacity-0-init animate-fade-up delay-2 text-sm text-slate-400 italic mb-8 max-w-[48ch]">
+        Un error inesperado ocurrio en el servidor. No es tu culpa. Nuestro equipo fue notificado automaticamente.
+      </p>
+
+      <!-- Recovery progress -->
+      <div class="opacity-0-init animate-fade-up delay-3 mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recovery progress / Progreso de recuperacion</p>
+          <p class="text-xs text-slate-400">73%</p>
+        </div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-error-400 to-amber-400 rounded-full animate-progress progress-bar-width" aria-label="Recovery 73 percent complete"></div>
+        </div>
+        <p class="text-xs text-slate-400 mt-1.5">Estimated resolution: a few minutes</p>
+      </div>
+
+      <!-- Primary actions -->
+      <div class="opacity-0-init animate-fade-up delay-4 flex flex-wrap gap-3">
+        <button
+          onclick="window.location.reload()"
+          class="group inline-flex items-center gap-2 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98] shadow-[0_4px_14px_-3px_rgba(29,78,216,0.35)]">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 10a6 6 0 1 0 1.2-3.6M4 6V10h4"/></svg>
+          Try Again / Reintentar
+          <span class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 10l8-8M10 2H4M10 2v6"/></svg>
+          </span>
+        </button>
+        <a href="/"
+           class="group inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer active:scale-[0.98]">
+          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4L4 10l6 6M4 10h12"/></svg>
+          Go Home / Inicio
+        </a>
+      </div>
+    </div>
+
+    <!-- Right col: status timeline + what you can do -->
+    <div class="space-y-4">
+
+      <!-- Incident timeline panel -->
+      <div class="opacity-0-init animate-fade-up delay-3">
+        <div class="bezel-outer-error">
+          <div class="bezel-inner-error p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-[0.12em] mb-4">Incident Timeline / Cronologia del incidente</p>
+
+            <ul class="space-y-4" role="list">
+              <li class="flex gap-3 step-done">
+                <span class="timeline-dot bg-green-500 mt-0.5 flex-shrink-0 w-2.5 h-2.5 rounded-full"></span>
+                <div>
+                  <p class="text-sm font-semibold text-ink">Error detected / Error detectado</p>
+                  <p class="text-xs text-slate-400 mt-0.5">Server reported an unhandled exception</p>
+                  <p class="text-xs text-slate-300 italic">El servidor reporto un error no manejado</p>
+                </div>
+              </li>
+              <li class="flex gap-3 step-active">
+                <span class="timeline-dot bg-error-500 mt-0.5 flex-shrink-0 w-2.5 h-2.5 rounded-full animate-blink"></span>
+                <div>
+                  <p class="text-sm font-semibold text-ink">Team notified / Equipo notificado</p>
+                  <p class="text-xs text-slate-400 mt-0.5">GM received alert, working on resolution</p>
+                  <p class="text-xs text-slate-300 italic">El GM recibio la alerta y esta trabajando en la solucion</p>
+                </div>
+              </li>
+              <li class="flex gap-3 step-pending">
+                <span class="timeline-dot mt-0.5 flex-shrink-0 w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+                <div>
+                  <p class="text-sm font-medium text-slate-400">Service restored / Servicio restaurado</p>
+                  <p class="text-xs text-slate-300 mt-0.5">Pending — Expected in a few minutes</p>
+                  <p class="text-xs text-slate-300 italic">Pendiente — Esperado en pocos minutos</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- What you can do -->
+      <div class="opacity-0-init animate-fade-up delay-4">
+        <div class="bezel-outer">
+          <div class="bezel-inner p-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-[0.12em] mb-4">What you can do / Que puedes hacer</p>
+
+            <ul class="space-y-3" role="list">
+              <li class="flex items-start gap-3">
+                <span class="w-7 h-7 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5 text-brand-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 8a4 4 0 1 0 8 0M8 4v4l2 2"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-medium text-ink">Wait a few minutes and refresh</p>
+                  <p class="text-xs text-slate-400">Espera unos minutos y recarga la pagina</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-7 h-7 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5 text-brand-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4L5 8l5 4"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-medium text-ink">Go back to the previous page</p>
+                  <p class="text-xs text-slate-400">Vuelve a la pagina anterior</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5 text-green-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </span>
+                <div>
+                  <p class="text-sm font-medium text-ink">Report directly to GM via WhatsApp</p>
+                  <p class="text-xs text-slate-400">Reporta directamente al GM por WhatsApp</p>
+                  <a href="https://wa.me/15551234567" target="_blank" rel="noopener noreferrer"
+                     class="inline-flex items-center gap-1 text-xs text-green-600 font-semibold mt-1 hover:text-green-700 cursor-pointer">
+                    Open WhatsApp
+                    <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 10l8-8M10 2H4M10 2v6"/></svg>
+                  </a>
+                </div>
+              </li>
+            </ul>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Error reference (for tech/GM) -->
+      <div class="opacity-0-init animate-fade-up delay-5">
+        <div class="bg-slate-900 rounded-xl p-4 font-mono text-xs">
+          <p class="text-slate-500 mb-2"># Error reference / Referencia del error</p>
+          <p class="text-error-400">ERROR: InternalServerError (500)</p>
+          <p class="text-slate-400">PATH: <span class="text-slate-300">{{ request.path }}</span></p>
+          <p class="text-slate-400">REF: <span class="text-slate-300">BD-{{ timestamp }}-5XX</span></p>
+          <p class="text-slate-600 mt-2 italic text-[10px]">&lt;!-- Blazor: bind error.RequestId and error.Path --&gt;</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-100 py-5">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-slate-400">&copy; 2026 Bulletin Dells &mdash; Wisconsin Dells, WI</p>
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-xs text-slate-400 hover:text-brand-600 transition-colors cursor-pointer">Home / Inicio</a>
+        <a href="https://wa.me/15551234567" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-green-600 transition-colors cursor-pointer">WhatsApp GM</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

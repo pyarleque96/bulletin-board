@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VIP Resplandor — Diagonal Sheen Sweep Picker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { background:#050B14; font-family:'DM Sans',sans-serif; color:#E2E8F0; min-height:100vh; padding:48px 24px; }
+
+  /* Base node — gradient fijo + overflow para clipear sheens */
+  .node {
+    width: 110px; height: 110px; border-radius: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 900; font-size: 2rem;
+    border: 1px solid rgba(249,115,22,0.45);
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+  }
+  /* Box-shadow no se recorta por overflow: hidden — se dibuja fuera del border-box */
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 01 — Sheen estándar diagonal, brillo medio
+     Una banda blanca 50% opacidad atraviesa el gradient ↗ cada 3.5s
+     Box-shadow pulsa sutil al mismo ritmo
+  ═══════════════════════════════════════════════════ */
+  .b1 { animation: b1Glow 3.5s ease-in-out infinite; }
+  .b1::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+    transform: translate(-110%, -110%);
+    animation: b1Sheen 3.5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b1Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b1Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 26px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.65), 0 0 48px rgba(249,115,22,0.80), 0 0 64px -4px rgba(96,165,250,0.55); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 02 — Sheen amplio y suave (banda gruesa, baja opacidad)
+     Sensación más etérea y soft, no agresiva
+  ═══════════════════════════════════════════════════ */
+  .b2 { animation: b2Glow 5s ease-in-out infinite; }
+  .b2::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 20%, rgba(255,255,255,0.35) 50%, transparent 80%);
+    transform: translate(-110%, -110%);
+    animation: b2Sheen 5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b2Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b2Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.60), 0 0 44px rgba(249,115,22,0.72), 0 0 60px -4px rgba(96,165,250,0.50); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 03 — Sheen fino y brillante (knife-edge)
+     Banda muy delgada al 75% opacidad, alta luminosidad puntual
+  ═══════════════════════════════════════════════════ */
+  .b3 { animation: b3Glow 3s ease-in-out infinite; }
+  .b3::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 46%, rgba(255,255,255,0.85) 50%, transparent 54%);
+    transform: translate(-110%, -110%);
+    animation: b3Sheen 3s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b3Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b3Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.75), 0 0 56px rgba(249,115,22,0.95), 0 0 80px -4px rgba(96,165,250,0.65); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 04 — Sheen doble (dos bandas en secuencia)
+     Dos pulsos blancos separados que recorren juntos
+  ═══════════════════════════════════════════════════ */
+  .b4 { animation: b4Glow 4.5s ease-in-out infinite; }
+  .b4::after {
+    content:''; position:absolute; inset:0;
+    background:
+      linear-gradient(135deg, transparent 28%, rgba(255,255,255,0.45) 35%, transparent 42%, transparent 58%, rgba(255,255,255,0.45) 65%, transparent 72%);
+    transform: translate(-110%, -110%);
+    animation: b4Sheen 4.5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b4Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b4Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.68), 0 0 52px rgba(249,115,22,0.85), 0 0 72px -4px rgba(96,165,250,0.60); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 05 — Sheen continuo en una sola dirección
+     La banda solo va ↘, vuelve a entrar por ↖ — flujo unidireccional perpetuo
+  ═══════════════════════════════════════════════════ */
+  .b5 { animation: b5Glow 4s linear infinite; }
+  .b5::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 38%, rgba(255,255,255,0.55) 50%, transparent 62%);
+    transform: translate(-110%, -110%);
+    animation: b5Sheen 4s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes b5Sheen { from { transform: translate(-110%,-110%);} to { transform: translate(110%,110%);} }
+  @keyframes b5Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.70), 0 0 50px rgba(249,115,22,0.85), 0 0 68px -4px rgba(96,165,250,0.58); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 06 — Sheen + Pulse fuerte de halo
+     Misma sheen pero el box-shadow late MUY notorio cuando pasa
+  ═══════════════════════════════════════════════════ */
+  .b6 { animation: b6Glow 3.6s ease-in-out infinite; }
+  .b6::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 38%, rgba(255,255,255,0.55) 50%, transparent 62%);
+    transform: translate(-110%, -110%);
+    animation: b6Sheen 3.6s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b6Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b6Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.40), 0 0 22px rgba(249,115,22,0.40), 0 0 36px -4px rgba(96,165,250,0.25); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.85), 0 0 64px rgba(249,115,22,1.0), 0 0 96px -4px rgba(96,165,250,0.75); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 07 — Sheen con franjas cromáticas (chromatic aberration)
+     Banda blanca con leves márgenes azul/melocotón — efecto prisma
+  ═══════════════════════════════════════════════════ */
+  .b7 { animation: b7Glow 4s ease-in-out infinite; }
+  .b7::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg,
+      transparent 35%,
+      rgba(192,219,255,0.35) 45%,
+      rgba(255,255,255,0.70) 50%,
+      rgba(254,215,170,0.35) 55%,
+      transparent 65%);
+    transform: translate(-110%, -110%);
+    animation: b7Sheen 4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b7Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b7Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 26px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.65), 0 0 48px rgba(249,115,22,0.80), 0 0 64px -4px rgba(96,165,250,0.55); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 08 — Sheen con cola larga (asimétrica, dejando estela)
+     Lado anterior se desvanece lento, lado posterior brusco — como cometa
+  ═══════════════════════════════════════════════════ */
+  .b8 { animation: b8Glow 4.2s ease-in-out infinite; }
+  .b8::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg,
+      transparent 10%,
+      rgba(255,255,255,0.10) 30%,
+      rgba(255,255,255,0.55) 50%,
+      transparent 56%);
+    transform: translate(-110%, -110%);
+    animation: b8Sheen 4.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b8Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b8Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 26px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.68), 0 0 50px rgba(249,115,22,0.85), 0 0 70px -4px rgba(96,165,250,0.58); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 09 — Sheen lento y meditativo
+     Travesía de 7s, banda media-suave, halo pulsa muy gentil
+  ═══════════════════════════════════════════════════ */
+  .b9 { animation: b9Glow 7s ease-in-out infinite; }
+  .b9::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 32%, rgba(255,255,255,0.45) 50%, transparent 68%);
+    transform: translate(-110%, -110%);
+    animation: b9Sheen 7s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes b9Sheen { 0%,100% { transform: translate(-110%,-110%);} 50% { transform: translate(110%,110%);} }
+  @keyframes b9Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 28px rgba(249,115,22,0.45), 0 0 42px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.58), 0 0 42px rgba(249,115,22,0.68), 0 0 58px -4px rgba(96,165,250,0.48); }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     OPCIÓN 10 — Sheen radial (no banda, sino esfera blanca diagonal)
+     Un foco circular blanco se mueve en diagonal — más orgánico
+  ═══════════════════════════════════════════════════ */
+  .b10 { animation: b10Glow 4s ease-in-out infinite; }
+  .b10::after {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.15) 25%, transparent 50%);
+    background-size: 60% 60%;
+    background-repeat: no-repeat;
+    background-position: -30% 130%;
+    animation: b10Sheen 4s ease-in-out infinite;
+    pointer-events:none;
+    mix-blend-mode: soft-light;
+  }
+  @keyframes b10Sheen { 0%,100% { background-position: -30% 130%;} 50% { background-position: 130% -30%;} }
+  @keyframes b10Glow {
+    0%,100% { box-shadow: 0 0 0 1px rgba(249,115,22,0.45), 0 0 26px rgba(249,115,22,0.45), 0 0 40px -4px rgba(96,165,250,0.30); }
+    50%     { box-shadow: 0 0 0 1px rgba(249,115,22,0.66), 0 0 48px rgba(249,115,22,0.82), 0 0 66px -4px rgba(96,165,250,0.56); }
+  }
+
+  .card { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+  .num { font-family:'DM Sans'; font-weight:900; color: rgba(255,255,255,0.30); font-size: 0.625rem; letter-spacing: 0.18em; }
+  .desc { font-size: 0.78rem; color: rgba(255,255,255,0.65); line-height: 1.5; }
+  .tag { font-size: 0.65rem; color: rgba(255,255,255,0.45); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-3xl font-black tracking-tight mb-2 text-white">VIP Resplandor v2 — Diagonal Sheen Sweep</h1>
+  <p class="text-white/55 text-sm mb-10">Todas son <strong>una banda/foco blanco que cruza el gradient en diagonal</strong> + el box-shadow brilla más cuando la banda pasa. Cambia el ancho, opacidad, intensidad del halo y velocidad.</p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 01 · Standard sheen</div>
+      <div class="flex justify-center py-3"><div class="node b1"><span>5</span></div></div>
+      <p class="desc">Banda media (50% opacity), 3.5s. Halo pulsa 26px→48px. Balance estándar — el "default" del efecto sheen.</p>
+      <p class="tag">band 50% · ping-pong · halo +moderado</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 02 · Wide soft</div>
+      <div class="flex justify-center py-3"><div class="node b2"><span>5</span></div></div>
+      <p class="desc">Banda gruesa pero suave (35% opacity), 5s. Más sutil, casi como una "respiración blanca" diagonal.</p>
+      <p class="tag">band 35% · slow · halo gentle</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 03 · Knife-edge</div>
+      <div class="flex justify-center py-3"><div class="node b3"><span>5</span></div></div>
+      <p class="desc">Banda muy fina y brillante (85% opacity), 3s rápido. Halo dispara fuerte cuando pasa — efecto láser/destello.</p>
+      <p class="tag">band 85% · sharp · halo +fuerte</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 04 · Double sheen</div>
+      <div class="flex justify-center py-3"><div class="node b4"><span>5</span></div></div>
+      <p class="desc">Dos bandas blancas separadas que cruzan juntas. Sensación de "doble brillo" — apariencia más rica.</p>
+      <p class="tag">2 bandas paralelas · 4.5s · halo moderado</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 05 · Continuous one-way</div>
+      <div class="flex justify-center py-3"><div class="node b5"><span>5</span></div></div>
+      <p class="desc">La banda solo va ↘ (no vuelve). Sale por una esquina y reaparece por la opuesta — flujo perpetuo unidireccional.</p>
+      <p class="tag">linear infinite · sin reverse</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 06 · Strong halo pulse</div>
+      <div class="flex justify-center py-3"><div class="node b6"><span>5</span></div></div>
+      <p class="desc">Misma sheen pero el halo de atrás dispara MUY notorio (22px→64px naranja, halo celeste también crece). Énfasis en el resplandor de fondo.</p>
+      <p class="tag">band 55% · halo +intenso (1.0 alpha pico)</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 07 · Chromatic edges</div>
+      <div class="flex justify-center py-3"><div class="node b7"><span>5</span></div></div>
+      <p class="desc">Banda blanca con franjas azul (líder) y melocotón (trasera) — efecto prisma/dispersión cromática. Tornasolado real.</p>
+      <p class="tag">band white + blue/peach fringes</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 08 · Comet tail</div>
+      <div class="flex justify-center py-3"><div class="node b8"><span>5</span></div></div>
+      <p class="desc">Asimétrica: lado posterior brusco, lado anterior con cola larga. Como cometa o estela.</p>
+      <p class="tag">band asymmetric fade</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 09 · Slow meditative</div>
+      <div class="flex justify-center py-3"><div class="node b9"><span>5</span></div></div>
+      <p class="desc">Recorrido lento de 7s, halo apenas se mueve. La opción más zen — apenas se nota pero está siempre vivo.</p>
+      <p class="tag">7s slow · halo +gentle</p>
+    </div>
+
+    <div class="card rounded-2xl p-5 flex flex-col gap-3">
+      <div class="num">OPTION 10 · Radial spot</div>
+      <div class="flex justify-center py-3"><div class="node b10"><span>5</span></div></div>
+      <p class="desc">En vez de una banda, un foco circular blanco se mueve en diagonal. <code class="text-white/40">mix-blend: soft-light</code> — más orgánico, menos "barrido".</p>
+      <p class="tag">radial circle · soft-light blend</p>
+    </div>
+
+  </div>
+
+  <div class="mt-12 card rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-white mb-3">Cómo aplicar la elegida</h2>
+    <p class="text-white/55 text-sm leading-relaxed">Dime el número (ej: <span class="text-white">"quiero la 6"</span>) y la aplico al <code class="text-white/80" style="color:#fbbf24">.timeline-step.vip .timeline-node</code> de <code class="text-white/80" style="color:#fbbf24">landing-05-dark-general-v3.html</code>.</p>
+    <p class="text-white/40 text-xs mt-3 italic">Tip: si te gusta una pero con el halo de otra, dime — puedo combinar (ej: "la banda de la 3 con el halo de la 6").</p>
+  </div>
+</div>
+
+</body>
+</html>

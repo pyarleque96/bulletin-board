@@ -1,0 +1,403 @@
+<!--
+  SCREEN: 08 — Elevator Floors
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Carga de navegación entre secciones principales (categoría a categoría)
+  CONCEPTO: Indicador estilo ascensor con números de piso que cambian
+            (Floor 1 → Floor 12), barra vertical que sube gradualmente,
+            nombre del "piso" = categoría de servicio que se carga.
+            Sensación: edificio de oficinas premium, orden, precisión.
+  HIGH-END: Double-Bezel vertical panel para el indicador,
+            fuente mono para los números de piso,
+            transición clip-path para la barra de progreso vertical.
+  BLAZOR HOOK: currentFloor = categoría activa (index de categorías);
+               Bind a NavigationManager route params.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Layout: horizontal split ── */
+    .elevator-wrap {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: wrap-in 0.7s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Vertical progress bar — Double Bezel ── */
+    .bar-shell {
+      width: 3rem;
+      height: 16rem;
+      border-radius: 9999px;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(30,41,59,0.06);
+      padding: 5px;
+      box-shadow:
+        0 0 0 1px rgba(30,41,59,0.03),
+        0 16px 48px -16px rgba(30,41,59,0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .bar-inner {
+      width: 100%;
+      flex: 1;
+      border-radius: 9999px;
+      background: #f8fafc;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Fill — grows from bottom up */
+    .bar-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0%;
+      border-radius: 9999px;
+      background: linear-gradient(to top, #fd8c1b, #fde8c8);
+      transition: height 0.55s cubic-bezier(0.32,0.72,0,1);
+    }
+    /* Shimmer on fill */
+    .bar-fill::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, transparent 30%, rgba(255,255,255,0.35) 60%, transparent 90%);
+      animation: fill-shimmer 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
+      will-change: transform;
+    }
+    @keyframes fill-shimmer {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(-100%); }
+    }
+
+    /* Moving dot (elevator cabin) */
+    .bar-cabin {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background: #fd8c1b;
+      box-shadow: 0 2px 8px -2px rgba(253,140,27,0.4);
+      bottom: 0%;
+      transition: bottom 0.55s cubic-bezier(0.32,0.72,0,1);
+      z-index: 2;
+    }
+    /* Cabin highlight */
+    .bar-cabin::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      width: 6px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+    }
+
+    /* Floor number labels on bar (right side) */
+    .bar-labels {
+      position: absolute;
+      right: -2rem;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .bar-label-item {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.5rem;
+      color: #cbd5e1;
+      line-height: 1;
+      transition: color 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .bar-label-item.active {
+      color: #fd8c1b;
+      font-weight: 500;
+    }
+
+    /* ── Right panel: floor display ── */
+    .floor-display {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .floor-num-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .floor-num {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(4rem, 10vw, 6.5rem);
+      font-weight: 500;
+      color: #1e293b;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1),
+                  opacity 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    .floor-unit {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      padding-bottom: 0.75rem;
+    }
+
+    /* Floor name */
+    .floor-name {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+      letter-spacing: -0.02em;
+      min-height: 1.75rem;
+      transition: opacity 0.3s cubic-bezier(0.32,0.72,0,1),
+                  transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .floor-name.changing {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    .floor-sub {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 400;
+      color: #94a3b8;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      min-height: 1rem;
+      transition: opacity 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .floor-sub.changing { opacity: 0; }
+
+    /* Hairline divider */
+    .hairline {
+      width: 100%;
+      height: 1px;
+      background: #f1f5f9;
+    }
+
+    /* Status pills */
+    .status-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.2rem 0.6rem;
+      transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .status-pill.done {
+      background: #fef3e2;
+      color: #c2650a;
+      border-color: #fde8c8;
+    }
+    .status-pill.active-pill {
+      background: #1e293b;
+      color: #ffffff;
+      border-color: #1e293b;
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading categories · Cargando categorías">
+
+    <div class="elevator-wrap">
+
+      <!-- Vertical bar -->
+      <div style="position:relative;">
+        <div class="bar-shell">
+          <div class="bar-inner" id="barInner">
+            <div class="bar-fill" id="barFill"></div>
+            <div class="bar-cabin" id="barCabin"></div>
+          </div>
+        </div>
+        <!-- Floor labels right side -->
+        <div class="bar-labels" aria-hidden="true" id="barLabels"></div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="floor-display">
+
+        <div>
+          <div class="floor-num-wrap">
+            <span class="floor-num" id="floorNum">01</span>
+            <span class="floor-unit">/ 12</span>
+          </div>
+          <div class="floor-name" id="floorName">Housing</div>
+          <div class="floor-sub" id="floorSub">Vivienda · Rentals</div>
+        </div>
+
+        <div class="hairline" aria-hidden="true"></div>
+
+        <!-- Status pills -->
+        <div class="status-row" id="statusPills" aria-hidden="true">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Brand -->
+        <p style="font-family:'Outfit',sans-serif;font-size:0.5625rem;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:#e2e8f0;margin-top:0.25rem;">
+          Bulletin Dells · Wisconsin
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: Replace animation data with actual category API response */
+    /* Bind: floors[] from GET /api/v1/categories */
+
+    const floors = [
+      { en: 'Housing', es: 'Vivienda · Rentals' },
+      { en: 'Transportation', es: 'Transporte' },
+      { en: 'Mechanics', es: 'Mecánicos' },
+      { en: 'Jobs', es: 'Empleos' },
+      { en: 'Beauty', es: 'Belleza' },
+      { en: 'Car Rentals', es: 'Renta de Autos' },
+      { en: 'Rides', es: 'Viajes / Rides' },
+      { en: 'Food', es: 'Comida' },
+      { en: 'Events', es: 'Eventos' },
+      { en: 'Healthcare', es: 'Salud' },
+      { en: 'Education', es: 'Educación' },
+      { en: 'Verified Providers', es: 'Proveedores VIP' }
+    ];
+
+    const barFill = document.getElementById('barFill');
+    const barCabin = document.getElementById('barCabin');
+    const floorNum = document.getElementById('floorNum');
+    const floorName = document.getElementById('floorName');
+    const floorSub = document.getElementById('floorSub');
+    const barLabels = document.getElementById('barLabels');
+    const statusPills = document.getElementById('statusPills');
+
+    // Build bar labels (floor numbers, reversed — bottom to top)
+    for (let i = floors.length; i >= 1; i--) {
+      const el = document.createElement('span');
+      el.className = 'bar-label-item';
+      el.id = `blabel-${i}`;
+      el.textContent = i < 10 ? `0${i}` : `${i}`;
+      barLabels.appendChild(el);
+    }
+
+    // Build status pills
+    floors.forEach((f, i) => {
+      const p = document.createElement('span');
+      p.className = 'status-pill';
+      p.id = `pill-${i}`;
+      p.textContent = f.en;
+      statusPills.appendChild(p);
+    });
+
+    let current = 0;
+
+    function goToFloor(index) {
+      const n = index + 1;
+      const pct = (n / floors.length) * 100;
+
+      // Update bar
+      barFill.style.height = pct + '%';
+      barCabin.style.bottom = `calc(${pct}% - 0.625rem)`;
+
+      // Update label highlight
+      document.querySelectorAll('.bar-label-item').forEach(el => el.classList.remove('active'));
+      const lbl = document.getElementById(`blabel-${n}`);
+      if (lbl) lbl.classList.add('active');
+
+      // Animate out
+      floorName.classList.add('changing');
+      floorSub.classList.add('changing');
+      floorNum.style.opacity = '0';
+      floorNum.style.transform = 'translateY(-6px)';
+
+      setTimeout(() => {
+        floorNum.textContent = n < 10 ? `0${n}` : `${n}`;
+        floorName.textContent = floors[index].en;
+        floorSub.textContent = floors[index].es;
+
+        floorName.classList.remove('changing');
+        floorSub.classList.remove('changing');
+        floorNum.style.opacity = '1';
+        floorNum.style.transform = 'translateY(0)';
+        floorNum.style.transition = 'opacity 0.3s, transform 0.3s';
+      }, 280);
+
+      // Update pills
+      document.querySelectorAll('.status-pill').forEach((p, i) => {
+        p.classList.remove('done', 'active-pill');
+        if (i < index) p.classList.add('done');
+        if (i === index) p.classList.add('active-pill');
+      });
+
+      current = index;
+    }
+
+    // Start at floor 1
+    goToFloor(0);
+
+    // Advance floors
+    let floorIndex = 0;
+    let delay = 800;
+    for (let i = 0; i < floors.length; i++) {
+      setTimeout((idx) => goToFloor(idx), delay, i);
+      delay += 400;
+    }
+  </script>
+</body>
+</html>

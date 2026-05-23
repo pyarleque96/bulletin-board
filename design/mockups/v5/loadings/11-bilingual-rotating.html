@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Bilingual Rotating Text</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 11-bilingual-rotating.html
+    SPEC:   Cascada vertical de palabras bilingües rotando estilo "slot
+            machine" / ticker vertical. Las frases se deslizan hacia arriba
+            y la siguiente entra desde abajo. Conjunto: "Cargando",
+            "Loading", "Esperando", "Almost there…", "Un momento",
+            "Just a second…". Pequeño punto naranja pulsante a la izquierda
+            actúa como "cursor vivo". Toda la pieza es minimalista y textual.
+    CUÁNDO: Cualquier espera de duración indeterminada donde no hay barra
+            de progreso (ej: envío de formulario de listing, verificación).
+    BLAZOR HOOK: Reemplazar el setInterval con un EventCallback de Blazor
+                 que actualice el índice. data-word-index permite binding.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .ticker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      animation: wrap-intro 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes wrap-intro {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Punto pulsante naranja */
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      flex-shrink: 0;
+      animation: dot-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes dot-pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.85); }
+      50%       { opacity: 1;   transform: scale(1.15); }
+    }
+
+    /* Ventana del ticker — altura fija, overflow hidden */
+    .ticker-window {
+      height: 44px;
+      overflow: hidden;
+      position: relative;
+      min-width: 200px;
+    }
+
+    /* Ítem del ticker */
+    .ticker-item {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      font-size: 26px;
+      font-weight: 600;
+      color: #1e293b;
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+      /* Empieza abajo */
+      transform: translateY(44px);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+                  opacity  0.45s ease;
+    }
+    .ticker-item.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .ticker-item.exit {
+      transform: translateY(-44px);
+      opacity: 0;
+    }
+
+    /* Subtítulo fijo */
+    .subtitle {
+      position: absolute;
+      bottom: calc(50% - 52px);
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 12px;
+      color: #94a3b8;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: wrap-intro 0.5s ease-out 0.5s forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .ticker-wrap, .subtitle { animation: none; opacity: 1; }
+      .pulse-dot { animation: none; opacity: 1; }
+      .ticker-item { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="ticker-wrap">
+      <div class="pulse-dot" aria-hidden="true"></div>
+      <div class="ticker-window" id="tickerWindow" aria-live="polite">
+        <!-- BLAZOR HOOK: data-word-index="0" — inyectar índice actual -->
+      </div>
+    </div>
+
+    <div class="subtitle" aria-hidden="true">
+      Bulletin Dells · Wisconsin Dells
+    </div>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: reemplazar setInterval con eventos reales de carga */
+    const words = [
+      'Cargando',
+      'Loading',
+      'Esperando',
+      'Almost there…',
+      'Un momento',
+      'Just a second…',
+    ];
+
+    const win = document.getElementById('tickerWindow');
+    let current = null;
+    let idx = 0;
+
+    function showWord(text) {
+      // Salida del ítem actual
+      if (current) {
+        current.classList.remove('active');
+        current.classList.add('exit');
+        const old = current;
+        setTimeout(() => old.remove(), 450);
+      }
+
+      // Nuevo ítem
+      const el = document.createElement('div');
+      el.className = 'ticker-item';
+      el.textContent = text;
+      win.appendChild(el);
+
+      // Forzar reflow antes de activar
+      void el.offsetWidth;
+      el.classList.add('active');
+      current = el;
+    }
+
+    // Primera palabra al arrancar
+    setTimeout(() => {
+      showWord(words[idx]);
+      idx = (idx + 1) % words.length;
+    }, 300);
+
+    setInterval(() => {
+      showWord(words[idx]);
+      idx = (idx + 1) % words.length;
+    }, 2400);
+  </script>
+
+</body>
+</html>

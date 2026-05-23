@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Housing (VIP tier)
+  =====================================================
+  Mockup: housing-manage-vip.html
+  Categoría: Housing / Rentals
+  Tier: VIP (verified, paid)
+  Estado: Tab "Calendar" activo (desbloqueado por VIP)
+  Diferenciación VIP vs Regular:
+    - Badge VIP dorado en header
+    - Banner analytics highlights arriba del contenido
+    - Tab Calendar DESBLOQUEADA y activa
+    - Footer "Powered by VIP"
+    - Unlimited photos
+  =====================================================
+  BINDING: ListingId, Tier="VIP", IsVerified=true
+  BINDING: AnalyticsSummaryDto: ViewsLast30d, ConversionRate, AvgResponseHours, OccupancyRate
+  BINDING: CalendarBookings: { Date, PropertyId, GuestName, Source: "BulletinDells"|"GoogleCal"|"AirbnbImport" }
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Housing VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          brand: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412' },
+          ink:'#0f172a', muted:'#64748b',
+        },
+        fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+        boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+      } },
+    };
+  </script>
+  <style>
+    .badge-sdvip { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+    .badge-vip   { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .vip-glow { box-shadow: 0 0 0 1px rgba(249,115,22,0.15), 0 8px 24px -8px rgba(249,115,22,0.25); }
+    .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.6s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .manage-tab:hover { color:#0f172a; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1); }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<!-- ===== NAVBAR ===== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">M</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HEADER BAND ===== -->
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home<!-- ES: Inicio --></a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings<!-- ES: Mis Anuncios --></a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Northwoods Premier Stays</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage</h1>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+          <!-- BINDING: Tier VIP — gradient orange pill + Top Host -->
+          <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold inline-flex items-center gap-1">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            VIP
+          </span>
+          <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Top Host<!-- ES: Anfitrión destacado --></span>
+        </div>
+        <p class="text-sm text-muted mt-1">
+          Northwoods Premier Stays<!-- ES: Estadías Premier Northwoods -->
+          <span class="text-slate-300 mx-1.5">·</span>
+          Housing / Rentals
+        </p>
+      </div>
+      <a href="/listing/detail/northwoods-premier-stays" class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-xl transition-colors duration-150 cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Public view
+      </a>
+    </div>
+
+    <!-- Tabs — Calendar ACTIVE (VIP unlocked) -->
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections">
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Properties <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Bookings <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">4</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Inquiries <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">12</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="true" id="tab-calendar" aria-controls="panel-calendar" class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Calendar sync<!-- ES: Sincronización -->
+          <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- ===== ANALYTICS HIGHLIGHTS BANNER (VIP only) ===== -->
+  <!-- BINDING: AnalyticsSummaryDto — only render for VIP -->
+  <section aria-label="Analytics highlights" class="mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Views · 30d<!-- ES: Vistas --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">4,287</p>
+        <p class="text-[11px] text-green-700 mt-1 inline-flex items-center gap-1">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+          +18.4% vs prev
+        </p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Conversion<!-- ES: Conversión --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">7.2%</p>
+        <p class="text-[11px] text-muted mt-1">View → Inquiry</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Avg response<!-- ES: Tiempo respuesta --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">1.8h</p>
+        <p class="text-[11px] text-muted mt-1">Auto-reply active</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Occupancy<!-- ES: Ocupación --></p>
+        <p class="text-2xl font-bold text-ink mt-1 tabular-nums">82%</p>
+        <p class="text-[11px] text-muted mt-1">May 2026</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CALENDAR PANEL ===== -->
+  <section id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" tabindex="0">
+
+    <div class="flex items-start justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <h2 class="text-base font-semibold text-ink">Calendar · May 2026<!-- ES: Calendario · May 2026 --></h2>
+        <p class="text-sm text-muted mt-0.5">
+          Two-way Google Calendar sync is active. Changes propagate within 60 seconds.
+          <!-- ES: Sincronización bidireccional con Google Calendar activa. Los cambios se propagan en menos de 60 segundos. -->
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+          Google Calendar connected
+        </span>
+        <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">
+          Export iCal<!-- ES: Exportar iCal -->
+        </button>
+      </div>
+    </div>
+
+    <!-- Property selector + month nav -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <select class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer" aria-label="Select property">
+          <option>All properties (7)<!-- ES: Todas las propiedades --></option>
+          <option>Lakefront Lodge — 4BR</option>
+          <option>Cabin near Mirror Lake</option>
+          <option>Downtown Loft on Broadway</option>
+        </select>
+        <div class="flex items-center gap-1">
+          <button type="button" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center cursor-pointer" aria-label="Previous month">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="text-sm font-semibold text-ink px-2 min-w-[7rem] text-center">May 2026</span>
+          <button type="button" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center cursor-pointer" aria-label="Next month">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Calendar grid -->
+      <div role="grid" aria-label="May 2026 bookings">
+        <div class="grid grid-cols-7 gap-1.5 text-[11px] uppercase tracking-wider text-muted font-medium mb-2">
+          <div class="text-center py-1">Sun</div><div class="text-center py-1">Mon</div><div class="text-center py-1">Tue</div><div class="text-center py-1">Wed</div><div class="text-center py-1">Thu</div><div class="text-center py-1">Fri</div><div class="text-center py-1">Sat</div>
+        </div>
+        <div class="grid grid-cols-7 gap-1.5">
+          <!-- Week 1 (Apr 26 - May 2) -->
+          <div class="aspect-square rounded-xl border border-slate-100 bg-slate-50 p-1.5 text-[11px] text-slate-400">26</div>
+          <div class="aspect-square rounded-xl border border-slate-100 bg-slate-50 p-1.5 text-[11px] text-slate-400">27</div>
+          <div class="aspect-square rounded-xl border border-slate-100 bg-slate-50 p-1.5 text-[11px] text-slate-400">28</div>
+          <div class="aspect-square rounded-xl border border-slate-100 bg-slate-50 p-1.5 text-[11px] text-slate-400">29</div>
+          <div class="aspect-square rounded-xl border border-slate-100 bg-slate-50 p-1.5 text-[11px] text-slate-400">30</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">1</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800" title="Booked: Sarah K.">2 <span class="block text-[9px] truncate">Sarah K.</span></div>
+          <!-- Week 2 -->
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800" title="Booked: Sarah K.">3 <span class="block text-[9px] truncate">Sarah K.</span></div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">4</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">5</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">6</div>
+          <div class="aspect-square rounded-xl border border-amber-200 bg-amber-50 p-1.5 text-[11px] text-amber-800" title="Pending: T. Ortiz">7 <span class="block text-[9px] truncate">T. Ortiz</span></div>
+          <div class="aspect-square rounded-xl border border-amber-200 bg-amber-50 p-1.5 text-[11px] text-amber-800">8</div>
+          <div class="aspect-square rounded-xl border border-blue-200 bg-blue-50 p-1.5 text-[11px] text-blue-800" title="External (Google Cal)">9 <span class="block text-[9px] truncate">GCal</span></div>
+          <!-- Week 3 -->
+          <div class="aspect-square rounded-xl border border-blue-200 bg-blue-50 p-1.5 text-[11px] text-blue-800">10</div>
+          <div class="aspect-square rounded-xl border border-blue-200 bg-blue-50 p-1.5 text-[11px] text-blue-800">11</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">12</div>
+          <div class="aspect-square rounded-xl border-2 border-brand-500 bg-brand-50 p-1.5 text-[11px] text-brand-700 font-semibold" aria-current="date">13</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800" title="Booked: J. Anderson">14 <span class="block text-[9px] truncate">J. Anders.</span></div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">15</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">16</div>
+          <!-- Week 4 -->
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">17</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">18</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">19</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800" title="Booked: R. Patel">20 <span class="block text-[9px] truncate">R. Patel</span></div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">21</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">22</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">23</div>
+          <!-- Week 5 -->
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">24</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">25</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">26</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">27</div>
+          <div class="aspect-square rounded-xl border border-slate-100 p-1.5 text-[11px] text-ink">28</div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800" title="Booked: A. Reyes">29 <span class="block text-[9px] truncate">A. Reyes</span></div>
+          <div class="aspect-square rounded-xl border border-green-200 bg-green-50 p-1.5 text-[11px] text-green-800">30</div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex items-center gap-3 flex-wrap mt-4 text-[11px] text-muted">
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-green-200 border border-green-300"></span> Confirmed booking</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-200 border border-amber-300"></span> Pending</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-200 border border-blue-300"></span> Google Calendar (external)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded border-2 border-brand-500 bg-brand-50"></span> Today</span>
+      </div>
+    </div>
+
+    <!-- Auto-reply config (VIP feature) -->
+    <div class="mt-6 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h3 class="text-sm font-semibold text-ink inline-flex items-center gap-2">
+            Auto-reply<!-- ES: Respuesta automática -->
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+          </h3>
+          <p class="text-xs text-muted mt-0.5">Sends a WhatsApp reply within seconds of a new inquiry.</p>
+        </div>
+        <label class="inline-flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked class="sr-only peer" aria-label="Toggle auto-reply" />
+          <span class="w-10 h-6 bg-slate-200 peer-checked:bg-brand-500 rounded-full relative transition-colors duration-200">
+            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-4"></span>
+          </span>
+          <span class="text-xs font-medium text-ink">Enabled</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- "Powered by VIP" footer tag -->
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Unlimited photos, calendar sync, auto-reply, analytics
+    <!-- ES: Impulsado por VIP -->
+  </div>
+</div>
+
+</body>
+</html>

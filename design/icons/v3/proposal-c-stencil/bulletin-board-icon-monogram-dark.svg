@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Stencil Monogram (Dark ink, light surface)</title>
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!-- Editorial double rule + ALL CAPS eyebrow + orange accent square (instead of a tab) -->
+  <rect x="32" y="32" width="32" height="32" fill="#F39323"/>
+  <text x="80" y="56" font-family="'DM Sans',system-ui,sans-serif"
+        font-size="14" font-weight="700" fill="#101A3D" letter-spacing="4">EST · 2024</text>
+  <rect x="242" y="106" width="28" height="320" fill="#101A3D"/>
+  <path fill="#101A3D" fill-rule="evenodd" d="M 242 106 L 162 106 C 110 106, 82 134, 82 180 C 82 226, 110 254, 162 254 L 242 254 Z M 242 138 L 174 138 C 138 138, 120 156, 120 180 C 120 204, 138 220, 174 220 L 242 220 Z"/>
+  <path fill="#101A3D" fill-rule="evenodd" d="M 242 274 L 152 274 C 96 274, 66 304, 66 350 C 66 396, 96 426, 152 426 L 242 426 Z M 242 306 L 164 306 C 130 306, 110 326, 110 350 C 110 374, 130 394, 164 394 L 242 394 Z"/>
+  <path fill="#F39323" fill-rule="evenodd" d="M 270 106 L 350 106 C 402 106, 430 134, 430 180 C 430 226, 402 254, 350 254 L 270 254 Z M 270 138 L 338 138 C 374 138, 392 156, 392 180 C 392 204, 374 220, 338 220 L 270 220 Z"/>
+  <path fill="#F39323" fill-rule="evenodd" d="M 270 274 L 360 274 C 416 274, 446 304, 446 350 C 446 396, 416 426, 360 426 L 270 426 Z M 270 306 L 348 306 C 382 306, 402 326, 402 350 C 402 374, 382 394, 348 394 L 270 394 Z"/>
+  <line x1="32" y1="460" x2="480" y2="460" stroke="#101A3D" stroke-width="2"/>
+  <text x="32" y="486" font-family="'DM Sans',system-ui,sans-serif"
+        font-size="14" font-weight="700" fill="#101A3D" letter-spacing="3">BULLETIN BOARD</text>
+  <text x="480" y="486" text-anchor="end" font-family="'DM Sans',system-ui,sans-serif"
+        font-size="14" font-weight="500" fill="#101A3D" letter-spacing="3" opacity="0.6">WISCONSIN DELLS</text>
+</svg>

@@ -1,0 +1,698 @@
+@page "/admin/categories"
+@layout AdminLayout
+@attribute [Authorize(Roles = "Admin")]
+
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Admin
+@using System.Globalization
+@using Bulletin.Board.Web.Client.States
+@using Microsoft.AspNetCore.Authorization
+
+@inject IStringLocalizer<SharedResource> L
+@inject ICategoriesService CategoriesService
+@inject NavBarState NavBarState
+@inject FooterState FooterState
+@inject AdminNavigationState AdminNav
+
+@implements IDisposable
+
+<PageTitle>@L["Admin_Categories_PageTitle"]</PageTitle>
+
+
+@* ── Toast ── *@
+<AppToast Message="@_toastMessage" Variant="@_toastVariant" OnDismiss="DismissToast" />
+
+@* ── Page body — flex column so table fills remaining height ── *@
+@if (!_isLoading || !AdminNav.IsNavigating)
+{
+<div class="flex flex-col" style="height:calc(100vh - 64px); overflow:hidden;">
+    <div class="flex-1 p-6 flex flex-col overflow-hidden min-h-0">
+
+        @* ── Info banner ── *@
+        <PageNoticeBanner IsVisible="@_bannerVisible"
+                          Variant="info"
+                          Title="Categories are platform-defined"
+                          Description="Providers must select from these categories when submitting a listing. They cannot create or suggest new categories."
+                          OnDismiss="() => _bannerVisible = false" />
+
+        @* ── AdminDataTable — ocupa el espacio restante ── *@
+        <AdminDataTable IsLoading="@_isLoading"
+                        HasError="@_hasError"
+                        IsEmpty="@(FilteredCategories.Count == 0)"
+                        EmptyMessage="@(string.IsNullOrWhiteSpace(_searchQuery) ? "No categories yet" : "No categories found")"
+                        EmptyActionLabel="@(string.IsNullOrWhiteSpace(_searchQuery) ? "Create the first category" : "")"
+                        OnEmptyAction="@(string.IsNullOrWhiteSpace(_searchQuery) ? EventCallback.Factory.Create(this, OpenCreateModal) : default)"
+                        OnRetry="LoadCategoriesAsync"
+                        CurrentPage="@_currentPage"
+                        TotalPages="@TotalPages"
+                        OnPageChanged="GoToPage">
+
+            <ToolbarContent>
+
+                @* Search *@
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                        </svg>
+                    </span>
+                    <input type="search"
+                           @bind="_searchQuery"
+                           @bind:event="oninput"
+                           placeholder="Search categories..."
+                           class="w-64 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           aria-label="Search categories" />
+                </div>
+
+                @* Sort *@
+                <select @bind="_sortMode"
+                        class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-muted focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        aria-label="Sort by name">
+                    <option value="name-asc">Sort: Name A-Z</option>
+                    <option value="name-desc">Sort: Name Z-A</option>
+                    <option value="listings-desc">Sort: Most Listings</option>
+                    <option value="listings-asc">Sort: Fewest Listings</option>
+                </select>
+
+                @* Listings filter *@
+                <select @bind="_listingsFilter"
+                        class="border border-slate-200 rounded-lg px-3 py-2 text-sm text-muted focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        aria-label="Filter by listings">
+                    <option value="">Listings: All</option>
+                    <option value="has-listings">Has listings</option>
+                    <option value="no-listings">No listings</option>
+                </select>
+
+                <div class="flex-1"></div>
+
+                @* New Category button *@
+                <button type="button"
+                        @onclick="OpenCreateModal"
+                        class="cat-btn-primary flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    New Category
+                </button>
+
+            </ToolbarContent>
+
+            <FooterLeft>
+                <p class="text-xs text-muted">
+                    Showing @PagedCategories.Count of @FilteredCategories.Count
+                    @(FilteredCategories.Count == 1 ? "category" : "categories")
+                    @if (FilteredCategories.Count < _categories.Length && _categories.Length > 0)
+                    {
+                        <span> (filtered from @_categories.Length total)</span>
+                    }
+                </p>
+            </FooterLeft>
+
+            <HeaderContent>
+                @* # *@
+                <th scope="col"
+                    class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide w-12 cursor-pointer hover:text-ink select-none"
+                    @onclick='() => SetSort("order")'
+                    aria-sort="@GetAriaSort("order")">
+                    <span class="flex items-center gap-1">
+                        #
+                        <SortIcon Column="order" CurrentSort="_sortMode" />
+                    </span>
+                </th>
+                @* Category (icon + name EN + name ES) *@
+                <th scope="col"
+                    class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide cursor-pointer hover:text-ink select-none"
+                    @onclick='() => SetSort("name-asc")'
+                    aria-sort="@GetAriaSort("name-asc")">
+                    <span class="flex items-center gap-1">
+                        Category
+                        <SortIcon Column="name-asc" CurrentSort="_sortMode" />
+                    </span>
+                </th>
+                @* Slug *@
+                <th scope="col" class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide hidden md:table-cell">
+                    Slug
+                </th>
+                @* Listings count *@
+                <th scope="col"
+                    class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide w-28 cursor-pointer hover:text-ink select-none hidden sm:table-cell"
+                    @onclick='() => SetSort("listings-desc")'
+                    aria-sort="@GetAriaSort("listings-desc")">
+                    <span class="flex items-center gap-1">
+                        Listings
+                        <SortIcon Column="listings-desc" CurrentSort="_sortMode" />
+                    </span>
+                </th>
+                @* Status *@
+                <th scope="col" class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide w-28">
+                    Status
+                </th>
+                @* Actions *@
+                <th scope="col" class="px-4 py-1 align-middle text-left text-xs font-semibold text-muted uppercase tracking-wide w-44">
+                    Actions
+                </th>
+            </HeaderContent>
+
+            <RowContent>
+                @{ var rowIndex = (_currentPage - 1) * PageSize; }
+                @foreach (var cat in PagedCategories)
+                {
+                    rowIndex++;
+                    var localCat = cat; @* capture for lambdas *@
+                    <tr class="cat-row @(cat.IsActive ? "" : "is-disabled")" aria-label="@cat.NameEn">
+
+                        @* Row number *@
+                        <td class="px-4 py-1 align-middle text-xs text-muted">@rowIndex</td>
+
+                        @* Category cell: icon + name EN + name ES *@
+                        <td class="px-4 py-1 align-middle">
+                            <div class="flex items-center gap-3">
+                                @* Icon badge *@
+                                <div class="w-6 h-6 @GetIconBgClass(localCat.Slug) rounded-md flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                                    @if (!string.IsNullOrWhiteSpace(localCat.Icon))
+                                    {
+                                        <span class="text-xs leading-none">@localCat.Icon</span>
+                                    }
+                                    else
+                                    {
+                                        <svg class="w-3.5 h-3.5 @GetIconColorClass(localCat.Slug)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            @((MarkupString)GetIconPath(localCat.Slug))
+                                        </svg>
+                                    }
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-ink leading-tight">@cat.NameEn</p>
+                                    <p class="text-[11px] text-muted leading-tight">@cat.NameEs</p>
+                                </div>
+                            </div>
+                        </td>
+
+                        @* Slug *@
+                        <td class="px-4 py-1 align-middle hidden md:table-cell">
+                            <code class="text-xs font-mono bg-slate-100 text-muted px-1.5 py-0.5 rounded">@cat.Slug</code>
+                        </td>
+
+                        @* Listings count (mock) *@
+                        <td class="px-4 py-1 align-middle hidden sm:table-cell">
+                            <span class="bg-slate-100 text-ink px-2 py-0.5 rounded-full text-xs font-semibold">
+                                @GetMockListingCount(localCat.Slug)
+                            </span>
+                        </td>
+
+                        @* Status *@
+                        <td class="px-4 py-1 align-middle">
+                            @if (cat.IsActive)
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full" aria-hidden="true"></span>
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full" aria-hidden="true"></span>
+                                    Inactive
+                                </span>
+                            }
+                        </td>
+
+                        @* Actions *@
+                        <td class="px-4 py-1 align-middle">
+                            <div class="flex items-center justify-end gap-1">
+
+                                @* Edit *@
+                                <button type="button"
+                                        @onclick="() => OpenEditModal(localCat)"
+                                        disabled="@_isMutating"
+                                        class="cat-btn-icon w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-ink hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                        aria-label="Edit @cat.NameEn">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+
+                                @* Toggle Enable/Disable — icon-only, igual formato que Edit/Delete *@
+                                <button type="button"
+                                        @onclick="() => ToggleActiveAsync(localCat)"
+                                        disabled="@_isMutating"
+                                        class="cat-btn-icon w-6 h-6 flex items-center justify-center rounded-md text-muted hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed @(cat.IsActive ? "hover:text-rose-600 hover:bg-rose-50" : "hover:text-green-600 hover:bg-green-50")"
+                                        aria-label="@(cat.IsActive ? "Disable" : "Enable") @cat.NameEn"
+                                        title="@(cat.IsActive ? "Disable category" : "Enable category")">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M18.364 6.636a9 9 0 11-12.728 0"/>
+                                        <line x1="12" y1="2" x2="12" y2="12"/>
+                                    </svg>
+                                </button>
+
+                                @* Delete *@
+                                <button type="button"
+                                        @onclick="() => OpenConfirmDelete(localCat)"
+                                        disabled="@_isMutating"
+                                        class="cat-btn-icon w-6 h-6 flex items-center justify-center rounded-md text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                        aria-label="Delete @cat.NameEn">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </RowContent>
+
+        </AdminDataTable>
+
+    </div>
+</div>
+}
+
+@* ── Create / Edit Modal — uses CategoryForm ── *@
+@if (_showFormModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="cat-modal-title">
+
+        @* Backdrop *@
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+             @onclick="CloseFormModal"
+             aria-hidden="true"></div>
+
+        @* Panel *@
+        <div class="relative bg-white rounded-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh] overflow-hidden"
+             style="box-shadow:0 8px 32px rgba(0,0,0,0.14);">
+
+            @* Modal header *@
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
+                <h3 id="cat-modal-title" class="text-base font-semibold text-ink">
+                    @(_editingCategory is null ? "New Category" : "Edit Category")
+                </h3>
+                <button type="button"
+                        @onclick="CloseFormModal"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+                        aria-label="Close modal">
+                    <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            @* Modal body (scrollable) *@
+            <div class="flex-1 overflow-y-auto px-6 py-5">
+                <CategoryForm InitialValues="_editingCategory"
+                              OnSubmit="HandleFormSubmit"
+                              OnCancel="CloseFormModal"
+                              IsBusy="_isMutating" />
+            </div>
+        </div>
+    </div>
+}
+
+@* ── Confirm Delete Modal ── *@
+@if (_categoryToDelete is not null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         role="alertdialog"
+         aria-modal="true"
+         aria-labelledby="cat-delete-title"
+         aria-describedby="cat-delete-desc">
+
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" aria-hidden="true"></div>
+
+        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6"
+             style="box-shadow:0 8px 32px rgba(0,0,0,0.14);">
+
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center" aria-hidden="true">
+                    <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="cat-delete-title" class="font-semibold text-ink text-base">Delete category?</h3>
+                    <p id="cat-delete-desc" class="text-sm text-muted mt-1">
+                        "@_categoryToDelete.NameEn" will be permanently removed. This cannot be undone.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6 justify-end">
+                <button type="button"
+                        @onclick="CancelDelete"
+                        disabled="@_isMutating"
+                        class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50">
+                    Cancel
+                </button>
+                <button type="button"
+                        @onclick="ConfirmDeleteAsync"
+                        disabled="@_isMutating"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all cursor-pointer disabled:opacity-60">
+                    @if (_isMutating)
+                    {
+                        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
+                        </svg>
+                    }
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ── Constants ─────────────────────────────────────────────────────────────
+    private const int PageSize = 10;
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    private CategoryAdminDto[] _categories    = [];
+    private bool               _isLoading     = true;
+    private bool               _hasError      = false;
+    private bool               _isMutating    = false;
+
+    // Banner
+    private bool _bannerVisible = false;
+
+    // Toolbar filters
+    private string _searchQuery    = string.Empty;
+    private string _sortMode       = "name-asc";
+    private string _listingsFilter = string.Empty;
+
+    // Pagination
+    private int _currentPage = 1;
+
+    // Modal state
+    private bool              _showFormModal    = false;
+    private CategoryAdminDto? _editingCategory  = null;
+    private CategoryAdminDto? _categoryToDelete = null;
+
+    // Toast
+    private string?      _toastMessage = null;
+    private ToastVariant _toastVariant = ToastVariant.Success;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    // BFF cookie auth — works the same in SSR, Server-interactive, and WASM.
+    protected override async Task OnInitializedAsync()
+    {
+        NavBarState.IsDark    = false;
+        FooterState.IsCompact = true;
+        await LoadCategoriesAsync();
+        AdminNav.MarkNavigationDone();
+    }
+
+    public void Dispose()
+    {
+    }
+
+    // ── Data ──────────────────────────────────────────────────────────────────
+    private async Task LoadCategoriesAsync()
+    {
+        _isLoading = true;
+        _hasError  = false;
+        _currentPage = 1;
+
+        try
+        {
+            _categories = await CategoriesService.GetAllAdminAsync();
+        }
+        catch
+        {
+            _hasError = true;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    // ── Computed / Filtering ──────────────────────────────────────────────────
+    private List<CategoryAdminDto> FilteredCategories
+    {
+        get
+        {
+            var q = _searchQuery.Trim().ToLowerInvariant();
+            var list = _categories.AsEnumerable();
+
+            // Text search
+            if (!string.IsNullOrWhiteSpace(q))
+                list = list.Where(c =>
+                    c.NameEn.ToLowerInvariant().Contains(q) ||
+                    c.NameEs.ToLowerInvariant().Contains(q) ||
+                    c.Slug.ToLowerInvariant().Contains(q));
+
+            // Listings filter
+            if (_listingsFilter == "has-listings")
+                list = list.Where(c => GetMockListingCount(c.Slug) > 0);
+            else if (_listingsFilter == "no-listings")
+                list = list.Where(c => GetMockListingCount(c.Slug) == 0);
+
+            // Sort
+            list = _sortMode switch
+            {
+                "name-desc"     => list.OrderByDescending(c => c.NameEn),
+                "listings-desc" => list.OrderByDescending(c => GetMockListingCount(c.Slug)),
+                "listings-asc"  => list.OrderBy(c => GetMockListingCount(c.Slug)),
+                _               => list.OrderBy(c => c.NameEn),  // name-asc / default
+            };
+
+            return list.ToList();
+        }
+    }
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCategories.Count / (double)PageSize));
+
+    private List<CategoryAdminDto> PagedCategories =>
+        FilteredCategories
+            .Skip((_currentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+    // ── Toolbar handlers ──────────────────────────────────────────────────────
+    private void SetSort(string column)
+    {
+        // Toggle asc/desc when clicking same column
+        if (_sortMode == column + "-asc" || _sortMode == column)
+            _sortMode = column + "-desc";
+        else if (_sortMode == column + "-desc")
+            _sortMode = column + "-asc";
+        else
+            _sortMode = column;
+
+        _currentPage = 1;
+    }
+
+    private string GetAriaSort(string column) =>
+        _sortMode == column + "-asc" || _sortMode == column ? "ascending" :
+        _sortMode == column + "-desc"                       ? "descending" :
+        "none";
+
+    // ── Pagination ────────────────────────────────────────────────────────────
+    private void GoToPage(int page)
+    {
+        _currentPage = Math.Clamp(page, 1, TotalPages);
+    }
+
+    private void PrevPage() => GoToPage(_currentPage - 1);
+    private void NextPage() => GoToPage(_currentPage + 1);
+
+    // ── Modal helpers ─────────────────────────────────────────────────────────
+    private void OpenCreateModal()
+    {
+        _editingCategory = null;
+        _showFormModal   = true;
+    }
+
+    private void OpenEditModal(CategoryAdminDto cat)
+    {
+        _editingCategory = cat;
+        _showFormModal   = true;
+    }
+
+    private void CloseFormModal()
+    {
+        _showFormModal   = false;
+        _editingCategory = null;
+    }
+
+    private void OpenConfirmDelete(CategoryAdminDto cat) => _categoryToDelete = cat;
+    private void CancelDelete()                           => _categoryToDelete = null;
+
+    // ── CRUD ──────────────────────────────────────────────────────────────────
+    private async Task HandleFormSubmit(CategoryCreateModel model)
+    {
+        _isMutating = true;
+        try
+        {
+            if (_editingCategory is null)
+            {
+                await CategoriesService.CreateAsync(model);
+                ShowToast("Category created successfully.");
+            }
+            else
+            {
+                var update = new CategoryUpdateModel
+                {
+                    NameEn       = model.NameEn,
+                    NameEs       = model.NameEs,
+                    Slug         = model.Slug,
+                    DisplayOrder = model.DisplayOrder,
+                    Icon         = model.Icon,
+                    IsActive     = model.IsActive
+                };
+                await CategoriesService.UpdateAsync(_editingCategory.Id, update);
+                ShowToast("Category updated.");
+            }
+
+            CloseFormModal();
+            await LoadCategoriesAsync();
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 409)
+        {
+            ShowToast("Slug already exists — please choose another.", ToastVariant.Error);
+        }
+        catch
+        {
+            ShowToast("Something went wrong. Please try again.", ToastVariant.Error);
+        }
+        finally
+        {
+            _isMutating = false;
+        }
+    }
+
+    private async Task ToggleActiveAsync(CategoryAdminDto cat)
+    {
+        _isMutating = true;
+        try
+        {
+            var update = new CategoryUpdateModel
+            {
+                NameEn       = cat.NameEn,
+                NameEs       = cat.NameEs,
+                Slug         = cat.Slug,
+                DisplayOrder = cat.DisplayOrder,
+                Icon         = cat.Icon,
+                IsActive     = !cat.IsActive
+            };
+            await CategoriesService.UpdateAsync(cat.Id, update);
+            ShowToast(cat.IsActive ? "Category deactivated." : "Category activated.");
+            await LoadCategoriesAsync();
+        }
+        catch
+        {
+            ShowToast("Something went wrong. Please try again.", ToastVariant.Error);
+        }
+        finally
+        {
+            _isMutating = false;
+        }
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (_categoryToDelete is null) return;
+
+        _isMutating = true;
+        try
+        {
+            await CategoriesService.DeleteAsync(_categoryToDelete.Id);
+            ShowToast("Category deleted.");
+            _categoryToDelete = null;
+            await LoadCategoriesAsync();
+        }
+        catch
+        {
+            ShowToast("Something went wrong. Please try again.", ToastVariant.Error);
+            _categoryToDelete = null;
+        }
+        finally
+        {
+            _isMutating = false;
+        }
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    private void ShowToast(string message, ToastVariant variant = ToastVariant.Success)
+    {
+        _toastMessage = message;
+        _toastVariant = variant;
+    }
+
+    private void DismissToast()
+    {
+        _toastMessage = null;
+    }
+
+    // ── Mock data helpers (listings count per slug) ────────────────────────────
+    private static readonly Dictionary<string, int> MockListingCounts = new()
+    {
+        ["car-rental"]       = 8,
+        ["housing"]          = 14,
+        ["beauty"]           = 11,
+        ["car-repair"]       = 6,
+        ["rides-airport"]    = 5,
+        ["jobs"]             = 9,
+        ["food"]             = 7,
+        ["general-services"] = 4,
+        ["local-events"]     = 3,
+    };
+
+    private static int GetMockListingCount(string slug) =>
+        MockListingCounts.TryGetValue(slug, out var v) ? v : 0;
+
+    // ── Icon style helpers (maps slug → brand-color bg/text) ──────────────────
+    private static string GetIconBgClass(string slug) => slug switch
+    {
+        "housing"          => "bg-green-100",
+        "beauty"           => "bg-pink-100",
+        "rides-airport"    => "bg-sky-100",
+        "jobs"             => "bg-orange-100",
+        "food"             => "bg-red-100",
+        "general-services" => "bg-purple-100",
+        "local-events"     => "bg-teal-100",
+        "car-repair"       => "bg-slate-100",
+        _                  => "bg-blue-100",
+    };
+
+    private static string GetIconColorClass(string slug) => slug switch
+    {
+        "housing"          => "text-green-600",
+        "beauty"           => "text-pink-600",
+        "rides-airport"    => "text-sky-600",
+        "jobs"             => "text-orange-600",
+        "food"             => "text-red-500",
+        "general-services" => "text-purple-600",
+        "local-events"     => "text-teal-600",
+        "car-repair"       => "text-slate-600",
+        _                  => "text-blue-600",
+    };
+
+    private static string GetIconPath(string slug) => slug switch
+    {
+        "car-rental" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z'/>" +
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0'/>",
+        "housing" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'/>",
+        "beauty" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z'/>",
+        "car-repair" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'/><path stroke-linecap='round' stroke-linejoin='round' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'/>",
+        "rides-airport" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M12 19l9 2-9-18-9 18 9-2zm0 0v-8'/>",
+        "jobs" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'/>",
+        "food" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/>",
+        "general-services" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'/>",
+        "local-events" =>
+            "<path stroke-linecap='round' stroke-linejoin='round' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/>",
+        _ =>
+            "<rect x='3' y='3' width='18' height='18' rx='3'/><path d='M3 9h18M9 21V9'/>",
+    };
+}

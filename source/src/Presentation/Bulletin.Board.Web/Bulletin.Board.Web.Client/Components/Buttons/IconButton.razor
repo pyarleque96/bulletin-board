@@ -1,0 +1,70 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Square/rounded button that contains only an icon.
+    Used for: pagination arrows, password toggle eye, nav arrow, gallery thumbnails nav.
+    Always requires AriaLabel for accessibility (icon-only = no visible text label).
+*@
+
+<button
+    type="@Type"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@(Disabled || IsLoading)"
+    aria-disabled="@(Disabled || IsLoading)"
+    aria-label="@AriaLabel">
+    @if (IsLoading)
+    {
+        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    }
+    else if (Icon != null)
+    {
+        @Icon
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Required: describes the action for screen readers.</summary>
+    [Parameter] public string AriaLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Visual variant:
+    /// "default"  — bordered, muted (pagination).
+    /// "ghost"    — no border, transparent (password toggle inside inputs).
+    /// "active"   — filled ink background (current pagination page).
+    /// </summary>
+    [Parameter] public string Variant { get; set; } = "default";
+
+    private string VariantClass => Variant switch
+    {
+        "active" => "bg-ink text-white border-transparent",
+        "ghost"  => "text-white/30 hover:text-white/60 border-transparent bg-transparent",
+        _        => "border border-slate-200 text-muted hover:text-ink hover:border-slate-300"
+    };
+
+    private string ComputedClass =>
+        $"w-9 h-9 rounded-xl flex items-center justify-center {VariantClass} " +
+        "transition-colors duration-200 " +
+        "disabled:opacity-40 disabled:cursor-not-allowed " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

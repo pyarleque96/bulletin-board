@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Sticker App Icon (Dark ink on light surface)</title>
+  <!-- Die-cut sticker: irregular rounded shape, thick white outline, hard offset shadow.
+       Skateboard-sticker / playful zine vibe — anti-corporate, anti-Booking. -->
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!-- Shadow -->
+  <g transform="translate(14 14)" opacity="0.18">
+    <path d="M 80 80
+             C 80 50, 110 30, 140 30
+             L 380 30
+             C 410 30, 440 50, 440 80
+             L 440 380
+             C 440 414, 410 440, 380 440
+             L 140 440
+             C 110 440, 80 414, 80 380
+             Z"
+          fill="#101A3D"/>
+  </g>
+  <!-- White sticker outline -->
+  <path d="M 60 80
+           C 60 42, 96 18, 134 18
+           L 386 18
+           C 424 18, 460 42, 460 80
+           L 460 384
+           C 460 418, 424 458, 386 458
+           L 134 458
+           C 96 458, 60 418, 60 384
+           Z"
+        fill="#FFFFFF" stroke="#FFFFFF" stroke-width="0"/>
+  <!-- Navy fill (inset) -->
+  <path d="M 88 100
+           C 88 70, 116 48, 146 48
+           L 374 48
+           C 404 48, 432 70, 432 100
+           L 432 372
+           C 432 400, 404 428, 374 428
+           L 146 428
+           C 116 428, 88 400, 88 372
+           Z"
+        fill="#101A3D"/>
+  <!-- BB inside sticker -->
+  <g transform="translate(0 8)">
+    <rect x="242" y="100" width="28" height="320" fill="#FFFFFF"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 242 100 L 166 100 C 116 100, 90 124, 90 164 C 90 204, 116 230, 166 230 L 242 230 Z M 242 130 L 178 130 C 146 130, 130 144, 130 164 C 130 184, 146 200, 178 200 L 242 200 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 242 250 L 156 250 C 102 250, 76 278, 76 320 C 76 362, 102 388, 156 388 L 242 388 Z M 242 280 L 168 280 C 136 280, 116 296, 116 320 C 116 344, 136 358, 168 358 L 242 358 Z"/>
+    <path fill="#F39323" fill-rule="evenodd" d="M 270 100 L 346 100 C 396 100, 422 124, 422 164 C 422 204, 396 230, 346 230 L 270 230 Z M 270 130 L 334 130 C 366 130, 382 144, 382 164 C 382 184, 366 200, 334 200 L 270 200 Z"/>
+    <path fill="#F39323" fill-rule="evenodd" d="M 270 250 L 356 250 C 410 250, 436 278, 436 320 C 436 362, 410 388, 356 388 L 270 388 Z M 270 280 L 344 280 C 376 280, 396 296, 396 320 C 396 344, 376 358, 344 358 L 270 358 Z"/>
+  </g>
+  <!-- Star burst accents (sticker vibe) -->
+  <g fill="#F39323">
+    <path d="M 100 60 L 108 76 L 124 80 L 108 84 L 100 100 L 92 84 L 76 80 L 92 76 Z"/>
+    <path d="M 420 408 L 426 420 L 438 423 L 426 426 L 420 438 L 414 426 L 402 423 L 414 420 Z"/>
+  </g>
+</svg>

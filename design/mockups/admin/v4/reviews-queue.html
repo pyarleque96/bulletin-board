@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Reviews Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['DM Sans','system-ui','sans-serif']},colors:{brand:{400:'#60a5fa',500:'#3b82f6',600:'#2563eb'}}}}}</script>
+  <style>
+    body{font-family:'DM Sans',system-ui,sans-serif;background:#050f1a;color:#e2e8f0}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,rgba(37,99,235,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(249,115,22,.08) 0%,transparent 50%)}
+    #sidebar{transition:width 300ms cubic-bezier(.32,.72,0,1);overflow:hidden;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(255,255,255,.04);border-right:1px solid rgba(255,255,255,.08);position:relative;z-index:10}
+    #sidebar .label{transition:opacity 200ms cubic-bezier(.32,.72,0,1)}
+    #sidebar.collapsed .label{opacity:0;width:0;overflow:hidden;white-space:nowrap}
+    #sidebar.collapsed{width:64px}#sidebar:not(.collapsed){width:256px}
+    .nav-item{transition:background-color 150ms ease;border-radius:.5rem}.nav-item:hover{background:rgba(255,255,255,.07)}.nav-item.active{background:rgba(96,165,250,.18);color:#93c5fd}
+    .glass-card{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+    tbody tr{transition:background-color 150ms ease;cursor:default}tbody tr:hover td{background:rgba(255,255,255,.04)}
+    button{transition:all 200ms cubic-bezier(.32,.72,0,1)}button:active{transform:scale(.98)}
+  </style>
+</head>
+<body class="min-h-[100dvh] flex relative">
+
+  <aside id="sidebar" class="flex flex-col min-h-[100dvh] flex-shrink-0">
+    <div class="flex items-center gap-3 px-4 py-5" style="border-bottom:1px solid rgba(255,255,255,.08)"><div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0" style="box-shadow:0 0 12px rgba(59,130,246,.4)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span></div>
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer w-full text-left text-slate-400" style="border-bottom:1px solid rgba(255,255,255,.08)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg><span class="label text-xs font-medium">Collapse</span></button>
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="label text-sm">Dashboard</span></a>
+      <a href="listings-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="label text-sm">Listings Queue</span></a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label text-sm">Providers</span></a>
+      <a href="categories.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg><span class="label text-sm">Categories</span></a>
+      <a href="reviews-queue.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 cursor-pointer text-brand-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="label text-sm">Reviews Queue</span></a>
+    </nav>
+    <div class="p-3" style="border-top:1px solid rgba(255,255,255,.08)"><div class="flex items-center gap-3 px-2 py-2"><div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">GM</div><div class="label min-w-0"><p class="text-xs font-medium text-white truncate">General Manager</p><p class="text-[11px] text-slate-500 truncate">admin@bulletindells.com</p></div></div></div>
+  </aside>
+
+  <main class="flex-1 overflow-auto min-h-[100dvh] relative z-10">
+    <header class="px-6 py-4 flex items-center justify-between sticky top-0 z-20" style="backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(5,15,26,.8);border-bottom:1px solid rgba(255,255,255,.07)">
+      <div><h1 class="text-lg font-semibold text-white">Reviews Queue</h1><p class="text-xs text-slate-500">9 pending — only platform-contacted users can submit</p></div>
+      <select class="text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-400" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)"><option>All Ratings</option><option>5 stars</option><option>4 stars</option><option>3 stars</option><option>1-2 stars</option></select>
+    </header>
+
+    <div class="p-6">
+      <!-- Policy note -->
+      <div class="mb-4 rounded-2xl px-4 py-3 flex items-start gap-3" style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <p class="text-xs text-amber-300">Reviews publish only after GM approval via <code class="text-xs font-mono">PUT /api/v1/reviews/{id}/approve</code>. Each reviewer's contact event is verified. Rejecting hides the review permanently.</p>
+      </div>
+
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left" style="background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.07)">
+              <th class="px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Provider / Listing</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Rating</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Review Text</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Reviewer</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Contact Date</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Ramirez Transport</p><p class="text-xs text-slate-500">Airport Shuttle — Premium</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-white">5</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Driver was on time, very professional. The SUV was spotless. Helped us carry all luggage. Absolutely recommend for airport runs.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Katerina Voss</p><p class="text-[11px] text-slate-500 font-mono">k***@mail.com</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">Apr 29</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Linh's Beauty Bar</p><p class="text-xs text-slate-500">Nail Art — Full Set Gel</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-white">4</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Beautiful work, very detailed. Wait time was a bit long but the results were worth it. I'll definitely come back for the holidays.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Camila Torres</p><p class="text-[11px] text-slate-500 font-mono">c***@gmail.com</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">Apr 30</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Casa Reyes Catering</p><p class="text-xs text-slate-500">Mexican Catering — Events</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-white">5</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Incredible food for our company event. Everyone kept asking who the caterer was. The horchata alone was a hit. Highly recommend.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Marcus Bellwood</p><p class="text-[11px] text-slate-500 font-mono">m***@corp.com</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">May 1</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Hernandez Auto Care</p><p class="text-xs text-slate-500">Oil Change Express</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-white">3</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Decent work, took a bit longer than expected. The price is fair and the mechanic was honest about what my car needed. Would use again.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Devon Khalil</p><p class="text-[11px] text-slate-500 font-mono">d***@yahoo.com</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">May 2</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Dells Housing Co.</p><p class="text-xs text-slate-500">3BR Lakefront Apt</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-red-400">2</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Apartment had a broken AC for the first 3 days. Management was slow to respond. The location is good but the unit needs maintenance.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Yusuf Olatunde</p><p class="text-[11px] text-slate-500 font-mono">y***@proton.me</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">May 3</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05)">
+              <td class="px-5 py-4"><p class="font-medium text-slate-200">Garcia Landscaping</p><p class="text-xs text-slate-500">Weekly Lawn Mowing</p></td>
+              <td class="px-4 py-4"><div class="flex items-center gap-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="ml-1 text-xs font-mono font-medium text-white">4</span></div></td>
+              <td class="px-4 py-4 max-w-xs"><p class="text-xs text-slate-300 line-clamp-2">Reliable and consistent. Shows up every week on time. My lawn looks better than ever. Could edge the driveway more carefully.</p></td>
+              <td class="px-4 py-4"><p class="text-xs font-medium text-slate-200">Priya Nambiar</p><p class="text-[11px] text-slate-500 font-mono">p***@icloud.com</p></td>
+              <td class="px-4 py-4 text-xs text-slate-500 font-mono">May 3</td>
+              <td class="px-4 py-4"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)">Reject</button></div></td>
+            </tr>
+
+          </tbody>
+        </table>
+        <div class="px-5 py-4 flex items-center justify-between" style="border-top:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
+          <p class="text-xs text-slate-500">Showing 6 of 9 pending reviews</p>
+          <div class="flex gap-1">
+            <button class="px-3 py-1.5 text-xs rounded-lg text-white font-medium bg-brand-600">1</button>
+            <button class="px-3 py-1.5 text-xs rounded-lg text-slate-400" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   SettingsRegular (CarRental) — Tab Settings para Regular. Secciones:
+     1. Public info (title, description bilingüe).
+     2. Pickup location (address + map preview).
+     3. Operating hours.
+     4. Notifications (email / WhatsApp toggles; GM-copy is forced).
+     5. Listing state (pause / resume).
+     + Save button: Saving returns to Pending review (regla #5).
+     + Danger zone: Delete listing (permanent).
+
+   Regla #5 — toda mutación dispara PendingReviewTooltip / data-tooltip.
+   Regla #8 — GM-copy es notice fijo (no-toggleable) en Notifications.
+
+   TODO: API GET/PUT /api/v1/listings/{id}/settings
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-3xl mx-auto px-4 py-8 w-full"
+      id="panel-settings"
+      role="tabpanel"
+      aria-labelledby="tab-settings"
+      tabindex="0">
+
+    @* Section 1: Public info *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-1">@_localizer["Manage_CarRental_Settings_PublicInfo_Title"]</h2>
+        <p class="text-xs text-muted mb-5">@_localizer["Manage_CarRental_Settings_PublicInfo_Subtitle"]</p>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-medium text-ink mb-1">@_localizer["Manage_CarRental_Settings_Title_En"]</label>
+                <input type="text" value="@Listing.TitleEn"
+                       class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-ink mb-1">@_localizer["Manage_CarRental_Settings_Title_Es"]</label>
+                <input type="text" value="@Listing.TitleEs"
+                       class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+            </div>
+        </div>
+    </section>
+
+    @* Section 2: Pickup location *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-1">@_localizer["Manage_CarRental_Settings_Pickup_Title"]</h2>
+        <p class="text-xs text-muted mb-5">@_localizer["Manage_CarRental_Settings_Pickup_Subtitle"]</p>
+        <input type="text" value="@(Listing.Location ?? string.Empty)"
+               class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+        @* TODO: Map preview integration (Leaflet / Google Maps tile). *@
+        <div class="aspect-[16/7] rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-muted mt-3">
+            @_localizer["Manage_CarRental_Settings_Pickup_MapPlaceholder"]
+        </div>
+    </section>
+
+    @* Section 3: Operating hours *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-1">@_localizer["Manage_CarRental_Settings_Hours_Title"]</h2>
+        <p class="text-xs text-muted mb-5">@_localizer["Manage_CarRental_Settings_Hours_Subtitle"]</p>
+        @* TODO: API GET /api/v1/listings/{id}/operating-hours *@
+        <p class="text-xs text-muted">@_localizer["Manage_Common_NotConfigured"]</p>
+    </section>
+
+    @* Section 4: Notifications *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-1">@_localizer["Manage_CarRental_Settings_Notifications_Title"]</h2>
+        <p class="text-xs text-muted mb-5">@_localizer["Manage_CarRental_Settings_Notifications_Subtitle"]</p>
+        <div class="space-y-3">
+            <label class="flex items-start gap-3">
+                <input type="checkbox" checked class="mt-0.5 rounded text-brand-500" />
+                <span class="text-sm text-ink font-medium">@_localizer["Manage_CarRental_Settings_Notif_EmailInquiries"]</span>
+            </label>
+            <label class="flex items-start gap-3">
+                <input type="checkbox" checked class="mt-0.5 rounded text-brand-500" />
+                <span class="text-sm text-ink font-medium">@_localizer["Manage_CarRental_Settings_Notif_WaModerated"]</span>
+            </label>
+            @* Regla #8 — GM-copy is non-toggleable. *@
+            <div class="mt-2">
+                <GmCopyNotice Message="@(_localizer["Manage_CarRental_Settings_Notif_GmAlwaysCopied"])" />
+            </div>
+        </div>
+    </section>
+
+    @* Section 5: Listing state *@
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-1">@_localizer["Manage_CarRental_Settings_State_Title"]</h2>
+        <p class="text-xs text-muted mb-5">@_localizer["Manage_CarRental_Settings_State_Subtitle"]</p>
+        <div class="flex items-center gap-3 flex-wrap">
+            <PendingReviewTooltip>
+                <button type="button" class="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 text-ink text-xs font-semibold cursor-pointer">
+                    @_localizer["Manage_CarRental_Settings_State_Pause"]
+                </button>
+            </PendingReviewTooltip>
+            <span class="text-[11px] text-muted">
+                @_localizer["Manage_Common_Currently"]
+                <strong class="text-green-700">@Listing.Status</strong>
+            </span>
+        </div>
+    </section>
+
+    @* Sticky save bar. Regla #5. *@
+    <div class="sticky bottom-4 z-10 bg-white rounded-3xl border border-slate-200 shadow-soft p-4 flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-[11px] text-muted leading-relaxed flex-1 min-w-[200px]">
+            <strong class="text-ink">@_localizer["Manage_CarRental_Settings_SavingPending_Title"]</strong>
+            @_localizer["Manage_CarRental_Settings_SavingPending_Body"]
+        </p>
+        <div class="flex items-center gap-2">
+            <button type="button" class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink cursor-pointer">
+                @_localizer["Manage_Common_Cancel"]
+            </button>
+            <PendingReviewTooltip>
+                <button type="button" class="text-xs px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold cursor-pointer">
+                    @_localizer["Manage_Common_SaveChanges"]
+                </button>
+            </PendingReviewTooltip>
+        </div>
+    </div>
+
+    @* Danger zone *@
+    <section class="bg-white rounded-3xl border border-red-200 shadow-soft p-5 mt-8">
+        <h2 class="text-base font-semibold text-red-800 mb-1">@_localizer["Manage_CarRental_Settings_Danger_Title"]</h2>
+        <p class="text-xs text-muted mb-4">@_localizer["Manage_CarRental_Settings_Danger_Subtitle"]</p>
+        <button type="button" class="px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold cursor-pointer">
+            @_localizer["Manage_CarRental_Settings_Danger_Delete"]
+        </button>
+    </section>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

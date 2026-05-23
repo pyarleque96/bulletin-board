@@ -1,0 +1,113 @@
+@* Pagination — componente reutilizable de paginación.
+   Muestra prev / números / ... / next.
+   No rendermode propio — hereda del padre. *@
+
+@if (TotalPages <= 1) { return; }
+
+<nav class="mt-10 flex items-center justify-center gap-1"
+     role="navigation"
+     aria-label="Pagination">
+
+    @* Prev button *@
+    <button type="button"
+            class="@NavButtonClass(CurrentPage <= 1)"
+            disabled="@(CurrentPage <= 1)"
+            aria-label="Previous page"
+            @onclick="() => ChangePage(CurrentPage - 1)">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+        </svg>
+    </button>
+
+    @* Page numbers *@
+    @foreach (var pageNum in GetPageNumbers())
+    {
+        if (pageNum == Ellipsis)
+        {
+            <span class="w-9 h-9 flex items-center justify-center text-muted text-sm select-none"
+                  aria-hidden="true">...</span>
+        }
+        else
+        {
+            <button type="button"
+                    class="@PageButtonClass(pageNum)"
+                    aria-label="@PageAriaLabel(pageNum)"
+                    aria-current="@AriaCurrent(pageNum)"
+                    @onclick="() => ChangePage(pageNum)">
+                @(pageNum)
+            </button>
+        }
+    }
+
+    @* Next button *@
+    <button type="button"
+            class="@NavButtonClass(CurrentPage >= TotalPages)"
+            disabled="@(CurrentPage >= TotalPages)"
+            aria-label="Next page"
+            @onclick="() => ChangePage(CurrentPage + 1)">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+        </svg>
+    </button>
+
+</nav>
+
+@code {
+    [Parameter] public int CurrentPage  { get; set; } = 1;
+    [Parameter] public int TotalPages   { get; set; } = 1;
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    [Inject] private IStringLocalizer<SharedResource>? _localizer { get; set; }
+
+    private const int Ellipsis = -1;
+
+    private string NavButtonClass(bool isDisabled) =>
+        isDisabled
+            ? "w-9 h-9 rounded-xl border border-slate-100 text-slate-300 cursor-not-allowed flex items-center justify-center transition-colors duration-200"
+            : "w-9 h-9 rounded-xl border border-slate-200 text-muted hover:text-ink hover:border-slate-300 flex items-center justify-center transition-colors duration-200 cursor-pointer";
+
+    private string PageButtonClass(int pageNum) =>
+        pageNum == CurrentPage
+            ? "w-9 h-9 rounded-xl bg-ink text-white flex items-center justify-center text-sm font-medium cursor-pointer"
+            : "w-9 h-9 rounded-xl border border-slate-200 text-muted hover:text-ink hover:border-slate-300 flex items-center justify-center text-sm font-medium transition-colors duration-200 cursor-pointer";
+
+    private string PageAriaLabel(int pageNum) => string.Format("Page {0}", pageNum);
+
+    private string? AriaCurrent(int pageNum) => pageNum == CurrentPage ? "page" : null;
+
+    private List<int> GetPageNumbers()
+    {
+        var pages = new List<int>();
+
+        if (TotalPages <= 7)
+        {
+            for (int i = 1; i <= TotalPages; i++) pages.Add(i);
+            return pages;
+        }
+
+        const int WindowSize = 2;
+
+        pages.Add(1);
+
+        int rangeStart = Math.Max(2, CurrentPage - WindowSize);
+        int rangeEnd   = Math.Min(TotalPages - 1, CurrentPage + WindowSize);
+
+        if (rangeStart > 2) pages.Add(Ellipsis);
+        for (int i = rangeStart; i <= rangeEnd; i++) pages.Add(i);
+        if (rangeEnd < TotalPages - 1) pages.Add(Ellipsis);
+
+        pages.Add(TotalPages);
+
+        return pages;
+    }
+
+    private async Task ChangePage(int pageNum)
+    {
+        if (pageNum < 1 || pageNum > TotalPages || pageNum == CurrentPage) return;
+        await OnPageChanged.InvokeAsync(pageNum);
+    }
+}

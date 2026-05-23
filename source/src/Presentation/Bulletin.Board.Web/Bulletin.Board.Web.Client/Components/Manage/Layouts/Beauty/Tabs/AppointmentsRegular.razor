@@ -1,0 +1,53 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   AppointmentsRegular (Beauty) — Tab Appointments para beauty Regular/Verified.
+   Lista de citas próximas/pending/past. Regla #8: WhatsApp + GM copy en cada
+   confirmación.
+
+   Datos: placeholder hasta que aterricen los endpoints. Ver BACKEND_AUDIT §1.4
+   Tab Appointments.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Beauty.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-appointments"
+      role="tabpanel"
+      aria-labelledby="tab-appointments"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Beauty_Appointments_Title"]</h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Beauty_Appointments_Subtitle"]</p>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="@_localizer["Manage_Beauty_Appointments_Filter_AriaLabel"]">
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">
+                @_localizer["Manage_Beauty_Appointments_Filter_Upcoming"]
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+                @_localizer["Manage_Beauty_Appointments_Filter_Pending"]
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+                @_localizer["Manage_Beauty_Appointments_Filter_Past"]
+            </button>
+        </div>
+    </div>
+
+    @* GM-copy banner (Regla #8) *@
+    <div class="mb-5">
+        <GmCopyNotice />
+    </div>
+
+    @* Lista — TODO: API GET /api/v1/manage/listings/{id}/appointments?from=&to= (BACKEND_AUDIT §1.4). *@
+    <ManageEmptyState Title="@_localizer["Manage_Beauty_Appointments_Empty_Title"]"
+                      Description="@_localizer["Manage_Beauty_Appointments_Empty_Description"]" />
+
+    <p class="text-[11px] text-muted mt-5">@_localizer["Manage_Beauty_Appointments_Footer"]</p>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

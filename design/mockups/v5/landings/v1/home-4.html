@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Local Services in Wisconsin Dells</title>
+  <!-- ES: Bulletin Dells — Servicios Locales en Wisconsin Dells -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand:  { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink:    '#1E293B',
+            muted:  '#64748B',
+            cream:  '#FDFBF7',
+          },
+          boxShadow: {
+            'soft':  '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift':  '0 12px 40px -8px rgba(30,41,59,0.14)',
+            'float': '0 24px 64px -12px rgba(30,41,59,0.18)',
+          },
+          transitionTimingFunction: {
+            'spring': 'cubic-bezier(0.32,0.72,0,1)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ─── Reduced motion ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ─── Grain overlay — fixed, GPU-safe ─── */
+    .grain-overlay {
+      position: fixed; inset: 0; z-index: 50; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.45;
+    }
+
+    /* ─── Nav pill glass morphism ─── */
+    .nav-pill {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(253,251,247,0.92);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    /* ─── Badges ─── */
+    .badge-sdvip { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .badge-vip   { background: linear-gradient(135deg, #fb923c, #f97316); }
+    .badge-new   { background: linear-gradient(135deg, #34d399, #10b981); }
+
+    /* ─── Double-Bezel outer shell ─── */
+    .bezel-shell {
+      ring: 1px solid rgba(0,0,0,0.05);
+      padding: 6px;
+      border-radius: 2rem;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .bezel-core {
+      border-radius: calc(2rem - 0.375rem);
+      background: white;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+
+    /* ─── VIP glow rings ─── */
+    .vip-glow   { box-shadow: 0 0 0 1px rgba(249,115,22,0.25), 0 8px 32px -4px rgba(249,115,22,0.16); }
+    .sdvip-glow { box-shadow: 0 0 0 1px rgba(234,179,8,0.35),  0 8px 32px -4px rgba(234,179,8,0.22); }
+
+    /* ─── Card hover lift ─── */
+    .card-hover {
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1);
+      cursor: pointer;
+    }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 24px 64px -12px rgba(30,41,59,0.16); }
+
+    /* ─── Buttons ─── */
+    .btn-primary {
+      transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s cubic-bezier(0.32,0.72,0,1);
+    }
+    .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(249,115,22,0.38); }
+    .btn-primary:active { transform: translateY(0) scale(0.98); }
+
+    .btn-wa { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease; }
+    .btn-wa:hover  { transform: translateY(-1px); box-shadow: 0 8px 24px -4px rgba(37,211,102,0.38); }
+    .btn-wa:active { transform: scale(0.98); }
+
+    /* ─── Search ring focus ─── */
+    .search-ring:focus-within { box-shadow: 0 0 0 3px rgba(59,130,246,0.35); }
+
+    /* ─── Scroll-reveal ─── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.32,0.72,0,1), transform 0.7s cubic-bezier(0.32,0.72,0,1);
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── Z-axis cascade (hero right stack) ─── */
+    .z-cascade-1 { transform: rotate(-2deg) translateY(0px);   z-index: 30; position: relative; }
+    .z-cascade-2 { transform: rotate(1.5deg) translateY(-12px); z-index: 20; position: relative; margin-top: -32px; }
+    .z-cascade-3 { transform: rotate(-1deg) translateY(-20px);  z-index: 10; position: relative; margin-top: -28px; }
+    @media (max-width: 767px) {
+      .z-cascade-1, .z-cascade-2, .z-cascade-3 {
+        transform: none; margin-top: 0; position: static;
+      }
+    }
+
+    /* ─── Category accordion pills ─── */
+    .cat-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 9999px;
+      background: white; border: 1px solid rgba(30,41,59,0.08);
+      font-size: 14px; font-weight: 500; color: #1E293B;
+      cursor: pointer; white-space: nowrap;
+      transition: all 0.45s cubic-bezier(0.32,0.72,0,1);
+      box-shadow: 0 2px 8px -2px rgba(30,41,59,0.06);
+      overflow: hidden;
+    }
+    .cat-pill:hover, .cat-pill.active {
+      background: #1E293B; color: white;
+      box-shadow: 0 8px 24px -6px rgba(30,41,59,0.25);
+    }
+    .cat-pill .cat-arrow {
+      opacity: 0; max-width: 0; transition: max-width 0.45s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease;
+    }
+    .cat-pill:hover .cat-arrow, .cat-pill.active .cat-arrow {
+      opacity: 1; max-width: 80px;
+    }
+    .cat-pill .cat-count {
+      opacity: 0; max-width: 0; overflow: hidden;
+      transition: max-width 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .cat-pill:hover .cat-count, .cat-pill.active .cat-count {
+      opacity: 0.65; max-width: 60px;
+    }
+
+    /* ─── Eyebrow pill ─── */
+    .eyebrow-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 9999px;
+      background: #eff6ff; color: #2563eb;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    /* ─── Rating stars ─── */
+    .star-fill { color: #f59e0b; }
+    .star-empty { color: #e2e8f0; }
+
+    /* ─── Skeleton shimmer ─── */
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e8edf3 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ─── Hero cream background with subtle warm gradient ─── */
+    .hero-cream {
+      background: linear-gradient(150deg, #FDFBF7 0%, #F9F5EE 40%, #FBF8F2 70%, #FDFBF7 100%);
+    }
+
+    /* ─── Provider CTA background ─── */
+    .cta-bg { background: #1E293B; }
+
+    /* ─── Trust strip dividers ─── */
+    .trust-col + .trust-col {
+      border-left: 1px solid #f1f5f9;
+    }
+
+    /* ─── Stagger delays for hero elements ─── */
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+    .delay-400 { transition-delay: 400ms; }
+    .delay-500 { transition-delay: 500ms; }
+    .delay-600 { transition-delay: 600ms; }
+    .delay-700 { transition-delay: 700ms; }
+
+    /* ─── Large card featured ─── */
+    .featured-large-card {
+      background: linear-gradient(145deg, #0f2744 0%, #1e3a5f 60%, #2553a0 100%);
+      min-height: 360px;
+    }
+    .featured-medium-card-1 {
+      background: linear-gradient(145deg, #1a1a2e 0%, #2d1b47 100%);
+      min-height: 168px;
+    }
+    .featured-medium-card-2 {
+      background: linear-gradient(145deg, #0f3a2e 0%, #1a6347 100%);
+      min-height: 168px;
+    }
+
+    /* ─── Icon circle bg in trust section ─── */
+    .trust-icon-ring {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: #f1f5f9; color: #1E293B;
+    }
+  </style>
+</head>
+<body class="font-sans bg-cream text-ink antialiased">
+
+  <!-- Grain texture (fixed, pointer-events-none — GPU safe) -->
+  <!-- ES: Textura de grano (fija, sin interaccion — segura para GPU) -->
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       NAVBAR — floating glass pill
+       ES: Barra de navegacion flotante tipo pastilla de vidrio
+       ============================================================ -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center justify-between" aria-label="Main navigation">
+
+      <!-- Logo -->
+      <a href="landing.html" class="flex items-center gap-2.5 cursor-pointer" aria-label="Bulletin Dells — go to homepage">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shadow-soft flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="font-semibold tracking-tight text-sm hidden sm:block text-ink transition-colors duration-300">Bulletin Dells</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <ul class="hidden md:flex items-center gap-1" role="list">
+        <li>
+          <a href="home-listings.html" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-ink/5 transition-colors duration-200 cursor-pointer">
+            Browse
+            <!-- ES: Navegar -->
+          </a>
+        </li>
+        <li>
+          <a href="#featured" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-ink/5 transition-colors duration-200 cursor-pointer">
+            Featured
+            <!-- ES: Destacados -->
+          </a>
+        </li>
+        <li>
+          <a href="#categories" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-ink/5 transition-colors duration-200 cursor-pointer">
+            Categories
+            <!-- ES: Categorias -->
+          </a>
+        </li>
+        <li>
+          <a href="#how-it-works" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-ink/5 transition-colors duration-200 cursor-pointer">
+            How it works
+            <!-- ES: Como funciona -->
+          </a>
+        </li>
+      </ul>
+
+      <!-- Language + CTA -->
+      <div class="flex items-center gap-2">
+        <!-- Language toggle -->
+        <button
+          class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-ink/5 transition-colors duration-200 cursor-pointer"
+          aria-label="Switch language between English and Spanish"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          EN / ES
+        </button>
+
+        <!-- Primary CTA — button-in-button -->
+        <a
+          href="#"
+          class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full btn-primary cursor-pointer"
+          aria-label="List your business on Bulletin Dells"
+        >
+          <!-- ES: Publica tu negocio -->
+          List your business
+          <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+            </svg>
+          </span>
+        </a>
+
+        <!-- Mobile hamburger -->
+        <button
+          class="md:hidden flex items-center justify-center w-8 h-8 rounded-full hover:bg-ink/5 transition-colors duration-200 cursor-pointer"
+          aria-label="Open menu"
+          aria-expanded="false"
+        >
+          <svg class="w-4 h-4 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ============================================================
+         HERO — Editorial Split (55 / 45) asymmetric layout
+         Vibe: Editorial Luxury — cream background, massive left-aligned type
+         ES: HERO — Division editorial asimetrica, tipografia masiva a la izquierda
+         ============================================================ -->
+    <section
+      class="hero-cream min-h-[100dvh] pt-28 pb-20 px-4 relative overflow-hidden"
+      aria-labelledby="h4-hero-headline"
+    >
+      <!-- Decorative orbs — pointer-events-none, GPU-safe -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="absolute top-1/4 right-[5%] w-96 h-96 rounded-full bg-brand-200/30 blur-3xl"></div>
+        <div class="absolute bottom-1/3 left-[8%] w-64 h-64 rounded-full bg-accent/8 blur-3xl"></div>
+        <div class="absolute top-[60%] right-[30%] w-48 h-48 rounded-full bg-amber-100/50 blur-2xl"></div>
+      </div>
+
+      <div class="relative z-10 w-full max-w-6xl mx-auto">
+        <!-- Split grid: 55 / 45 -->
+        <div class="grid grid-cols-1 md:grid-cols-[55fr_45fr] gap-12 md:gap-8 lg:gap-16 items-center min-h-[calc(100dvh-7rem)]">
+
+          <!-- LEFT — Text content -->
+          <div class="flex flex-col justify-center gap-7 py-8 md:py-0">
+
+            <!-- Eyebrow pill -->
+            <!-- ES: Pastilla de categoría -->
+            <div class="fade-up delay-100">
+              <span class="eyebrow-pill" aria-label="Location: Wisconsin Dells, WI">
+                <!-- Map pin icon inline -->
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                Wisconsin Dells, WI
+              </span>
+            </div>
+
+            <!-- H1 — massive, tight tracking -->
+            <!-- ES: Encuentra lo que buscas. Aqui mismo. -->
+            <h1
+              id="h4-hero-headline"
+              class="fade-up delay-200 text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-bold text-ink leading-[1.02] tracking-tighter"
+            >
+              Find what<br />
+              you need.<br />
+              <span class="text-brand-600">Right here.</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <!-- ES: El marketplace bilingue de Wisconsin Dells. Vivienda, rides, mecanica, belleza, empleos — todos verificados. -->
+            <p class="fade-up delay-300 text-lg text-muted leading-relaxed max-w-[46ch]">
+              The bilingual marketplace for Wisconsin Dells. Housing, rides, mechanics, beauty, jobs — all verified by our GM.
+            </p>
+
+            <!-- Search bar — left-aligned, full-width on left column -->
+            <div class="fade-up delay-400">
+              <div
+                class="search-ring rounded-2xl bg-white shadow-lift overflow-hidden transition-shadow duration-300"
+                role="search"
+                aria-label="Search Bulletin Dells"
+              >
+                <div class="flex items-center">
+                  <div class="pl-5 pr-2 flex-shrink-0" aria-hidden="true">
+                    <svg class="w-5 h-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"/>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                  </div>
+                  <label for="h4-search" class="sr-only">Search services in Wisconsin Dells</label>
+                  <!-- ES: Buscar servicios en Wisconsin Dells -->
+                  <input
+                    id="h4-search"
+                    type="search"
+                    placeholder="Car rental, housing, mechanic..."
+                    class="flex-1 py-4 px-3 text-ink placeholder-muted/55 bg-transparent border-none outline-none text-base"
+                    aria-label="Search services"
+                  />
+                  <!-- ES: placeholder="Renta de autos, vivienda, mecanico..." -->
+                  <div class="w-px h-8 bg-slate-100 flex-shrink-0 mx-1" aria-hidden="true"></div>
+                  <label for="h4-category" class="sr-only">Category</label>
+                  <!-- ES: Categoria -->
+                  <select id="h4-category" class="hidden sm:block py-4 px-3 text-sm text-muted bg-transparent border-none outline-none cursor-pointer appearance-none">
+                    <option>All categories</option>
+                    <!-- ES: <option>Todas las categorias</option> -->
+                    <option>Housing</option>
+                    <!-- ES: <option>Vivienda</option> -->
+                    <option>Car Rental</option>
+                    <!-- ES: <option>Renta de autos</option> -->
+                    <option>Airport Rides</option>
+                    <!-- ES: <option>Rides al aeropuerto</option> -->
+                    <option>Mechanics</option>
+                    <!-- ES: <option>Mecanicos</option> -->
+                    <option>Beauty</option>
+                    <!-- ES: <option>Belleza</option> -->
+                    <option>Jobs</option>
+                    <!-- ES: <option>Empleos</option> -->
+                  </select>
+                  <button
+                    type="submit"
+                    class="m-2 flex items-center gap-2 bg-ink text-white text-sm font-medium px-5 py-2.5 rounded-xl btn-primary cursor-pointer flex-shrink-0"
+                    aria-label="Search"
+                  >
+                    <!-- ES: Buscar -->
+                    Search
+                    <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trust signals -->
+            <!-- ES: Senales de confianza -->
+            <div class="fade-up delay-500 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 text-brand-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <!-- ES: Verificado por el GM -->
+                GM Verified
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/>
+                </svg>
+                <!-- ES: Contacto por WhatsApp -->
+                WhatsApp contact
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 text-amber-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <!-- ES: 142 negocios locales -->
+                142 local businesses
+              </div>
+            </div>
+
+          </div><!-- /LEFT -->
+
+          <!-- RIGHT — Z-axis cascade cards -->
+          <!-- ES: Lado derecho — tarjetas en cascada Z -->
+          <div class="relative flex flex-col gap-0 py-8 md:py-0 md:pl-6">
+
+            <!-- Card 1 — SD-VIP (gold, largest, foreground) -->
+            <!-- ES: Tarjeta SD-VIP — dorada, primer plano -->
+            <div class="z-cascade-1 fade-up delay-300">
+              <!-- Double-Bezel outer shell — SD-VIP glow -->
+              <div class="bezel-shell sdvip-glow card-hover">
+                <div class="bezel-core">
+                  <div class="relative p-5">
+                    <!-- Photo placeholder gradient -->
+                    <div class="w-full h-40 rounded-[calc(2rem-1rem)] overflow-hidden mb-4 bg-gradient-to-br from-amber-900 via-amber-700 to-yellow-600 flex items-end p-3" aria-hidden="true">
+                      <span class="text-white/20 text-6xl font-black leading-none select-none">SD</span>
+                    </div>
+                    <!-- Badges row -->
+                    <div class="flex items-center gap-2 mb-3">
+                      <span class="badge-sdvip text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                        Super Duper VIP
+                      </span>
+                      <span class="badge-new text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                        New
+                        <!-- ES: Nuevo -->
+                      </span>
+                    </div>
+                    <!-- Title + meta -->
+                    <h3 class="font-semibold text-ink text-base leading-snug mb-1">
+                      Dells Premium Car Rentals
+                      <!-- ES: Renta de Autos Premium Dells -->
+                    </h3>
+                    <p class="text-muted text-xs mb-3">Wisconsin Dells, WI · Car Rental</p>
+                    <!-- ES: Wisconsin Dells, WI · Renta de Autos -->
+                    <!-- Rating -->
+                    <div class="flex items-center gap-1.5 mb-4">
+                      <div class="flex" aria-label="Rating: 4.8 out of 5 stars">
+                        <!-- 4 full stars + 1 half -->
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-empty" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </div>
+                      <span class="text-xs font-semibold text-ink">4.8</span>
+                      <span class="text-xs text-muted">(37 reviews)</span>
+                      <!-- ES: (37 reseñas) -->
+                    </div>
+                    <!-- WhatsApp CTA — button-in-button -->
+                    <a
+                      href="https://wa.me/16084001234"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-wa flex items-center justify-center gap-2 w-full bg-[#25D366] text-white text-sm font-semibold py-2.5 rounded-xl cursor-pointer"
+                      aria-label="Contact Dells Premium Car Rentals via WhatsApp"
+                    >
+                      <!-- WhatsApp icon -->
+                      <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                      </svg>
+                      <!-- ES: Contactar por WhatsApp -->
+                      Contact on WhatsApp
+                      <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                        </svg>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Card 1 SD-VIP -->
+
+            <!-- Card 2 — VIP (orange, behind card 1) -->
+            <!-- ES: Tarjeta VIP — naranja, detras de la primera -->
+            <div class="z-cascade-2 fade-up delay-500">
+              <div class="bezel-shell vip-glow card-hover">
+                <div class="bezel-core">
+                  <div class="p-4 flex items-center gap-4">
+                    <!-- Photo thumbnail -->
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-700 to-purple-900 flex-shrink-0 flex items-end p-1.5" aria-hidden="true">
+                      <span class="text-white/25 text-2xl font-black leading-none select-none">H</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-1.5 mb-1">
+                        <span class="badge-vip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">VIP</span>
+                      </div>
+                      <h3 class="font-semibold text-ink text-sm leading-snug truncate">
+                        Casa Morales Housing
+                        <!-- ES: Vivienda Casa Morales -->
+                      </h3>
+                      <p class="text-muted text-xs">Housing · From $650/mo</p>
+                      <!-- ES: Vivienda · Desde $650/mes -->
+                      <div class="flex items-center gap-1 mt-1">
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span class="text-[11px] font-semibold text-ink ml-0.5">4.9</span>
+                        <span class="text-[11px] text-muted">(21)</span>
+                      </div>
+                    </div>
+                    <!-- WhatsApp mini-button -->
+                    <a
+                      href="https://wa.me/16085557832"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-wa flex-shrink-0 w-9 h-9 rounded-xl bg-[#25D366] flex items-center justify-center text-white shadow-soft cursor-pointer"
+                      aria-label="Contact Casa Morales Housing via WhatsApp"
+                    >
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Card 2 VIP -->
+
+            <!-- Card 3 — Regular (deep background) -->
+            <!-- ES: Tarjeta regular — al fondo -->
+            <div class="z-cascade-3 fade-up delay-700">
+              <div class="bezel-shell card-hover">
+                <div class="bezel-core">
+                  <div class="p-4 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex-shrink-0" aria-hidden="true"></div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-semibold text-ink text-sm leading-snug truncate">Flores Auto Repair</h3>
+                      <!-- ES: Taller Flores Reparacion de Autos -->
+                      <p class="text-muted text-xs">Mechanics · Baraboo, WI</p>
+                      <!-- ES: Mecanicos · Baraboo, WI -->
+                      <div class="flex items-center gap-1 mt-1">
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3 h-3 star-empty" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span class="text-[11px] font-semibold text-ink ml-0.5">4.6</span>
+                      </div>
+                    </div>
+                    <a
+                      href="https://wa.me/16083219045"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-wa flex-shrink-0 w-9 h-9 rounded-xl bg-[#25D366] flex items-center justify-center text-white shadow-soft cursor-pointer"
+                      aria-label="Contact Flores Auto Repair via WhatsApp"
+                    >
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Card 3 Regular -->
+
+          </div><!-- /RIGHT -->
+
+        </div><!-- /grid -->
+      </div><!-- /max-w-6xl -->
+    </section>
+    <!-- /HERO -->
+
+
+    <!-- ============================================================
+         FEATURED SERVICES — asymmetric grid (1 large + 2 stacked)
+         ES: SERVICIOS DESTACADOS — cuadricula asimetrica (1 grande + 2 medianas)
+         ============================================================ -->
+    <section id="featured" class="py-28 px-4 bg-white" aria-labelledby="h4-featured-headline">
+      <div class="w-full max-w-6xl mx-auto">
+
+        <!-- Section header -->
+        <div class="mb-14 fade-up">
+          <span class="eyebrow-pill mb-4 inline-flex">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <!-- ES: Servicios Destacados -->
+            Featured Services
+          </span>
+          <h2 id="h4-featured-headline" class="text-4xl md:text-5xl font-bold text-ink tracking-tighter leading-tight mt-3">
+            Top providers,<br />verified by our GM.
+            <!-- ES: Los mejores proveedores,<br />verificados por nuestro GM. -->
+          </h2>
+        </div>
+
+        <!-- Asymmetric grid: 2fr 1fr on desktop -->
+        <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-5">
+
+          <!-- Large card — SD-VIP -->
+          <!-- ES: Tarjeta grande — SD-VIP -->
+          <div class="fade-up delay-100">
+            <!-- Double-Bezel outer shell -->
+            <div class="bezel-shell sdvip-glow card-hover h-full">
+              <div class="bezel-core h-full">
+                <!-- Photo area with gradient -->
+                <div class="featured-large-card w-full relative flex flex-col justify-end p-6" aria-hidden="true">
+                  <!-- Overlay text on gradient -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent rounded-t-[calc(2rem-0.375rem)]"></div>
+                  <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="badge-sdvip text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">Super Duper VIP</span>
+                      <span class="badge-new text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">New</span>
+                      <!-- ES: <span>Nuevo</span> -->
+                    </div>
+                    <h3 class="text-white font-bold text-2xl leading-tight mb-0.5">
+                      Dells Premium Car Rentals
+                      <!-- ES: Renta de Autos Premium Dells -->
+                    </h3>
+                    <p class="text-white/70 text-sm">Car Rental · Wisconsin Dells, WI</p>
+                    <!-- ES: Renta de Autos · Wisconsin Dells, WI -->
+                  </div>
+                </div>
+                <!-- Card footer -->
+                <div class="p-5 flex items-center justify-between gap-4">
+                  <div>
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <div class="flex" aria-label="Rating 4.8 of 5">
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <svg class="w-3.5 h-3.5 star-empty" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      </div>
+                      <span class="text-sm font-semibold text-ink">4.8</span>
+                      <span class="text-sm text-muted">(37 reviews)</span>
+                      <!-- ES: (37 reseñas) -->
+                    </div>
+                    <p class="text-muted text-xs">From $48/day · Fleet of 12 vehicles</p>
+                    <!-- ES: Desde $48/dia · Flota de 12 vehiculos -->
+                  </div>
+                  <a
+                    href="https://wa.me/16084001234"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-wa flex items-center gap-2 bg-[#25D366] text-white text-sm font-semibold px-4 py-2.5 rounded-xl cursor-pointer flex-shrink-0"
+                    aria-label="Contact Dells Premium Car Rentals via WhatsApp"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                    </svg>
+                    <!-- ES: Contactar -->
+                    Contact
+                    <span class="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div><!-- /Large card -->
+
+          <!-- Right column: 2 medium cards stacked -->
+          <!-- ES: Columna derecha: 2 tarjetas medianas apiladas -->
+          <div class="flex flex-col gap-5">
+
+            <!-- Medium card 1 — VIP Housing -->
+            <!-- ES: Tarjeta mediana 1 — VIP Vivienda -->
+            <div class="fade-up delay-200">
+              <div class="bezel-shell vip-glow card-hover h-full">
+                <div class="bezel-core h-full">
+                  <div class="featured-medium-card-1 relative flex flex-col justify-end p-5">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-t-[calc(2rem-0.375rem)]"></div>
+                    <div class="relative z-10">
+                      <div class="flex items-center gap-1.5 mb-1.5">
+                        <span class="badge-vip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">VIP</span>
+                      </div>
+                      <h3 class="text-white font-bold text-base leading-snug mb-0.5">Casa Morales Housing</h3>
+                      <!-- ES: Vivienda Casa Morales -->
+                      <p class="text-white/65 text-xs">Housing · From $650/mo</p>
+                      <!-- ES: Vivienda · Desde $650/mes -->
+                    </div>
+                  </div>
+                  <div class="p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-1">
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span class="text-xs font-semibold text-ink ml-1">4.9</span>
+                      <span class="text-xs text-muted">(21)</span>
+                    </div>
+                    <a
+                      href="https://wa.me/16085557832"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-wa flex-shrink-0 w-8 h-8 rounded-xl bg-[#25D366] flex items-center justify-center text-white cursor-pointer"
+                      aria-label="Contact Casa Morales via WhatsApp"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Medium card 1 -->
+
+            <!-- Medium card 2 — VIP Airport Rides -->
+            <!-- ES: Tarjeta mediana 2 — VIP Rides al Aeropuerto -->
+            <div class="fade-up delay-300">
+              <div class="bezel-shell vip-glow card-hover h-full">
+                <div class="bezel-core h-full">
+                  <div class="featured-medium-card-2 relative flex flex-col justify-end p-5">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-t-[calc(2rem-0.375rem)]"></div>
+                    <div class="relative z-10">
+                      <div class="flex items-center gap-1.5 mb-1.5">
+                        <span class="badge-vip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">VIP</span>
+                      </div>
+                      <h3 class="text-white font-bold text-base leading-snug mb-0.5">Dells Airport Express</h3>
+                      <!-- ES: Express Aeropuerto Dells -->
+                      <p class="text-white/65 text-xs">Airport Rides · MSN Airport</p>
+                      <!-- ES: Rides al Aeropuerto · Aeropuerto MSN -->
+                    </div>
+                  </div>
+                  <div class="p-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-1">
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3 h-3 star-fill" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span class="text-xs font-semibold text-ink ml-1">5.0</span>
+                      <span class="text-xs text-muted">(14)</span>
+                    </div>
+                    <a
+                      href="https://wa.me/16087774521"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn-wa flex-shrink-0 w-8 h-8 rounded-xl bg-[#25D366] flex items-center justify-center text-white cursor-pointer"
+                      aria-label="Contact Dells Airport Express via WhatsApp"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Medium card 2 -->
+
+          </div><!-- /Right column -->
+        </div><!-- /grid -->
+
+        <!-- View all link -->
+        <div class="mt-10 fade-up delay-400">
+          <a
+            href="home-listings.html"
+            class="inline-flex items-center gap-2 text-brand-600 text-sm font-semibold hover:text-brand-700 transition-colors duration-200 cursor-pointer group"
+            aria-label="View all featured services"
+          >
+            <!-- ES: Ver todos los servicios destacados -->
+            View all featured services
+            <span class="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center group-hover:bg-brand-200 transition-colors duration-200" aria-hidden="true">
+              <svg class="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+
+      </div><!-- /max-w-6xl -->
+    </section>
+    <!-- /FEATURED SERVICES -->
+
+
+    <!-- ============================================================
+         CATEGORIES — Horizontal accordion pills
+         ES: CATEGORIAS — Pills horizontales con acordeon
+         ============================================================ -->
+    <section id="categories" class="py-24 px-4 bg-cream" aria-labelledby="h4-cat-headline">
+      <div class="w-full max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="mb-12 fade-up">
+          <span class="eyebrow-pill mb-4 inline-flex">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <!-- ES: Explorar por categoria -->
+            Browse by category
+          </span>
+          <h2 id="h4-cat-headline" class="text-4xl md:text-5xl font-bold text-ink tracking-tighter leading-tight mt-3">
+            What are you<br />looking for?
+            <!-- ES: ¿Que estas<br />buscando? -->
+          </h2>
+        </div>
+
+        <!-- Pills row — horizontal scroll on mobile -->
+        <div class="fade-up delay-200 flex flex-wrap gap-3" role="list" aria-label="Service categories">
+          <!-- ES: Categorias de servicio -->
+
+          <!-- Housing -->
+          <div role="listitem">
+            <button
+              class="cat-pill"
+              aria-label="Browse Housing listings — 23 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- House icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <!-- ES: Vivienda -->
+              Housing
+              <span class="cat-count">23</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- Car Rental -->
+          <div role="listitem">
+            <button
+              class="cat-pill active"
+              aria-label="Browse Car Rental listings — 17 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- Car icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              <!-- ES: Renta de Autos -->
+              Car Rental
+              <span class="cat-count">17</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- Airport Rides -->
+          <div role="listitem">
+            <button
+              class="cat-pill"
+              aria-label="Browse Airport Rides listings — 11 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- Plane icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 1-3.5 2.5L11 8 2.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 7.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+              </svg>
+              <!-- ES: Rides al Aeropuerto -->
+              Airport Rides
+              <span class="cat-count">11</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- Mechanics -->
+          <div role="listitem">
+            <button
+              class="cat-pill"
+              aria-label="Browse Mechanics listings — 19 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- Wrench icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+              <!-- ES: Mecanicos -->
+              Mechanics
+              <span class="cat-count">19</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- Beauty -->
+          <div role="listitem">
+            <button
+              class="cat-pill"
+              aria-label="Browse Beauty listings — 28 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- Scissors icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+                <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+              </svg>
+              <!-- ES: Belleza -->
+              Beauty
+              <span class="cat-count">28</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          <!-- Jobs -->
+          <div role="listitem">
+            <button
+              class="cat-pill"
+              aria-label="Browse Jobs listings — 34 providers available"
+              onclick="this.classList.toggle('active')"
+            >
+              <!-- Briefcase icon -->
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              <!-- ES: Empleos -->
+              Jobs
+              <span class="cat-count">34</span>
+              <span class="cat-arrow flex items-center" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+        </div><!-- /pills row -->
+
+        <!-- Total count -->
+        <p class="mt-8 text-sm text-muted fade-up delay-400">
+          <!-- ES: 132 proveedores verificados en 6 categorias -->
+          132 verified providers across 6 categories
+        </p>
+
+      </div><!-- /max-w-6xl -->
+    </section>
+    <!-- /CATEGORIES -->
+
+
+    <!-- ============================================================
+         TRUST STRIP — 4 columns with inline dividers
+         ES: FRANJA DE CONFIANZA — 4 columnas con divisores
+         ============================================================ -->
+    <section id="how-it-works" class="py-16 px-4 bg-white border-y border-slate-100" aria-labelledby="h4-trust-headline">
+      <div class="w-full max-w-6xl mx-auto">
+        <h2 id="h4-trust-headline" class="sr-only">How Bulletin Dells works</h2>
+        <!-- ES: Como funciona Bulletin Dells -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 lg:divide-x divide-slate-100">
+
+          <!-- Col 1 — GM Verified -->
+          <div class="trust-col px-6 py-8 fade-up">
+            <div class="trust-icon-ring mb-4" aria-hidden="true">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-ink text-base mb-1.5">GM Verified</h3>
+            <!-- ES: Verificado por el GM -->
+            <p class="text-muted text-sm leading-relaxed">
+              Every listing is manually reviewed and approved by our General Manager before going live.
+              <!-- ES: Cada anuncio es revisado y aprobado manualmente por nuestro GM antes de publicarse. -->
+            </p>
+          </div>
+
+          <!-- Col 2 — WhatsApp Contact -->
+          <div class="trust-col px-6 py-8 fade-up delay-100">
+            <div class="trust-icon-ring mb-4" aria-hidden="true">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-ink text-base mb-1.5">WhatsApp Direct</h3>
+            <!-- ES: Contacto Directo por WhatsApp -->
+            <p class="text-muted text-sm leading-relaxed">
+              Connect with providers instantly via WhatsApp. No middlemen, no delays.
+              <!-- ES: Conectate con proveedores al instante por WhatsApp. Sin intermediarios, sin esperas. -->
+            </p>
+          </div>
+
+          <!-- Col 3 — Bilingual -->
+          <div class="trust-col px-6 py-8 fade-up delay-200">
+            <div class="trust-icon-ring mb-4" aria-hidden="true">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-ink text-base mb-1.5">Bilingual EN / ES</h3>
+            <!-- ES: Bilingue EN / ES -->
+            <p class="text-muted text-sm leading-relaxed">
+              Fully bilingual platform — English and Spanish, from day one. Built for the whole community.
+              <!-- ES: Plataforma completamente bilingue — ingles y espanol, desde el primer dia. Para toda la comunidad. -->
+            </p>
+          </div>
+
+          <!-- Col 4 — Real Reviews -->
+          <div class="trust-col px-6 py-8 fade-up delay-300">
+            <div class="trust-icon-ring mb-4" aria-hidden="true">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-ink text-base mb-1.5">Real Reviews Only</h3>
+            <!-- ES: Solo Reseñas Reales -->
+            <p class="text-muted text-sm leading-relaxed">
+              Ratings come only from users who contacted the provider through our platform, then reviewed by the GM.
+              <!-- ES: Las reseñas solo vienen de usuarios que contactaron al proveedor a traves de nuestra plataforma, revisadas por el GM. -->
+            </p>
+          </div>
+
+        </div><!-- /grid -->
+      </div><!-- /max-w-6xl -->
+    </section>
+    <!-- /TRUST STRIP -->
+
+
+    <!-- ============================================================
+         PROVIDER CTA — dark ink background, split layout
+         ES: CTA DE PROVEEDOR — fondo oscuro ink, layout dividido
+         ============================================================ -->
+    <section class="py-32 px-4 cta-bg" aria-labelledby="h4-cta-headline">
+      <div class="w-full max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-[55fr_45fr] gap-12 md:gap-16 items-center">
+
+          <!-- Left — Text -->
+          <div class="fade-up">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white/70 text-[10px] uppercase tracking-[0.14em] font-medium mb-6 border border-white/10">
+              <!-- ES: Para proveedores -->
+              For providers
+            </span>
+            <h2 id="h4-cta-headline" class="text-4xl md:text-5xl font-bold text-white tracking-tighter leading-tight mb-5">
+              Grow your<br />local business.
+              <!-- ES: Haz crecer tu<br />negocio local. -->
+            </h2>
+            <p class="text-white/60 text-base leading-relaxed mb-8 max-w-[44ch]">
+              Join Wisconsin Dells' most trusted local marketplace. Get verified, reach customers, and grow.
+              <!-- ES: Unete al marketplace local mas confiable de Wisconsin Dells. Verificate, llega a clientes y crece. -->
+            </p>
+            <!-- CTA — button-in-button orange -->
+            <a
+              href="#"
+              class="inline-flex items-center gap-3 bg-accent text-white font-semibold px-6 py-3.5 rounded-full btn-primary cursor-pointer"
+              aria-label="List your business on Bulletin Dells"
+            >
+              <!-- ES: Publica tu negocio -->
+              List your business
+              <span class="w-7 h-7 rounded-full bg-black/15 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+                </svg>
+              </span>
+            </a>
+          </div><!-- /Left -->
+
+          <!-- Right — Steps -->
+          <!-- ES: Lado derecho — Pasos -->
+          <div class="fade-up delay-200 space-y-6">
+
+            <!-- Step 1 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/60 text-sm font-bold" aria-hidden="true">1</div>
+              <div>
+                <h3 class="text-white font-semibold text-base mb-1">Create your listing</h3>
+                <!-- ES: Crea tu anuncio -->
+                <p class="text-white/50 text-sm leading-relaxed">Add your business info, photos, and contact details.</p>
+                <!-- ES: Agrega informacion de tu negocio, fotos y datos de contacto. -->
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/60 text-sm font-bold" aria-hidden="true">2</div>
+              <div>
+                <h3 class="text-white font-semibold text-base mb-1">Get verified by the GM</h3>
+                <!-- ES: Verificate con el GM -->
+                <p class="text-white/50 text-sm leading-relaxed">Our General Manager reviews and approves your profile.</p>
+                <!-- ES: Nuestro GM revisa y aprueba tu perfil. -->
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/60 text-sm font-bold" aria-hidden="true">3</div>
+              <div>
+                <h3 class="text-white font-semibold text-base mb-1">Start receiving customers</h3>
+                <!-- ES: Empieza a recibir clientes -->
+                <p class="text-white/50 text-sm leading-relaxed">Clients contact you directly on WhatsApp — no fees per lead.</p>
+                <!-- ES: Los clientes te contactan directamente por WhatsApp — sin costo por lead. -->
+              </div>
+            </div>
+
+            <!-- Step 4 — optional upgrade -->
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent text-sm font-bold" aria-hidden="true">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-white font-semibold text-base mb-1">Upgrade to VIP for more reach</h3>
+                <!-- ES: Sube a VIP para mayor alcance -->
+                <p class="text-white/50 text-sm leading-relaxed">VIP providers appear above regular listings, always.</p>
+                <!-- ES: Los proveedores VIP aparecen siempre por encima de los regulares. -->
+              </div>
+            </div>
+
+          </div><!-- /Right — Steps -->
+        </div><!-- /grid -->
+      </div><!-- /max-w-6xl -->
+    </section>
+    <!-- /PROVIDER CTA -->
+
+  </main>
+
+
+  <!-- ============================================================
+       FOOTER — 4 columns, dark background
+       ES: PIE DE PAGINA — 4 columnas, fondo oscuro
+       ============================================================ -->
+  <footer class="bg-[#0f172a] px-4 pt-16 pb-8" role="contentinfo">
+    <div class="w-full max-w-6xl mx-auto">
+
+      <!-- 4-column grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
+
+        <!-- Col 1 — Brand -->
+        <div>
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <span class="text-white font-semibold tracking-tight text-sm">Bulletin Dells</span>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            The bilingual local marketplace for Wisconsin Dells. Connecting residents, J1 students, and seasonal workers with trusted local services.
+            <!-- ES: El marketplace local bilingue de Wisconsin Dells. Conectando residentes, estudiantes J1 y trabajadores de temporada con servicios locales confiables. -->
+          </p>
+          <!-- Language toggle -->
+          <div class="flex items-center gap-2">
+            <button class="text-xs text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer font-medium">EN</button>
+            <span class="text-slate-600 text-xs">·</span>
+            <button class="text-xs text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer">ES</button>
+          </div>
+        </div>
+
+        <!-- Col 2 — Browse -->
+        <div>
+          <h3 class="text-white text-xs font-semibold uppercase tracking-[0.12em] mb-5">
+            Browse
+            <!-- ES: Navegar -->
+          </h3>
+          <ul class="space-y-3" role="list">
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Housing</a></li>
+            <!-- ES: <li><a>Vivienda</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Car Rental</a></li>
+            <!-- ES: <li><a>Renta de Autos</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Airport Rides</a></li>
+            <!-- ES: <li><a>Rides al Aeropuerto</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Mechanics</a></li>
+            <!-- ES: <li><a>Mecanicos</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Beauty</a></li>
+            <!-- ES: <li><a>Belleza</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Jobs</a></li>
+            <!-- ES: <li><a>Empleos</a></li> -->
+          </ul>
+        </div>
+
+        <!-- Col 3 — For Providers -->
+        <div>
+          <h3 class="text-white text-xs font-semibold uppercase tracking-[0.12em] mb-5">
+            For Providers
+            <!-- ES: Para Proveedores -->
+          </h3>
+          <ul class="space-y-3" role="list">
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">List your business</a></li>
+            <!-- ES: <li><a>Publica tu negocio</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">VIP upgrade</a></li>
+            <!-- ES: <li><a>Mejorar a VIP</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Verification</a></li>
+            <!-- ES: <li><a>Verificacion</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Provider login</a></li>
+            <!-- ES: <li><a>Acceso proveedor</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Provider dashboard</a></li>
+            <!-- ES: <li><a>Panel del proveedor</a></li> -->
+          </ul>
+        </div>
+
+        <!-- Col 4 — Legal & Info -->
+        <div>
+          <h3 class="text-white text-xs font-semibold uppercase tracking-[0.12em] mb-5">
+            Info
+            <!-- ES: Informacion -->
+          </h3>
+          <ul class="space-y-3" role="list">
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">About Bulletin Dells</a></li>
+            <!-- ES: <li><a>Sobre Bulletin Dells</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">How it works</a></li>
+            <!-- ES: <li><a>Como funciona</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Terms of service</a></li>
+            <!-- ES: <li><a>Terminos de servicio</a></li> -->
+            <li><a href="#" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer">Privacy policy</a></li>
+            <!-- ES: <li><a>Politica de privacidad</a></li> -->
+            <li>
+              <a href="https://wa.me/16084001234" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-white text-sm transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                </svg>
+                <!-- ES: Contacto WhatsApp -->
+                WhatsApp contact
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div><!-- /4-column grid -->
+
+      <!-- Divider -->
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <p class="text-slate-500 text-xs">
+          <!-- ES: 2025 Bulletin Dells. Todos los derechos reservados. Wisconsin Dells, WI. -->
+          &copy; 2025 Bulletin Dells. All rights reserved. Wisconsin Dells, WI.
+        </p>
+        <p class="text-slate-600 text-xs">
+          <!-- ES: Diseñado para la comunidad de Wisconsin Dells -->
+          Designed for the Wisconsin Dells community
+        </p>
+      </div>
+
+    </div><!-- /max-w-6xl -->
+  </footer>
+  <!-- /FOOTER -->
+
+
+  <!-- ============================================================
+       JAVASCRIPT — IntersectionObserver scroll reveals
+       (Replace with Blazor @onscroll or JS interop as needed)
+       ES: Reemplazar con @onscroll de Blazor o JS interop segun sea necesario
+       ============================================================ -->
+  <script>
+    // ─── Scroll-reveal via IntersectionObserver (NEVER window.addEventListener('scroll'))
+    // ES: Revelar al hacer scroll usando IntersectionObserver
+    (function () {
+      const revealEls = document.querySelectorAll('.fade-up');
+      if (!revealEls.length) return;
+
+      const observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target); // fire once only
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      revealEls.forEach(function (el) {
+        observer.observe(el);
+      });
+    })();
+
+    // ─── Nav scroll behavior: darken pill on scroll
+    // ES: Comportamiento del nav al hacer scroll — oscurecer la pastilla
+    (function () {
+      var nav = document.querySelector('.nav-pill');
+      if (!nav) return;
+      var scrolled = false;
+
+      var navObserver = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) {
+              nav.style.background = 'rgba(253,251,247,0.97)';
+              nav.style.boxShadow = '0 8px 32px -8px rgba(30,41,59,0.14), inset 0 1px 0 rgba(255,255,255,0.9)';
+            } else {
+              nav.style.background = 'rgba(253,251,247,0.92)';
+              nav.style.boxShadow = '0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9)';
+            }
+          });
+        },
+        { threshold: 0 }
+      );
+
+      // Observe the hero section bottom edge
+      var heroSection = document.querySelector('section');
+      if (heroSection) navObserver.observe(heroSection);
+    })();
+  </script>
+
+</body>
+</html>

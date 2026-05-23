@@ -1,0 +1,38 @@
+@*
+    VipBadge — Badge de tier VIP.
+    Gradiente naranja — manage/index.html .tier-vip:
+      background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; border:none.
+    Estrella rellena (polygon SVG fill="currentColor").
+
+    Parámetros:
+      IconOnly (bool, default false) — muestra solo el icono sin texto, padding circular.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<span class="@WrapperClass" aria-label="@_localizer["Badge_VIP"]" role="img">
+    @* Estrella rellena — SVG canónico de home-8.html *@
+    <svg class="@IconClass"
+         viewBox="0 0 24 24"
+         fill="currentColor"
+         aria-hidden="true">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    @if (!IconOnly)
+    {
+        <span>@_localizer["Badge_VIP"]</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Cuando es true, muestra solo el icono (padding circular, sin texto).
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; } = false;
+
+    private string WrapperClass => IconOnly
+        ? "vip-badge vip-badge--icon-only inline-flex items-center justify-center"
+        : "vip-badge inline-flex items-center gap-1";
+
+    private string IconClass => IconOnly ? "w-3.5 h-3.5" : "w-2.5 h-2.5";
+}

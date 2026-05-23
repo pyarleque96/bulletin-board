@@ -1,0 +1,431 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   AnalyticsTab — Tab VIP-only de analítica, reutilizable en TODAS las
+   categorías (housing, beauty, mechanics, transportation, car-rental, jobs).
+
+   Backend: GET /api/v1/listings/{id}/analytics → ListingAnalyticsDto
+            via IListingService.GetAnalyticsAsync(Guid)
+
+   Reglas:
+     · Sólo se renderiza cuando Listing.Tier == "VIP" (los containers ya
+       garantizan eso; el componente no checa el tier).
+     · El color y el chevron del delta los decide el signo del Value (KpiDelta).
+     · Distribución de ratings: solo reseñas Approved (Regla #7).
+     · Funnel: ContactLog y WhatsApp click tracking lo alimentan (Regla #8).
+
+   Estados: Loading (skeleton) · Empty (sin datos) · Error · Loaded.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Services.Common
+@using Bulletin.Board.Web.Client.Services.Http
+
+@inject IStringLocalizer<SharedResource> _localizer
+@inject IListingService ListingService
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .vip-glow  { box-shadow: 0 4px 24px -4px rgba(249,115,22,0.16); }
+    @@keyframes analytics-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .analytics-sk {
+        background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+        background-size: 200% 100%;
+        animation: analytics-shimmer 1.8s ease-in-out infinite;
+        border-radius: 8px;
+    }
+    .funnel-bar { transition: width .6s cubic-bezier(0.32,0.72,0,1); }
+    @@media (prefers-reduced-motion: reduce) {
+        .analytics-sk { animation: none; }
+        .funnel-bar   { transition: none; }
+    }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-analytics"
+      role="tabpanel"
+      aria-labelledby="tab-analytics"
+      tabindex="0">
+
+    @* ── Header + period selector ─────────────────────────────────────── *@
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+        <div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Analytics_Title"]</h2>
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            </div>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Analytics_Subtitle"]</p>
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-wrap"
+             role="group"
+             aria-label="@_localizer["Manage_Analytics_Period_AriaLabel"]">
+            @foreach (var opt in _periods)
+            {
+                var isActive = _selectedPeriod == opt.Days;
+                <button type="button"
+                        class="@(isActive ? "bg-ink text-white" : "bg-slate-100 hover:bg-slate-200 text-ink") px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-colors"
+                        aria-pressed="@isActive.ToString().ToLowerInvariant()"
+                        @onclick="@(() => OnPeriodChanged(opt.Days))">
+                    @_localizer[opt.LabelKey]
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        @* ── Loading skeleton ─────────────────────────────────────────── *@
+        <section aria-busy="true" role="status" aria-label="@_localizer["Manage_Analytics_Loading_AriaLabel"]">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+                        <div class="analytics-sk h-3 w-20 mb-3"></div>
+                        <div class="analytics-sk h-7 w-16 mb-2"></div>
+                        <div class="analytics-sk h-3 w-24"></div>
+                    </div>
+                }
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                    <div class="analytics-sk h-4 w-40 mb-4"></div>
+                    <div class="space-y-3">
+                        <div class="analytics-sk h-3 w-full"></div>
+                        <div class="analytics-sk h-3 w-5/6"></div>
+                        <div class="analytics-sk h-3 w-3/4"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                    <div class="analytics-sk h-4 w-40 mb-4"></div>
+                    <div class="space-y-4">
+                        <div class="analytics-sk h-4 w-full"></div>
+                        <div class="analytics-sk h-4 w-3/4"></div>
+                        <div class="analytics-sk h-4 w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+    else if (_errorKey is not null)
+    {
+        @* ── Error state ──────────────────────────────────────────────── *@
+        <section class="bg-red-50 rounded-3xl border border-red-200 p-6 text-center">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-white border border-red-200 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h3 class="text-sm font-semibold text-ink">@_localizer["Manage_Analytics_Error_Title"]</h3>
+            <p class="text-xs text-muted mt-1 mb-3">@_localizer["Manage_Analytics_Error_Description"]</p>
+            <button type="button"
+                    class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer transition-colors"
+                    @onclick="LoadAsync">
+                @_localizer["Manage_Common_Retry"]
+            </button>
+        </section>
+    }
+    else if (_analytics is null || IsAnalyticsEmpty(_analytics))
+    {
+        @* ── Empty state ──────────────────────────────────────────────── *@
+        <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-8 text-center">
+            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <svg class="w-6 h-6 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+            </div>
+            <h3 class="text-sm font-semibold text-ink">@_localizer["Manage_Analytics_Empty_Title"]</h3>
+            <p class="text-xs text-muted mt-1 max-w-sm mx-auto">@_localizer["Manage_Analytics_Empty_Description"]</p>
+        </section>
+    }
+    else
+    {
+        var a = _analytics;
+
+        @* ── Primary KPIs ─────────────────────────────────────────────── *@
+        <section aria-label="@_localizer["Manage_Analytics_PrimaryKpis_AriaLabel"]" class="mb-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Analytics_Kpi_Views"]</p>
+                        <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink mt-2 tabular-nums">@a.ViewsTotal.ToString("N0")</p>
+                    <KpiDelta Value="@(a.ViewsMonthDeltaPercent.HasValue ? (double?)a.ViewsMonthDeltaPercent.Value : null)"
+                              HintText="@_localizer["Manage_Analytics_VsPrev"]" />
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Analytics_Kpi_WhatsApp"]</p>
+                        <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink mt-2 tabular-nums">@a.WhatsAppClicksTotal.ToString("N0")</p>
+                    <KpiDelta Value="@(a.WhatsAppContactsDeltaPercent.HasValue ? (double?)a.WhatsAppContactsDeltaPercent.Value : null)"
+                              HintText="@_localizer["Manage_Analytics_VsPrev"]" />
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Analytics_Kpi_AvgRating"]</p>
+                        <svg class="w-4 h-4 text-amber-500 fill-amber-500" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink mt-2 tabular-nums">@a.AvgRating.ToString("0.0")
+                        <span class="text-muted text-sm font-medium">/ 5</span>
+                    </p>
+                    <p class="text-[11px] text-muted mt-1">@string.Format(_localizer["Manage_Analytics_Kpi_AvgRating_From"], a.TotalRatings)</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4 vip-glow">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Analytics_Kpi_Closed"]</p>
+                        <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-ink mt-2 tabular-nums">@a.ContactsTotal.ToString("N0")</p>
+                    <p class="text-[11px] text-muted mt-1">@_localizer["Manage_Analytics_Kpi_Closed_Hint"]</p>
+                </div>
+            </div>
+        </section>
+
+        @* ── Rating breakdown + Funnel ────────────────────────────────── *@
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+            <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                    <div>
+                        <h3 class="text-base font-semibold text-ink">@_localizer["Manage_Analytics_Ratings_Title"]</h3>
+                        <p class="text-[11px] text-muted mt-0.5">@_localizer["Manage_Analytics_Ratings_Subtitle"]</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-ink tabular-nums">@a.AvgRating.ToString("0.0")</p>
+                        <p class="text-[11px] text-muted mt-0.5 tabular-nums">@a.TotalRatings @_localizer["Manage_Analytics_Ratings_Reviews"]</p>
+                    </div>
+                </div>
+
+                @* Listing.RatingDistribution viene del backend; sólo se considera si tiene datos. *@
+                @if (Listing.RatingDistribution is { } dist && (dist.FiveStar + dist.FourStar + dist.ThreeStar + dist.TwoStar + dist.OneStar) > 0)
+                {
+                    var total = Math.Max(1, dist.FiveStar + dist.FourStar + dist.ThreeStar + dist.TwoStar + dist.OneStar);
+                    var rows  = new (int Star, int Count, string Bar)[]
+                    {
+                        (5, dist.FiveStar,  "bg-amber-400"),
+                        (4, dist.FourStar,  "bg-amber-300"),
+                        (3, dist.ThreeStar, "bg-amber-200"),
+                        (2, dist.TwoStar,   "bg-slate-300"),
+                        (1, dist.OneStar,   "bg-slate-200"),
+                    };
+
+                    <ul class="space-y-2.5" role="list" aria-label="@_localizer["Manage_Analytics_Ratings_AriaList"]">
+                        @foreach (var row in rows)
+                        {
+                            var pct = (row.Count * 100.0) / total;
+                            <li class="flex items-center gap-3">
+                                <span class="flex items-center gap-1 w-8 text-xs font-medium text-ink tabular-nums">
+                                    @row.Star
+                                    <svg class="w-3 h-3 text-amber-500 fill-amber-500" viewBox="0 0 24 24" aria-hidden="true">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
+                                    </svg>
+                                </span>
+                                <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="funnel-bar h-full @row.Bar rounded-full" style="width: @pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                </div>
+                                <span class="text-xs text-muted tabular-nums w-10 text-right">@row.Count</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-xs text-muted py-6 text-center">@_localizer["Manage_Analytics_Ratings_NoneYet"]</p>
+                }
+
+                <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+                    <span class="text-muted">@_localizer["Manage_Analytics_Ratings_Note"]</span>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                <div class="mb-4">
+                    <h3 class="text-base font-semibold text-ink">@_localizer["Manage_Analytics_Funnel_Title"]</h3>
+                    <p class="text-[11px] text-muted mt-0.5">@_localizer["Manage_Analytics_Funnel_Subtitle"]</p>
+                </div>
+
+                @{
+                    var views    = a.ViewsTotal;
+                    var clicks   = a.WhatsAppClicksTotal;
+                    var contacts = a.ContactsTotal;
+                    double clicksPct   = views > 0 ? (clicks * 100.0) / views : 0;
+                    double contactsPct = views > 0 ? (contacts * 100.0) / views : 0;
+                    double ofClicksPct = clicks > 0 ? (contacts * 100.0) / clicks : 0;
+                    // Mínimo visual 0.4% para barras > 0 pero microscópicas (designer hint).
+                    string MinBar(double pct, int count) => (count > 0 && pct < 0.4 ? "0.4" : pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+                }
+
+                <ol class="space-y-3" role="list">
+                    <li>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-medium text-ink inline-flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                                @_localizer["Manage_Analytics_Funnel_Step1"]
+                            </span>
+                            <span class="tabular-nums text-ink font-semibold">@views.ToString("N0")</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="funnel-bar h-full rounded-full" style="width: 100%; background: linear-gradient(90deg,#60A5FA,#3B82F6);"></div>
+                        </div>
+                        <p class="text-[10px] text-muted mt-1">100%</p>
+                    </li>
+
+                    <li>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-medium text-ink inline-flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                @_localizer["Manage_Analytics_Funnel_Step2"]
+                            </span>
+                            <span class="tabular-nums text-ink font-semibold">@clicks.ToString("N0")</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="funnel-bar h-full rounded-full" style="width: @MinBar(clicksPct, clicks)%; background: linear-gradient(90deg,#34D399,#10B981);"></div>
+                        </div>
+                        <p class="text-[10px] text-muted mt-1 inline-flex items-center gap-2">
+                            <span class="tabular-nums">@clicksPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%</span>
+                            <span class="text-emerald-600">· @_localizer["Manage_Analytics_Funnel_OfViews"]</span>
+                        </p>
+                    </li>
+
+                    <li>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="font-medium text-ink inline-flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-accent-500"></span>
+                                @_localizer["Manage_Analytics_Funnel_Step3"]
+                            </span>
+                            <span class="tabular-nums text-ink font-semibold">@contacts.ToString("N0")</span>
+                        </div>
+                        <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="funnel-bar h-full rounded-full" style="width: @MinBar(contactsPct, contacts)%; background: linear-gradient(90deg,#FB923C,#F97316);"></div>
+                        </div>
+                        <p class="text-[10px] text-muted mt-1 inline-flex items-center gap-2">
+                            <span class="tabular-nums">@contactsPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%</span>
+                            <span class="text-accent-600">· @string.Format(_localizer["Manage_Analytics_Funnel_OfClicks"], ofClicksPct.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))</span>
+                        </p>
+                    </li>
+                </ol>
+
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <p class="text-[11px] text-muted leading-relaxed">@_localizer["Manage_Analytics_Funnel_FooterNote"]</p>
+                </div>
+            </section>
+        </div>
+
+        @* ── Daily activity trend ─────────────────────────────────────── *@
+        @if (a.DailyViews is { Count: > 0 })
+        {
+            var maxViews = Math.Max(1, a.DailyViews.Max(d => d.Count));
+            <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+                <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                    <div>
+                        <h3 class="text-base font-semibold text-ink">@_localizer["Manage_Analytics_Trend_Title"]</h3>
+                        <p class="text-[11px] text-muted mt-0.5">@_localizer["Manage_Analytics_Trend_Subtitle"]</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px] text-muted">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-sm bg-brand-500"></span>@_localizer["Manage_Analytics_Trend_Views"]
+                        </span>
+                    </div>
+                </div>
+
+                <div class="h-44 flex items-end gap-1 sm:gap-1.5" aria-hidden="true">
+                    @foreach (var dv in a.DailyViews)
+                    {
+                        var h = (dv.Count * 100.0) / maxViews;
+                        <div class="flex-1 flex flex-col items-stretch justify-end">
+                            <div class="bg-brand-300 rounded-t" style="height: @h.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%; min-height: 2px"></div>
+                        </div>
+                    }
+                </div>
+                <div class="mt-2 flex items-center justify-between text-[10px] text-muted tabular-nums">
+                    <span>@a.DailyViews.First().Date.ToString("MMM d")</span>
+                    <span>@a.DailyViews.Last().Date.ToString("MMM d")</span>
+                </div>
+            </section>
+        }
+    }
+
+    @* ── VIP footer ──────────────────────────────────────────────────── *@
+    <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        @_localizer["Manage_Analytics_VipFooter"]
+    </div>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private ListingAnalyticsDto? _analytics;
+    private bool                  _loading       = true;
+    private string?               _errorKey;
+    private int                   _selectedPeriod = 30;
+    private Guid                  _lastLoadedId;
+
+    private readonly (int Days, string LabelKey)[] _periods = new[]
+    {
+        (7,  "Manage_Analytics_Period_7d"),
+        (30, "Manage_Analytics_Period_30d"),
+        (90, "Manage_Analytics_Period_90d"),
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Listing.Id != _lastLoadedId)
+        {
+            _lastLoadedId = Listing.Id;
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading  = true;
+        _errorKey = null;
+        StateHasChanged();
+
+        // NOTE: the period selector is client-visual only for now. The current
+        // /api/v1/listings/{id}/analytics endpoint does not accept ?from/&to;
+        // when the backend extends the contract, pass _selectedPeriod as a query
+        // param here.
+        var result = await ListingService.GetAnalyticsAsync(Listing.Id);
+        _loading   = false;
+        switch (result)
+        {
+            case ApiResult<ListingAnalyticsDto>.Success s:
+                _analytics = s.Data;
+                _errorKey  = null;
+                break;
+            case ApiResult<ListingAnalyticsDto>.Error e:
+                _analytics = null;
+                _errorKey  = e.MessageKey ?? "Manage_Analytics_Error_Description";
+                break;
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnPeriodChanged(int days)
+    {
+        if (_selectedPeriod == days) return;
+        _selectedPeriod = days;
+        await LoadAsync();
+    }
+
+    private static bool IsAnalyticsEmpty(ListingAnalyticsDto a) =>
+        a.ViewsTotal == 0
+        && a.ContactsTotal == 0
+        && a.WhatsAppClicksTotal == 0
+        && a.TotalRatings == 0;
+}

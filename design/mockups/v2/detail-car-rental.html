@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dells Premier Auto — Car Rental · Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Rubik:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { heading: ['Outfit','sans-serif'], body: ['Rubik','sans-serif'] },
+          colors: {
+            lake:   {50:'#e6f4fb',100:'#b3daf2',200:'#80c0e9',300:'#4da6e0',400:'#1a8cd7',500:'#0077B6',600:'#005f91',700:'#00476d'},
+            amber:  {50:'#fffbf0',100:'#fef3c7',200:'#fde68a',300:'#fcd34d',400:'#fbbf24',500:'#F59E0B',600:'#d97706',700:'#b45309'},
+            forest: {50:'#e8f5ee',100:'#c3e6cf',200:'#9dd8b0',500:'#2D6A4F',600:'#24553f'},
+            cream: '#FFFBF5',
+            dells: { text:'#1A2E3B', muted:'#4A6375', border:'#DDE8EE' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;}
+    body{font-family:'Rubik',sans-serif;background:#FFFBF5;color:#1A2E3B;-webkit-font-smoothing:antialiased;}
+    h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;}
+
+    @keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+    @keyframes pulse-soft{0%,100%{opacity:1}50%{opacity:.6}}
+    @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+    .animate-fsu{animation:fadeSlideUp .5s cubic-bezier(.16,1,.3,1) both;}
+    .animate-fsu-2{animation:fadeSlideUp .5s cubic-bezier(.16,1,.3,1) .12s both;}
+    .animate-fsu-3{animation:fadeSlideUp .5s cubic-bezier(.16,1,.3,1) .24s both;}
+    .animate-modal{animation:modalIn .3s cubic-bezier(.16,1,.3,1) both;}
+
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+    /* Z: 10=nav, 20=gallery-full, 30=modal/overlay, 50=toast */
+
+    .badge-sdvip{background:linear-gradient(135deg,#F59E0B 0%,#d97706 100%);color:#fff;font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.03em;box-shadow:0 2px 8px rgba(245,158,11,.35);}
+    .badge-verified{background:#2D6A4F;color:#fff;font-family:'Outfit',sans-serif;font-weight:600;}
+
+    .btn-primary{background:#F59E0B;color:#1A2E3B;font-family:'Outfit',sans-serif;font-weight:700;transition:background .2s ease,transform .15s cubic-bezier(.16,1,.3,1),box-shadow .2s ease;box-shadow:0 3px 12px rgba(245,158,11,.32);}
+    .btn-primary:hover{background:#d97706;}
+    .btn-primary:active{transform:scale(.98);}
+
+    .wa-btn{background:#25D366;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;transition:background .2s ease,transform .15s cubic-bezier(.16,1,.3,1),box-shadow .2s ease;box-shadow:0 4px 16px rgba(37,211,102,.3);}
+    .wa-btn:hover{background:#1da851;box-shadow:0 6px 20px rgba(37,211,102,.4);}
+    .wa-btn:active{transform:scale(.98);}
+
+    .btn-ghost{color:#1A2E3B;border:1.5px solid #DDE8EE;font-family:'Outfit',sans-serif;font-weight:600;transition:border-color .2s ease,background .2s ease,transform .15s cubic-bezier(.16,1,.3,1);}
+    .btn-ghost:hover{border-color:#0077B6;background:rgba(0,119,182,.05);}
+    .btn-ghost:active{transform:scale(.98);}
+
+    .star-filled{color:#F59E0B;}
+    .star-empty{color:#DDE8EE;}
+
+    /* Gallery thumbnails */
+    .thumb{transition:opacity .15s ease,box-shadow .15s ease;cursor:pointer;}
+    .thumb:hover{opacity:.85;}
+    .thumb.active{box-shadow:0 0 0 2.5px #0077B6;opacity:1;}
+
+    /* Sticky sidebar */
+    .sticky-panel{position:sticky;top:88px;max-height:calc(100vh - 96px);overflow-y:auto;}
+
+    /* Date input */
+    input[type="date"]{
+      font-family:'Rubik',sans-serif;
+      color:#1A2E3B;
+      background:#fff;
+      border:1.5px solid #DDE8EE;
+      border-radius:12px;
+      padding:10px 14px;
+      width:100%;
+      font-size:.875rem;
+      transition:border-color .2s ease,box-shadow .2s ease;
+    }
+    input[type="date"]:focus{outline:none;border-color:#0077B6;box-shadow:0 0 0 3px rgba(0,119,182,.12);}
+    input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.6;}
+
+    /* Waiver modal */
+    #waiver-modal{display:none;}
+    #waiver-modal.open{display:flex;}
+
+    /* Review card */
+    .review-card{background:#fff;border:1px solid #DDE8EE;border-radius:16px;padding:16px;}
+
+    /* Verified review badge */
+    .review-verified{background:#e8f5ee;color:#2D6A4F;font-family:'Outfit',sans-serif;font-weight:600;font-size:.65rem;border:1px solid #c3e6cf;}
+
+    /* Photo gallery main */
+    .gallery-main{border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#e6f4fb,#b3daf2);}
+
+    /* Price calculator */
+    .price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;}
+    .price-row+.price-row{border-top:1px solid #DDE8EE;}
+    .price-total{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:2px solid #DDE8EE;}
+
+    .lang-active{background:#0077B6;color:#fff;}
+
+    /* Toast */
+    #toast{transition:opacity .3s ease,transform .3s cubic-bezier(.16,1,.3,1);}
+    #toast.hidden-toast{opacity:0;transform:translateY(12px);pointer-events:none;}
+  </style>
+</head>
+<body class="bg-cream">
+
+  <!-- ============================================================
+       @component: NavBar (detail page — back nav)
+  ============================================================ -->
+  <header class="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-dells-border" role="banner">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center gap-3">
+      <!-- Back -->
+      <a href="home-listings.html" class="flex items-center gap-2 text-dells-muted hover:text-dells-text transition-colors duration-200 cursor-pointer mr-2 flex-shrink-0" aria-label="Back to listings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        <span class="font-body text-sm hidden sm:inline">Back to listings</span>
+      </a>
+      <!-- Logo -->
+      <a href="landing.html" class="flex items-center gap-2 flex-shrink-0" aria-label="Bulletin Dells home">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <rect width="36" height="36" rx="9" fill="#0077B6"/>
+          <path d="M6 24 C10 20 14 28 18 24 C22 20 26 28 30 24" stroke="#FFFBF5" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <circle cx="18" cy="13" r="5" fill="#F59E0B"/>
+          <circle cx="18" cy="13" r="2.5" fill="#fff"/>
+          <line x1="18" y1="16" x2="18" y2="21" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="font-heading font-700 text-dells-text text-sm hidden sm:inline">Bulletin<span class="text-lake-500">Dells</span></span>
+      </a>
+      <!-- Breadcrumb -->
+      <nav class="hidden md:flex items-center gap-1 text-xs font-body text-dells-muted ml-2" aria-label="Breadcrumb">
+        <a href="home-listings.html" class="hover:text-lake-500 transition-colors cursor-pointer">Browse</a>
+        <span aria-hidden="true">/</span>
+        <a href="home-listings.html?cat=car-rental" class="hover:text-lake-500 transition-colors cursor-pointer">Car Rental</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-dells-text" aria-current="page">Dells Premier Auto</span>
+      </nav>
+      <!-- Language -->
+      <div class="ml-auto flex items-center rounded-lg overflow-hidden border border-dells-border text-xs font-heading font-600" role="group" aria-label="Language">
+        <button class="lang-active px-2.5 py-1.5 cursor-pointer transition-colors" aria-pressed="true">EN</button>
+        <button class="px-2.5 py-1.5 text-dells-muted hover:bg-lake-50 cursor-pointer transition-colors" aria-pressed="false">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-8" aria-label="Car rental listing detail">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+
+      <!-- ============================================================
+           LEFT COLUMN: gallery + details + reviews
+      ============================================================ -->
+      <div>
+
+        <!-- ========================================================
+             @component: ListingGallery
+             Data: listing.photos[] — GM-approved subset only
+             @binding: selectedPhoto, @onClick: setSelectedPhoto
+        ======================================================== -->
+        <div class="mb-6 animate-fsu">
+          <!-- Main photo -->
+          <div class="gallery-main relative h-72 sm:h-96 mb-3" role="img" aria-label="Main photo: Dells Premier Auto fleet — GM approved">
+            <svg class="w-full h-full" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="800" height="380" fill="url(#mainGrad)"/>
+              <!-- Sky -->
+              <path d="M0 220 C200 185 400 250 600 215 C720 195 775 230 800 218 L800 380 L0 380Z" fill="#2D6A4F" opacity=".35"/>
+              <path d="M0 248 C150 232 350 265 550 245 C680 232 755 255 800 245 L800 380 L0 380Z" fill="#0077B6" opacity=".28"/>
+              <!-- Sun -->
+              <circle cx="680" cy="75" r="48" fill="#F59E0B" opacity=".7"/>
+              <circle cx="680" cy="75" r="70" fill="#F59E0B" opacity=".12"/>
+              <!-- Car (large) -->
+              <rect x="180" y="220" width="440" height="100" rx="22" fill="#1A2E3B" opacity=".65"/>
+              <rect x="230" y="185" width="340" height="60" rx="18" fill="#1A2E3B" opacity=".55"/>
+              <!-- Windows -->
+              <rect x="248" y="195" width="90" height="40" rx="8" fill="#80c0e9" opacity=".7"/>
+              <rect x="355" y="195" width="90" height="40" rx="8" fill="#80c0e9" opacity=".7"/>
+              <rect x="462" y="195" width="90" height="40" rx="8" fill="#80c0e9" opacity=".7"/>
+              <!-- Wheels -->
+              <circle cx="300" cy="322" r="36" fill="#0077B6" opacity=".85"/>
+              <circle cx="500" cy="322" r="36" fill="#0077B6" opacity=".85"/>
+              <circle cx="300" cy="322" r="18" fill="#DDE8EE"/>
+              <circle cx="500" cy="322" r="18" fill="#DDE8EE"/>
+              <!-- Headlights -->
+              <rect x="185" y="245" width="28" height="16" rx="4" fill="#fcd34d" opacity=".85"/>
+              <rect x="587" y="245" width="28" height="16" rx="4" fill="#fcd34d" opacity=".85"/>
+              <!-- License plate -->
+              <rect x="355" y="290" width="90" height="22" rx="4" fill="#fff" opacity=".8"/>
+              <text x="400" y="306" text-anchor="middle" font-size="11" fill="#1A2E3B" font-family="Outfit" font-weight="700">WI DELLS</text>
+              <defs>
+                <linearGradient id="mainGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#e6f4fb"/>
+                  <stop offset="50%" stop-color="#b3daf2"/>
+                  <stop offset="100%" stop-color="#80c0e9"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <!-- GM Approved overlay badge -->
+            <div class="absolute top-4 left-4 flex gap-2 flex-wrap">
+              <span class="badge-sdvip px-3 py-1.5 rounded-full text-xs">Super Duper VIP</span>
+              <span class="bg-white/90 text-forest-600 text-xs font-heading font-600 px-2.5 py-1.5 rounded-full flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                GM Approved Photos
+              </span>
+            </div>
+
+            <!-- Photo count -->
+            <div class="absolute bottom-4 right-4 bg-black/50 text-white text-xs font-heading font-600 px-3 py-1.5 rounded-full" aria-label="6 photos available">
+              1 / 6 photos
+            </div>
+          </div>
+
+          <!-- Thumbnails row -->
+          <!-- @binding: listing.approvedPhotos.map() -->
+          <div class="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Photo thumbnails">
+            <button role="listitem" class="thumb active flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 1 — selected" aria-pressed="true">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#e6f4fb,#80c0e9);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 2" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#b3daf2,#4da6e0);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 3" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#fffbf0,#fde68a);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 4" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#e8f5ee,#9dd8b0);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 5" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#b3daf2,#2D6A4F);"></div>
+            </button>
+            <button role="listitem" class="thumb flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden" aria-label="Photo 6" aria-pressed="false">
+              <div class="w-full h-full" style="background:linear-gradient(135deg,#fcd34d,#F59E0B);"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             @component: ListingHeader
+             Data: listing.title, listing.category, listing.tier, listing.verifiedBadges
+        ======================================================== -->
+        <div class="mb-6 animate-fsu-2">
+          <div class="flex flex-wrap items-start gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+              <h1 class="font-heading font-800 text-2xl sm:text-3xl text-dells-text leading-tight">
+                Dells Premier Auto
+              </h1>
+              <p class="font-body text-sm text-dells-muted mt-1">Car Rental · Wisconsin Dells, WI</p>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+              <p class="font-heading font-800 text-2xl text-lake-600">$35<span class="text-base font-400 text-dells-muted">/day</span></p>
+              <p class="font-body text-xs text-dells-muted">Price estimate before contact</p>
+            </div>
+          </div>
+
+          <!-- Badges row -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="badge-sdvip px-3 py-1.5 rounded-full text-xs">Super Duper VIP</span>
+            <span class="badge-verified px-3 py-1.5 rounded-full text-xs">ID Verified</span>
+            <span class="bg-lake-50 text-lake-600 border border-lake-100 px-3 py-1.5 rounded-full text-xs font-heading font-600">Phone Verified</span>
+            <span class="bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1.5 rounded-full text-xs font-heading font-600">Bilingual EN/ES</span>
+          </div>
+
+          <!-- Rating summary -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1" aria-label="Rating: 4.9 out of 5">
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span class="font-heading font-700 text-base text-dells-text ml-1">4.9</span>
+            </div>
+            <span class="font-body text-sm text-dells-muted">52 verified reviews</span>
+            <span class="font-body text-xs text-lake-500 font-500 cursor-pointer hover:underline" tabindex="0" role="button" onclick="document.getElementById('reviews').scrollIntoView({behavior:'smooth'})">
+              View all
+            </span>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             @component: ListingDescription
+             Data: listing.description, listing.vehicles[]
+        ======================================================== -->
+        <div class="border-t border-dells-border pt-6 mb-6 animate-fsu-3">
+          <h2 class="font-heading font-700 text-lg text-dells-text mb-3">About this provider</h2>
+          <p class="font-body text-sm text-dells-muted leading-relaxed mb-3">
+            Dells Premier Auto has been serving Wisconsin Dells locals, J1 seasonal workers, and visitors since 2019.
+            We offer reliable, clean vehicles at competitive rates — pickup available at the waterpark area or your housing.
+            We speak Spanish and English.
+          </p>
+          <p class="font-body text-sm text-dells-muted leading-relaxed">
+            <span class="font-500 text-dells-text">Sobre nosotros:</span> Llevamos desde 2019 sirviendo a la comunidad de Wisconsin Dells.
+            Tenemos vehículos limpios y confiables con precios justos. Hablamos español.
+          </p>
+
+          <!-- Vehicle list -->
+          <h3 class="font-heading font-700 text-base text-dells-text mt-5 mb-3">Available Vehicles</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="list" aria-label="Available vehicles">
+            <div role="listitem" class="flex items-center gap-3 p-3 rounded-2xl border border-dells-border bg-white">
+              <div class="w-10 h-10 rounded-xl bg-lake-50 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5h-2"/>
+                  <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-heading font-600 text-sm text-dells-text">Toyota Corolla 2023</p>
+                <p class="font-body text-xs text-dells-muted">4-door sedan · $35/day</p>
+              </div>
+            </div>
+            <div role="listitem" class="flex items-center gap-3 p-3 rounded-2xl border border-dells-border bg-white">
+              <div class="w-10 h-10 rounded-xl bg-lake-50 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-heading font-600 text-sm text-dells-text">Honda CR-V 2022</p>
+                <p class="font-body text-xs text-dells-muted">SUV · $48/day</p>
+              </div>
+            </div>
+            <div role="listitem" class="flex items-center gap-3 p-3 rounded-2xl border border-dells-border bg-white">
+              <div class="w-10 h-10 rounded-xl bg-lake-50 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="1" y="3" width="15" height="13" rx="2"/>
+                  <path d="M16 8h4l3 5v3h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-heading font-600 text-sm text-dells-text">Dodge Grand Caravan</p>
+                <p class="font-body text-xs text-dells-muted">7-seat van · $65/day</p>
+              </div>
+            </div>
+            <div role="listitem" class="flex items-center gap-3 p-3 rounded-2xl border border-dells-border bg-white">
+              <div class="w-10 h-10 rounded-xl bg-lake-50 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0077B6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5h-2"/>
+                  <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-heading font-600 text-sm text-dells-text">Ford F-150 Pickup</p>
+                <p class="font-body text-xs text-dells-muted">Truck · $72/day</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================
+             @component: ReviewList
+             Data: GET /api/listings/{id}/reviews
+             Rules: only verified contact reviews, GM approved before publish
+             States: loading (skeleton), empty, default
+        ======================================================== -->
+        <div id="reviews" class="border-t border-dells-border pt-6">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="font-heading font-700 text-lg text-dells-text">
+              Reviews
+              <span class="text-dells-muted font-400 text-sm ml-1">(52)</span>
+            </h2>
+            <!-- Rating summary bar -->
+            <div class="flex items-center gap-2">
+              <svg class="star-filled w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span class="font-heading font-700 text-xl text-dells-text">4.9</span>
+              <span class="font-body text-xs text-dells-muted">out of 5</span>
+            </div>
+          </div>
+
+          <!-- Trust note -->
+          <div class="flex items-start gap-3 p-4 rounded-2xl bg-forest-50 border border-forest-100 mb-5" style="background:#e8f5ee;border-color:#c3e6cf;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <p class="font-body text-xs text-forest-600">
+              <strong class="font-heading font-600">Verified reviews only.</strong> Only users who contacted this provider through Bulletin Dells can leave a review. All reviews approved by GM before publishing.
+            </p>
+          </div>
+
+          <!-- @binding: reviews.map() -->
+          <div class="flex flex-col gap-4">
+
+            <!-- @component: ReviewCard -->
+            <div class="review-card" role="article" aria-label="Review by Marco Antonio G.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <!-- Avatar placeholder (no SVG egg icons per design rules) -->
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#0077B6,#2D6A4F);" aria-hidden="true">M</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Marco Antonio G.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Mar 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="5 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                El carro estaba impecable. Me lo entregaron en mi housing directamente. Super recomendado para J1 workers como yo que llegamos sin transporte.
+              </p>
+            </div>
+
+            <div class="review-card" role="article" aria-label="Review by Brianna K.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#F59E0B,#d97706);" aria-hidden="true">B</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Brianna K.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Feb 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="5 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                Rented for a weekend trip to Madison. Great condition, easy WhatsApp communication. Price was exactly as listed — no hidden fees.
+              </p>
+            </div>
+
+            <div class="review-card" role="article" aria-label="Review by Sebastián R.">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-heading font-700 text-sm text-white" style="background:linear-gradient(135deg,#2D6A4F,#052e16);" aria-hidden="true">S</div>
+                  <div>
+                    <p class="font-heading font-600 text-sm text-dells-text">Sebastián R.</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="review-verified px-1.5 py-0.5 rounded-md text-xs">Verified contact</span>
+                      <span class="font-body text-xs text-dells-muted">Jan 2026</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 flex-shrink-0" aria-label="4 stars">
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-filled w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg class="star-empty w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+              <p class="font-body text-sm text-dells-muted leading-relaxed">
+                Muy buena experiencia. Devolver el carro fue un poco confuso pero me ayudaron por WhatsApp de inmediato. Lo recomiendo.
+              </p>
+            </div>
+
+          </div>
+
+          <button class="mt-4 btn-ghost w-full rounded-2xl py-3 text-sm cursor-pointer" aria-label="Load more reviews">
+            Show more reviews / Ver más reseñas
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ============================================================
+           RIGHT COLUMN: Sticky contact & price panel
+           @component: ContactPanel
+           Data: listing.pricePerDay, listing.whatsappNumber, listing.providerId
+           @binding: pickupDate, returnDate, selectedVehicle
+           States: default, loading (waiver), success (redirect WA)
+      ============================================================ -->
+      <div class="sticky-panel animate-fsu-2">
+        <div class="bg-white rounded-3xl border border-dells-border p-6 shadow-sm">
+
+          <!-- Provider info -->
+          <div class="flex items-center gap-3 mb-5 pb-5 border-b border-dells-border">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-heading font-800 text-xl text-white flex-shrink-0" style="background:linear-gradient(135deg,#0077B6,#2D6A4F);" aria-hidden="true">D</div>
+            <div>
+              <p class="font-heading font-700 text-base text-dells-text">Dells Premier Auto</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="badge-sdvip px-2 py-0.5 rounded-lg text-xs">Super Duper VIP</span>
+                <span class="badge-verified px-2 py-0.5 rounded-lg text-xs">Verified</span>
+              </div>
+              <p class="font-body text-xs text-dells-muted mt-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline mr-0.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Responds within 1 hour
+              </p>
+            </div>
+          </div>
+
+          <!-- ======================================================
+               Date selector
+               @binding: pickupDate (DateTime?), returnDate (DateTime?)
+               @onchange: calculateEstimate()
+               Validation: returnDate > pickupDate, pickupDate >= today
+          ====================================================== -->
+          <div class="mb-5">
+            <h2 class="font-heading font-700 text-base text-dells-text mb-3">Select Dates / Selecciona Fechas</h2>
+
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label for="pickup-date" class="font-heading font-600 text-xs text-dells-muted block mb-1.5">
+                  Pickup Date
+                  <span class="text-dells-muted font-400">(Recogida)</span>
+                </label>
+                <!-- @binding: @bind="pickupDate" @onchange="RecalcEstimate" -->
+                <input type="date"
+                  id="pickup-date"
+                  name="pickup-date"
+                  min="2026-04-24"
+                  aria-label="Pickup date — required"
+                  aria-describedby="pickup-date-help"
+                  required />
+                <p id="pickup-date-help" class="sr-only">Select the date you want to pick up the vehicle</p>
+              </div>
+              <div>
+                <label for="return-date" class="font-heading font-600 text-xs text-dells-muted block mb-1.5">
+                  Return Date
+                  <span class="text-dells-muted font-400">(Devolución)</span>
+                </label>
+                <!-- @binding: @bind="returnDate" @onchange="RecalcEstimate" -->
+                <input type="date"
+                  id="return-date"
+                  name="return-date"
+                  min="2026-04-25"
+                  aria-label="Return date — required"
+                  aria-describedby="return-date-help"
+                  required />
+                <p id="return-date-help" class="sr-only">Select the date you will return the vehicle</p>
+              </div>
+            </div>
+
+            <!-- Error state for dates -->
+            <!-- @state: dateError -->
+            <div id="date-error" class="hidden flex items-center gap-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2" role="alert" aria-live="polite">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Return date must be after pickup date / La fecha de devolución debe ser posterior.
+            </div>
+          </div>
+
+          <!-- ======================================================
+               Price calculator
+               @binding: pricePerDay, days computed from dates
+               @computed: subtotal, tax (8.5% WI), total
+          ====================================================== -->
+          <div id="price-calculator" class="bg-cream rounded-2xl p-4 mb-5">
+            <p class="font-heading font-700 text-sm text-dells-text mb-3">Price Estimate / Estimado de precio</p>
+            <!-- @binding: priceBreakdown -->
+            <div class="price-row">
+              <span class="font-body text-sm text-dells-muted">$35 × <span id="days-count">3</span> days</span>
+              <span class="font-heading font-600 text-sm text-dells-text" id="subtotal">$105.00</span>
+            </div>
+            <div class="price-row">
+              <span class="font-body text-sm text-dells-muted">WI tax (8.5%)</span>
+              <span class="font-heading font-600 text-sm text-dells-text" id="tax">$8.93</span>
+            </div>
+            <div class="price-total">
+              <span class="font-heading font-700 text-base text-dells-text">Estimated Total</span>
+              <span class="font-heading font-800 text-lg text-lake-600" id="total" aria-live="polite">$113.93</span>
+            </div>
+            <p class="font-body text-xs text-dells-muted mt-2">
+              * Estimate only. Confirm exact price via WhatsApp with provider.
+            </p>
+          </div>
+
+          <!-- ======================================================
+               WhatsApp CTA — triggers WaiverModal first
+               @onClick: openWaiverModal()
+               Rule: waiver must be accepted before contact is logged
+          ====================================================== -->
+          <button
+            id="open-waiver-btn"
+            class="wa-btn w-full flex items-center justify-center gap-3 rounded-2xl py-4 text-base cursor-pointer mb-3"
+            aria-label="Contact Dells Premier Auto via WhatsApp — legal disclaimer will appear"
+            aria-haspopup="dialog">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M11.99 0C5.366 0 0 5.373 0 12.001c0 2.117.551 4.103 1.515 5.832L.057 23.73a.5.5 0 0 0 .609.635l5.977-1.568A11.922 11.922 0 0 0 11.99 24C18.62 24 24 18.627 24 12S18.62 0 11.99 0zm0 21.818a9.748 9.748 0 0 1-5.031-1.395l-.36-.213-3.737.98.998-3.638-.234-.374A9.76 9.76 0 0 1 2.182 12c0-5.41 4.402-9.818 9.808-9.818 5.41 0 9.826 4.408 9.826 9.818 0 5.407-4.416 9.818-9.826 9.818z"/>
+            </svg>
+            Contact via WhatsApp
+          </button>
+
+          <a href="#" class="btn-ghost w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm cursor-pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            Share listing / Compartir anuncio
+          </a>
+
+          <!-- Platform trust note -->
+          <div class="flex items-start gap-2 mt-4 p-3 rounded-2xl bg-forest-50 border border-forest-100" style="background:#e8f5ee;border-color:#c3e6cf;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <p class="font-body text-xs text-forest-600">
+              Bulletin Dells connects you with this provider. We do not manage the transaction or service delivery.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================================
+       @component: WaiverModal
+       Data: listing.title, listing.providerId, user.id
+       States: open (default hidden), loading (after accept), closed
+       Trigger: clicking WhatsApp CTA button
+       Rule: GM receives email copy of every contact interaction
+  ============================================================ -->
+  <div id="waiver-modal"
+    class="fixed inset-0 z-30 items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="waiver-title"
+    aria-describedby="waiver-body">
+
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl animate-modal" tabindex="-1" id="waiver-panel">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h2 id="waiver-title" class="font-heading font-700 text-lg text-dells-text">
+            Before You Contact
+          </h2>
+        </div>
+        <button id="waiver-close"
+          class="p-2 rounded-xl hover:bg-cream text-dells-muted hover:text-dells-text transition-colors cursor-pointer"
+          aria-label="Close disclaimer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Waiver text -->
+      <div id="waiver-body" class="font-body text-sm text-dells-muted leading-relaxed mb-5 max-h-52 overflow-y-auto pr-1">
+        <p class="mb-3 font-heading font-600 text-dells-text">Bulletin Dells Legal Disclaimer</p>
+        <p class="mb-3">
+          Bulletin Dells is a <strong>connection platform only</strong>. We list and moderate service providers but we do <strong>not</strong> provide, manage, or guarantee any service listed.
+        </p>
+        <p class="mb-3">
+          By contacting this provider, you acknowledge that:
+        </p>
+        <ul class="list-disc pl-4 flex flex-col gap-1.5 mb-3">
+          <li>Bulletin Dells is not a party to any agreement between you and the provider.</li>
+          <li>We do not handle payments, disputes, or service quality.</li>
+          <li>You contact the provider at your own discretion and responsibility.</li>
+          <li>Your contact interaction will be logged and a copy sent to our team for safety monitoring.</li>
+          <li>Ratings you leave must be based on actual contact made through this platform.</li>
+        </ul>
+        <p class="mb-3 text-xs" lang="es">
+          <strong>Aviso legal (español):</strong> Bulletin Dells es una plataforma de conexión. No prestamos ni garantizamos ningún servicio. Al contactar a este proveedor, aceptas que tu interacción será registrada y que Bulletin Dells no es responsable del servicio prestado.
+        </p>
+      </div>
+
+      <!-- Checkbox confirmation -->
+      <label class="flex items-start gap-3 cursor-pointer mb-5" id="waiver-checkbox-label">
+        <input type="checkbox" id="waiver-checkbox" class="w-4 h-4 mt-0.5 rounded border-dells-border accent-lake-500 cursor-pointer flex-shrink-0"
+          aria-required="true"
+          aria-label="I understand and agree to the disclaimer" />
+        <span class="font-body text-sm text-dells-text">
+          I understand and agree to the disclaimer above.
+          <span class="text-dells-muted text-xs block mt-0.5">Entiendo y acepto el aviso legal.</span>
+        </span>
+      </label>
+
+      <!-- Error if unchecked -->
+      <div id="waiver-error" class="hidden items-center gap-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 mb-4" role="alert" aria-live="polite">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Please confirm you have read the disclaimer before continuing.
+      </div>
+
+      <!-- CTA buttons -->
+      <div class="flex gap-3">
+        <button id="waiver-cancel" class="btn-ghost flex-1 rounded-2xl py-3 text-sm cursor-pointer">
+          Cancel / Cancelar
+        </button>
+        <!-- @onClick: acceptWaiverAndRedirectWhatsApp -->
+        <!-- @binding: isLoading (disable button + show spinner) -->
+        <a id="waiver-accept-btn"
+          href="#"
+          class="wa-btn flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 text-sm cursor-pointer"
+          aria-label="Accept disclaimer and open WhatsApp"
+          role="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M11.99 0C5.366 0 0 5.373 0 12.001c0 2.117.551 4.103 1.515 5.832L.057 23.73a.5.5 0 0 0 .609.635l5.977-1.568A11.922 11.922 0 0 0 11.99 24C18.62 24 24 18.627 24 12S18.62 0 11.99 0zm0 21.818a9.748 9.748 0 0 1-5.031-1.395l-.36-.213-3.737.98.998-3.638-.234-.374A9.76 9.76 0 0 1 2.182 12c0-5.41 4.402-9.818 9.808-9.818 5.41 0 9.826 4.408 9.826 9.818 0 5.407-4.416 9.818-9.826 9.818z"/>
+          </svg>
+          Open WhatsApp
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Toast: success message after waiver accept
+  ============================================================ -->
+  <div id="toast" class="hidden-toast fixed bottom-6 right-4 z-50 bg-dells-text text-white rounded-2xl px-5 py-3 shadow-xl flex items-center gap-3 max-w-xs" role="status" aria-live="polite">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5"/>
+    </svg>
+    <div>
+      <p class="font-heading font-700 text-sm">Opening WhatsApp</p>
+      <p class="font-body text-xs text-white/70">Contact logged successfully</p>
+    </div>
+  </div>
+
+  <script>
+    // ==============================================================
+    // WAIVER MODAL
+    // @Blazor: replace with @onclick, @bind, JSInterop for wa.me link
+    // ==============================================================
+    const openBtn    = document.getElementById('open-waiver-btn');
+    const modal      = document.getElementById('waiver-modal');
+    const panel      = document.getElementById('waiver-panel');
+    const closeBtn   = document.getElementById('waiver-close');
+    const cancelBtn  = document.getElementById('waiver-cancel');
+    const acceptBtn  = document.getElementById('waiver-accept-btn');
+    const checkbox   = document.getElementById('waiver-checkbox');
+    const errDiv     = document.getElementById('waiver-error');
+    const toast      = document.getElementById('toast');
+
+    function openModal() {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      panel.focus();
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      checkbox.checked = false;
+      errDiv.classList.add('hidden');
+    }
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    // Close on backdrop click
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    // Close on Esc
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    acceptBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!checkbox.checked) {
+        errDiv.classList.remove('hidden');
+        errDiv.classList.add('flex');
+        checkbox.focus();
+        return;
+      }
+      // @Blazor: call API POST /api/contacts to log interaction + send GM email
+      // then open wa.me deep link
+      closeModal();
+      // Show toast
+      toast.classList.remove('hidden-toast');
+      setTimeout(() => { toast.classList.add('hidden-toast'); }, 3500);
+      // @Blazor: NavigationManager.NavigateTo("https://wa.me/16082537841?text=...");
+      // Demo: just show toast
+    });
+
+    // ==============================================================
+    // DATE CALCULATOR
+    // @Blazor: replace with C# computed property / EventCallback
+    // ==============================================================
+    const pickupInput = document.getElementById('pickup-date');
+    const returnInput = document.getElementById('return-date');
+    const daysEl      = document.getElementById('days-count');
+    const subtotalEl  = document.getElementById('subtotal');
+    const taxEl       = document.getElementById('tax');
+    const totalEl     = document.getElementById('total');
+    const dateErrEl   = document.getElementById('date-error');
+    const PRICE_PER_DAY = 35;
+    const TAX_RATE = 0.085;
+
+    function calcDays() {
+      const p = new Date(pickupInput.value);
+      const r = new Date(returnInput.value);
+      if (!pickupInput.value || !returnInput.value) return;
+      if (r <= p) {
+        dateErrEl.classList.remove('hidden');
+        dateErrEl.classList.add('flex');
+        return;
+      }
+      dateErrEl.classList.add('hidden');
+      dateErrEl.classList.remove('flex');
+      const days = Math.ceil((r - p) / (1000 * 60 * 60 * 24));
+      const subtotal = days * PRICE_PER_DAY;
+      const tax = subtotal * TAX_RATE;
+      const total = subtotal + tax;
+      daysEl.textContent = days;
+      subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+      taxEl.textContent = `$${tax.toFixed(2)}`;
+      totalEl.textContent = `$${total.toFixed(2)}`;
+    }
+
+    pickupInput?.addEventListener('change', calcDays);
+    returnInput?.addEventListener('change', calcDays);
+
+    // ==============================================================
+    // GALLERY THUMBNAILS
+    // @Blazor: replace with @onclick bound to selectedPhotoIndex state
+    // ==============================================================
+    document.querySelectorAll('.thumb').forEach((thumb, i) => {
+      thumb.addEventListener('click', () => {
+        document.querySelectorAll('.thumb').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-pressed', 'false');
+        });
+        thumb.classList.add('active');
+        thumb.setAttribute('aria-pressed', 'true');
+      });
+    });
+  </script>
+
+</body>
+</html>

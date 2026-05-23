@@ -1,0 +1,104 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ServicesRegular (Mechanics) — Tab Services agrupados por categoría.
+   Improved over mockup with grouping. Regla #5 aplica en cada CTA mutador.
+
+   Datos:
+   - Las services las renderiza Listing.Services. Cuando estén disponibles, el
+     `GroupEn` viene del backend; agrupamos por GroupEn (fallback "—").
+   - Counts/empty manejados localmente.
+   TODO: API GET /api/v1/manage/listings/{id}/services (BACKEND_AUDIT §1.1).
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Mechanics.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-services"
+      role="tabpanel"
+      aria-labelledby="tab-services"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Mechanics_Services_Title"]</h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Mechanics_Services_Subtitle"]</p>
+        </div>
+        <PendingReviewTooltip>
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                @_localizer["Manage_Mechanics_AddService"]
+            </button>
+        </PendingReviewTooltip>
+    </div>
+
+    @if (Listing.Services.Length == 0)
+    {
+        <ManageEmptyState Title="@_localizer["Manage_Mechanics_Services_Empty"]" />
+    }
+    else
+    {
+        @foreach (var grp in _grouped)
+        {
+            <section class="mb-6">
+                <h3 class="text-[11px] uppercase tracking-wider text-muted font-semibold mb-3">
+                    @(string.IsNullOrWhiteSpace(grp.Key) ? _localizer["Manage_Mechanics_Services_GroupOther"] : grp.Key)
+                </h3>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-3" role="list">
+                    @foreach (var s in grp.Items)
+                    {
+                        <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-ink">@s.NameEn</h4>
+                                    @if (!string.IsNullOrWhiteSpace(s.DescriptionEn))
+                                    {
+                                        <p class="text-[11px] text-muted mt-0.5">@s.DescriptionEn</p>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(s.Price))
+                                {
+                                    <p class="text-sm font-bold text-ink tabular-nums whitespace-nowrap">@_localizer["Manage_Mechanics_From"] @s.Price</p>
+                                }
+                                else
+                                {
+                                    <p class="text-sm font-bold text-ink tabular-nums whitespace-nowrap">@_localizer["Manage_Mechanics_Services_FreeQuote"]</p>
+                                }
+                            </div>
+                            <div class="flex items-center gap-2 mt-3">
+                                <PendingReviewTooltip>
+                                    <button type="button" class="text-[11px] text-brand-600 hover:underline cursor-pointer">@_localizer["Manage_Common_Edit"]</button>
+                                </PendingReviewTooltip>
+                                <PendingReviewTooltip>
+                                    <button type="button" class="text-[11px] text-red-600 hover:underline cursor-pointer">@_localizer["Manage_Common_Remove"]</button>
+                                </PendingReviewTooltip>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    }
+
+    <p class="text-[11px] text-muted mt-5">@_localizer["Manage_Mechanics_Services_PendingFootnote"]</p>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private IReadOnlyList<ServiceGroup> _grouped = Array.Empty<ServiceGroup>();
+
+    protected override void OnParametersSet()
+    {
+        _grouped = Listing.Services
+            .GroupBy(s => s.GroupEn ?? string.Empty)
+            .Select(g => new ServiceGroup(g.Key, g.ToArray()))
+            .ToArray();
+    }
+
+    private sealed record ServiceGroup(string Key, IReadOnlyList<ServiceItemDto> Items);
+}

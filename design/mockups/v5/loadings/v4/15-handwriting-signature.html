@@ -1,0 +1,382 @@
+<!--
+  SCREEN: 15 — Handwriting Signature
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Cold start premium / first time user experience
+  CONCEPTO: El wordmark "Bulletin Dells" siendo escrito a mano via
+            stroke-dasharray/stroke-dashoffset animado en SVG inline.
+            Sensación artesanal premium — como firmar un contrato de confianza.
+            El trazo es en naranja, aparece como caligrafía de alta gama.
+            Debajo, la tagline "Wisconsin's local marketplace" fade-in.
+  HIGH-END: El path SVG es un trazo único continuo (no letras separadas).
+            Stroke-linecap round, stroke-linejoin round.
+            Ligero tremble noise al inicio (no en loop — solo la intro).
+            Halo naranja muy suave detrás del trazo.
+  BLAZOR HOOK: Montar en App.razor como splash absoluto.
+               Desmontar al completar (OnAfterRenderAsync IsReady).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Warm paper texture via radial bg ── */
+    .stage::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 45%,
+        rgba(253,240,210,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Main content ── */
+    .sig-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      animation: wrap-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.2s forwards;
+    }
+    @keyframes wrap-in { to { opacity: 1; } }
+
+    /* ── SVG signature container ── */
+    .sig-svg-wrap {
+      position: relative;
+    }
+
+    /* Halo behind signature */
+    .sig-halo {
+      position: absolute;
+      inset: -3rem;
+      background: radial-gradient(ellipse,
+        rgba(253,140,27,0.06) 0%, transparent 65%);
+      pointer-events: none;
+      opacity: 0;
+      animation: halo-in 2s cubic-bezier(0.32,0.72,0,1) 0.5s forwards;
+    }
+    @keyframes halo-in { to { opacity: 1; } }
+
+    /* The signature SVG */
+    .sig-svg {
+      width: min(28rem, 90vw);
+      height: auto;
+    }
+
+    /* Stroke draw animation — path gets measured length in JS */
+    .sig-path-bulletin {
+      fill: none;
+      stroke: #fd8c1b;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.92;
+    }
+    .sig-path-dells {
+      fill: none;
+      stroke: #1e293b;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.85;
+    }
+
+    /* ── Underline drawn after signature ── */
+    .sig-underline {
+      stroke: rgba(253,140,27,0.25);
+      stroke-width: 2;
+      stroke-linecap: round;
+      fill: none;
+      stroke-dasharray: 280;
+      stroke-dashoffset: 280;
+      animation: draw-line 0.6s cubic-bezier(0.32,0.72,0,1) 3.4s forwards;
+    }
+    @keyframes draw-line {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* ── Tagline ── */
+    .tagline-wrap {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: tag-in 0.7s cubic-bezier(0.32,0.72,0,1) 3.8s forwards;
+    }
+    @keyframes tag-in { to { opacity: 1; transform: translateY(0); } }
+
+    .tagline-main {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+    .tagline-sub {
+      margin-top: 0.4rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    /* ── Pen cursor dot — follows stroke end ── */
+    .pen-dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      box-shadow: 0 0 8px 2px rgba(253,140,27,0.35);
+      pointer-events: none;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.1s;
+      z-index: 5;
+    }
+
+    /* ── Bottom progress line ── */
+    .progress-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: transparent;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #fd8c1b);
+      width: 0;
+      animation: prog 4.2s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+    }
+    @keyframes prog {
+      0%  { width: 0; }
+      70% { width: 80%; }
+      95% { width: 100%; }
+      100%{ width: 100%; opacity: 0; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading Bulletin Dells · Cargando Bulletin Dells">
+
+    <div class="sig-wrap">
+
+      <!-- Signature SVG -->
+      <div class="sig-svg-wrap">
+        <div class="sig-halo" aria-hidden="true"></div>
+
+        <svg class="sig-svg" id="sigSvg"
+             viewBox="0 0 480 140"
+             xmlns="http://www.w3.org/2000/svg"
+             aria-label="Bulletin Dells signature">
+
+          <!--
+            Handwritten-style paths for "Bulletin Dells"
+            These are approximate calligraphic paths — each word is
+            a single continuous stroke for authentic signature feel.
+
+            "Bulletin" — orange stroke
+          -->
+
+          <!-- B -->
+          <path class="sig-path-bulletin" id="pathB"
+            d="M 40,100 L 40,35 C 40,35 55,35 62,42 C 68,48 68,58 62,64 C 68,64 76,70 76,80 C 76,92 67,100 55,100 Z"/>
+
+          <!-- u -->
+          <path class="sig-path-bulletin" id="pathU"
+            d="M 82,65 C 82,65 82,92 90,98 C 98,104 108,96 112,88 L 112,65"/>
+
+          <!-- l -->
+          <path class="sig-path-bulletin" id="pathL1"
+            d="M 120,35 L 120,100"/>
+
+          <!-- l -->
+          <path class="sig-path-bulletin" id="pathL2"
+            d="M 130,35 L 130,100"/>
+
+          <!-- e -->
+          <path class="sig-path-bulletin" id="pathE"
+            d="M 138,82 C 138,82 150,82 156,76 C 162,70 162,60 156,54 C 150,48 140,48 138,58 C 136,68 140,80 150,86 C 158,90 168,88 172,82"/>
+
+          <!-- t -->
+          <path class="sig-path-bulletin" id="pathT1"
+            d="M 176,45 L 176,100 M 168,62 L 186,62"/>
+
+          <!-- i -->
+          <path class="sig-path-bulletin" id="pathI"
+            d="M 194,65 L 194,100 M 194,50 L 194,54"/>
+
+          <!-- n -->
+          <path class="sig-path-bulletin" id="pathN"
+            d="M 202,65 L 202,100 C 202,100 202,72 210,66 C 218,60 228,64 228,76 L 228,100"/>
+
+          <!-- Dot over i — tiny orange circle -->
+          <circle cx="194" cy="49" r="3" fill="#fd8c1b" opacity="0"
+                  id="iDot"
+                  style="animation: dot-appear 0.2s cubic-bezier(0.32,0.72,0,1) 1.8s forwards;">
+          </circle>
+
+          <!-- Space -->
+
+          <!-- D — slate, "Dells" word -->
+          <path class="sig-path-dells" id="pathD"
+            d="M 255,35 L 255,100 C 255,100 280,100 290,85 C 300,70 298,50 288,40 C 278,30 255,35 255,35 Z"/>
+
+          <!-- e -->
+          <path class="sig-path-dells" id="pathE2"
+            d="M 298,82 C 298,82 310,82 316,76 C 322,70 322,60 316,54 C 310,48 300,48 298,58 C 296,68 300,80 310,86 C 318,90 328,88 332,82"/>
+
+          <!-- l -->
+          <path class="sig-path-dells" id="pathL3"
+            d="M 340,35 L 340,100"/>
+
+          <!-- l -->
+          <path class="sig-path-dells" id="pathL4"
+            d="M 350,35 L 350,100"/>
+
+          <!-- s -->
+          <path class="sig-path-dells" id="pathS"
+            d="M 378,58 C 378,58 366,54 362,62 C 358,70 366,76 374,76 C 382,76 390,82 386,90 C 382,98 370,100 360,96"/>
+
+          <!-- ── Underline — drawn after signature completes ── -->
+          <path class="sig-underline"
+            d="M 34,112 Q 200,118 402,112"
+            id="sigUnderline"/>
+
+        </svg>
+
+        <!-- Pen cursor dot (positioned by JS) -->
+        <div class="pen-dot" id="penDot" aria-hidden="true"></div>
+
+      </div>
+
+      <!-- Tagline -->
+      <div class="tagline-wrap">
+        <p class="tagline-main">Wisconsin's local marketplace · Mercado local</p>
+        <p class="tagline-sub">Bulletin Dells · Est. 2024</p>
+      </div>
+
+    </div>
+
+    <!-- Progress line -->
+    <!-- BLAZOR HOOK: Replace with NavigationManager progress -->
+    <div class="progress-bottom" aria-hidden="true">
+      <div class="progress-fill"></div>
+    </div>
+
+  </div>
+
+  <style>
+    @keyframes dot-appear {
+      to { opacity: 1; }
+    }
+  </style>
+
+  <script>
+    /* BLAZOR HOOK: Replace with app initialization lifecycle */
+    /* Animate stroke-dashoffset for each path after measuring its length */
+
+    // Measure and animate each path
+    const bulletinPaths = ['pathB','pathU','pathL1','pathL2','pathE','pathT1','pathI','pathN'];
+    const dellsPaths = ['pathD','pathE2','pathL3','pathL4','pathS'];
+    const allPaths = [...bulletinPaths, ...dellsPaths];
+
+    // Add pen dot to SVG container
+    const penDot = document.getElementById('penDot');
+    const svgEl = document.getElementById('sigSvg');
+    const svgRect = svgEl.getBoundingClientRect();
+
+    function animatePath(pathId, delay, duration) {
+      const path = document.getElementById(pathId);
+      if (!path) return;
+
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      path.style.animation = `none`;
+
+      // Trigger after delay
+      setTimeout(() => {
+        path.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(0.4,0,0.3,1)`;
+        path.style.strokeDashoffset = '0';
+
+        // Move pen dot to end of path during animation
+        const steps = 30;
+        for (let i = 0; i <= steps; i++) {
+          setTimeout(() => {
+            const t = i / steps;
+            const pt = path.getPointAtLength(len * t);
+            const svgBounds = svgEl.getBoundingClientRect();
+            const wrapBounds = svgEl.parentElement.getBoundingClientRect();
+            const scaleX = svgBounds.width / 480;
+            const scaleY = svgBounds.height / 140;
+            penDot.style.left = (svgBounds.left - wrapBounds.left + pt.x * scaleX) + 'px';
+            penDot.style.top = (svgBounds.top - wrapBounds.top + pt.y * scaleY) + 'px';
+            penDot.style.opacity = '1';
+          }, (duration / steps) * i);
+        }
+      }, delay);
+    }
+
+    // Animate Bulletin (orange) — paths spaced ~180ms apart
+    let d = 400;
+    bulletinPaths.forEach((id) => {
+      animatePath(id, d, 180);
+      d += 160;
+    });
+
+    // Brief gap between words, then Dells (slate)
+    d += 200;
+    dellsPaths.forEach((id) => {
+      animatePath(id, d, 200);
+      d += 180;
+    });
+
+    // Hide pen dot after writing completes
+    setTimeout(() => {
+      penDot.style.opacity = '0';
+      penDot.style.transition = 'opacity 0.3s';
+    }, d + 100);
+  </script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+@namespace Bulletin.Board.Web.Client.Components.Admin
+
+@*
+    CategoryForm — formulario reutilizable para crear y editar categorías.
+
+    Modo Crear : pasar InitialValues = null  (o no pasarlo).
+    Modo Editar : pasar InitialValues con los datos del registro existente.
+
+    El componente emite OnSubmit(CategoryCreateModel) cuando el formulario es válido.
+    El Slug se auto-genera desde NameEn pero el usuario puede editarlo manualmente.
+    Cuando el usuario edita NameEn y el Slug no ha sido tocado manualmente, el Slug
+    se actualiza en tiempo real.
+*@
+
+@using Bulletin.Board.Web.Client.Models
+@using System.Globalization
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<EditForm Model="_model"
+          OnValidSubmit="HandleValidSubmit"
+          class="space-y-5">
+
+    <DataAnnotationsValidator />
+
+    @* ── Name EN ── *@
+    <div>
+        <label for="cat-name-en"
+               class="block text-sm font-medium text-slate-700 mb-1.5">
+            @_localizer["Admin_Cat_NameEn"]
+            <span class="text-red-500 ml-0.5" aria-hidden="true">*</span>
+        </label>
+        @*
+            We use a plain <input> here so we can intercept oninput to drive the
+            slug auto-generator.  The value is two-way bound via @bind with the
+            "oninput" event (Blazor default for native inputs).  ValidationMessage
+            reads from EditContext which is updated on every input event.
+        *@
+        <input id="cat-name-en"
+               type="text"
+               value="@_model.NameEn"
+               @oninput="OnNameEnInput"
+               placeholder="e.g. Car Rental"
+               class="admin-input"
+               aria-required="true" />
+        <ValidationMessage For="() => _model.NameEn"
+                           class="text-red-500 text-xs mt-1" />
+    </div>
+
+    @* ── Name ES ── *@
+    <div>
+        <label for="cat-name-es"
+               class="block text-sm font-medium text-slate-700 mb-1.5">
+            @_localizer["Admin_Cat_NameEs"]
+            <span class="text-red-500 ml-0.5" aria-hidden="true">*</span>
+        </label>
+        <input id="cat-name-es"
+               type="text"
+               value="@_model.NameEs"
+               @oninput="e => _model.NameEs = e.Value?.ToString() ?? string.Empty"
+               placeholder="ej. Renta de Autos"
+               class="admin-input"
+               aria-required="true" />
+        <ValidationMessage For="() => _model.NameEs"
+                           class="text-red-500 text-xs mt-1" />
+    </div>
+
+    @* ── Slug ── *@
+    <div>
+        <label for="cat-slug"
+               class="block text-sm font-medium text-slate-700 mb-1.5">
+            @_localizer["Admin_Cat_Slug"]
+            <span class="text-red-500 ml-0.5" aria-hidden="true">*</span>
+        </label>
+        <div class="relative">
+            <input id="cat-slug"
+                   type="text"
+                   value="@_model.Slug"
+                   @oninput="OnSlugInput"
+                   placeholder="car-rental"
+                   class="admin-input pl-6 font-mono"
+                   aria-required="true"
+                   aria-describedby="slug-hint" />
+        </div>
+        <p id="slug-hint" class="text-slate-400 text-xs mt-1 text-[0.6rem]">
+            @_localizer["Admin_Cat_SlugHint"]
+        </p>
+        <ValidationMessage For="() => _model.Slug"
+                           class="text-red-500 text-xs mt-1" />
+    </div>
+
+    @* ── Display Order + IsActive — two columns ── *@
+    <div class="grid grid-cols-2 gap-4">
+
+        <div>
+            <label for="cat-order"
+                   class="block text-sm font-medium text-slate-700 mb-1.5">
+                @_localizer["Admin_Cat_DisplayOrder"]
+            </label>
+            <input id="cat-order"
+                   type="number"
+                   min="0"
+                   max="9999"
+                   value="@_model.DisplayOrder"
+                   @onchange="e => _model.DisplayOrder = int.TryParse(e.Value?.ToString(), out var n) ? n : 0"
+                   class="admin-input" />
+            <ValidationMessage For="() => _model.DisplayOrder"
+                               class="text-red-500 text-xs mt-1" />
+        </div>
+
+        <div class="flex flex-col justify-end pb-1">
+            <label class="flex items-center gap-3 cursor-pointer select-none"
+                   for="cat-active">
+                <span class="relative inline-flex items-center">
+                    <input type="checkbox"
+                           id="cat-active"
+                           checked="@_model.IsActive"
+                           @onchange="e => _model.IsActive = (bool)(e.Value ?? false)"
+                           class="sr-only peer"
+                           role="switch"
+                           aria-label="@_localizer["Admin_Cat_IsActive"]" />
+                    <div class="w-10 h-6 rounded-full bg-slate-200 peer-checked:bg-brand-500
+                                transition-colors duration-200 peer-focus:ring-2 peer-focus:ring-brand-400
+                                peer-focus:ring-offset-1 pointer-events-none"></div>
+                    <div class="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow
+                                transition-transform duration-200 peer-checked:translate-x-4
+                                pointer-events-none"></div>
+                </span>
+                <span class="text-sm font-medium text-slate-700">
+                    @_localizer["Admin_Cat_IsActive"]
+                </span>
+            </label>
+        </div>
+    </div>
+
+    @* ── Icon (emoji) ── *@
+    <div>
+        <label for="cat-icon"
+               class="block text-sm font-medium text-slate-700 mb-1.5">
+            @_localizer["Admin_Cat_Icon"]
+            <span class="ml-1 text-slate-400 text-xs font-normal">(@_localizer["Admin_Optional"])</span>
+        </label>
+        <input id="cat-icon"
+               type="text"
+               value="@_model.Icon"
+               @oninput="e => _model.Icon = e.Value?.ToString()"
+               placeholder="🚗"
+               class="admin-input" />
+        <ValidationMessage For="() => _model.Icon"
+                           class="text-red-500 text-xs mt-1" />
+        @if (!string.IsNullOrWhiteSpace(_model.Icon))
+        {
+            <div class="mt-2 flex items-center gap-2">
+                <span class="text-2xl leading-none" aria-hidden="true">@_model.Icon</span>
+                <span class="text-slate-400 text-xs">@_localizer["Admin_Cat_IconPreview"]</span>
+            </div>
+        }
+    </div>
+
+    @* ── Action buttons ── *@
+    <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+
+        <button type="button"
+                @onclick="HandleCancel"
+                disabled="@IsBusy"
+                class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600
+                       hover:text-slate-800 hover:bg-slate-100
+                       transition-colors duration-150 cursor-pointer
+                       disabled:opacity-50 disabled:cursor-not-allowed">
+            @_localizer["Admin_Cancel"]
+        </button>
+
+        <button type="submit"
+                disabled="@IsBusy"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                       bg-brand-500 text-white hover:bg-brand-600 active:scale-[0.98]
+                       transition-all duration-150 cursor-pointer shadow-sm
+                       disabled:opacity-60 disabled:cursor-not-allowed">
+
+            @if (IsBusy)
+            {
+                @* Spinner *@
+                <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round" />
+                </svg>
+                <span>@_localizer["Admin_Saving"]</span>
+            }
+            else
+            {
+                @* Save icon *@
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                <span>@(IsEditMode ? _localizer["Admin_SaveChanges"] : _localizer["Admin_CreateCategory"])</span>
+            }
+        </button>
+    </div>
+
+</EditForm>
+
+<style>
+    .admin-input {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #1e293b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .admin-input:focus {
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+        background: #ffffff;
+    }
+</style>
+
+@code {
+    /// <summary>
+    /// When set, the form is in Edit mode and fields are pre-populated.
+    /// When null, the form is in Create mode with empty fields.
+    /// </summary>
+    [Parameter] public CategoryAdminDto? InitialValues { get; set; }
+
+    /// <summary>
+    /// Raised with the validated model when the user submits successfully.
+    /// The parent page is responsible for calling the API.
+    /// </summary>
+    [Parameter] public EventCallback<CategoryCreateModel> OnSubmit { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    /// <summary>Set to true by the parent while the API call is in-flight.</summary>
+    [Parameter] public bool IsBusy { get; set; }
+
+    // ── State ──────────────────────────────────────────────────────────────
+    private CategoryCreateModel _model = new();
+
+    // Tracks whether the user has manually edited the slug field.
+    // If false, slug is auto-synced from NameEn on each keystroke.
+    private bool _slugTouched;
+
+    private bool IsEditMode => InitialValues is not null;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────
+    protected override void OnParametersSet()
+    {
+        if (InitialValues is not null)
+        {
+            _model = new CategoryCreateModel
+            {
+                NameEn       = InitialValues.NameEn,
+                NameEs       = InitialValues.NameEs,
+                Slug         = InitialValues.Slug,
+                DisplayOrder = InitialValues.DisplayOrder,
+                Icon      = InitialValues.Icon,
+                IsActive     = InitialValues.IsActive
+            };
+            // In edit mode the slug is already set — treat it as touched
+            // so an accidental NameEn edit does not overwrite the slug.
+            _slugTouched = true;
+        }
+        else
+        {
+            // Reset to empty model when switching to Create mode
+            _model       = new CategoryCreateModel();
+            _slugTouched = false;
+        }
+    }
+
+    // ── Event handlers ─────────────────────────────────────────────────────
+    private void OnNameEnInput(ChangeEventArgs e)
+    {
+        // @bind-Value already updates _model.NameEn before oninput fires in Blazor,
+        // but we also read the raw value to keep sync safe in all render scenarios.
+        var current = e.Value?.ToString() ?? string.Empty;
+        _model.NameEn = current;
+
+        // Auto-generate slug only when the user has not manually touched it
+        if (!_slugTouched)
+            _model.Slug = GenerateSlug(current);
+    }
+
+    private void OnSlugInput(ChangeEventArgs e)
+    {
+        _model.Slug  = e.Value?.ToString() ?? string.Empty;
+        _slugTouched = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSubmit.InvokeAsync(_model);
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Converts a display name to a URL-safe slug.
+    /// "Car Rental" → "car-rental"
+    /// "Belleza &amp; Bienestar" → "belleza-bienestar"
+    /// </summary>
+    private static string GenerateSlug(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        // Lowercase, replace spaces and special chars with hyphens
+        var slug = name.Trim().ToLowerInvariant();
+
+        // Remove accents / diacritics
+        var normalized = slug.Normalize(System.Text.NormalizationForm.FormD);
+        var builder    = new System.Text.StringBuilder();
+        foreach (var c in normalized)
+        {
+            var cat = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+            if (cat != System.Globalization.UnicodeCategory.NonSpacingMark)
+                builder.Append(c);
+        }
+        slug = builder.ToString().Normalize(System.Text.NormalizationForm.FormC);
+
+        // Replace non-alphanumeric characters with hyphens
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9]+", "-");
+
+        // Trim leading/trailing hyphens
+        return slug.Trim('-');
+    }
+
+}

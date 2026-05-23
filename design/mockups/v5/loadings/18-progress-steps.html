@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Progress Steps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 18-progress-steps.html
+    SPEC:   Loader multi-etapa vertical: 4 pasos con iconos de check.
+            "Verificando identidad → Cargando catálogo → Revisando permisos
+            → Casi listo". Cada paso transiciona de "pendiente" (gris) a
+            "activo" (naranja, spinner) a "completo" (naranja sólido, check).
+            Simulado con CSS keyframes y delays. Línea conectora entre pasos
+            que se llena de izquierda a derecha en sincronía.
+    CUÁNDO: Proceso de login completo / verificación de proveedor /
+            primera carga con autenticación.
+    BLAZOR HOOK: data-step="X" en el contenedor permite controlar el paso
+                 activo desde Blazor. Reemplazar setInterval con
+                 StateHasChanged() al completar cada etapa del proceso real.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      pointer-events: none;
+      padding: 0 24px;
+    }
+
+    /* Título */
+    .title-wrap {
+      text-align: center;
+      opacity: 0;
+      animation: fade-up 0.5s ease-out 0.15s forwards;
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Lista de pasos */
+    .steps-list {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      opacity: 0;
+      animation: fade-up 0.5s ease-out 0.3s forwards;
+    }
+
+    /* Ítem de paso */
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    /* Línea conectora */
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 38px;
+      width: 2px;
+      height: calc(100% - 18px);
+      background: #e2e8f0;
+      border-radius: 2px;
+      z-index: 0;
+    }
+    /* Línea completada */
+    .step-item.done::after {
+      background: #fd8c1b;
+      transition: background 0.4s ease;
+    }
+
+    /* Ícono circular */
+    .step-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #e2e8f0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+      position: relative;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+    .step-item.active .step-icon {
+      border-color: #fd8c1b;
+      background: #fff7ed;
+    }
+    .step-item.done .step-icon {
+      border-color: #fd8c1b;
+      background: #fd8c1b;
+    }
+
+    /* Mini spinner para estado activo */
+    .step-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fde8c8;
+      border-top-color: #fd8c1b;
+      border-radius: 50%;
+      animation: step-spin 0.8s linear infinite;
+      display: none;
+    }
+    .step-item.active .step-spinner { display: block; }
+    @keyframes step-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Número para estado pendiente */
+    .step-num {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .step-item.active .step-num,
+    .step-item.done .step-num { display: none; }
+
+    /* Check para estado done */
+    .step-check {
+      display: none;
+    }
+    .step-item.done .step-check { display: block; }
+    .step-item.done .step-spinner { display: none; }
+
+    /* Texto del paso */
+    .step-text {
+      flex: 1;
+      padding-top: 3px;
+    }
+    .step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      transition: color 0.3s ease;
+    }
+    .step-sublabel {
+      font-size: 11px;
+      color: #cbd5e1;
+      margin-top: 1px;
+      transition: color 0.3s ease;
+    }
+    .step-item.active .step-label { color: #1e293b; }
+    .step-item.active .step-sublabel { color: #64748b; }
+    .step-item.done .step-label { color: #64748b; }
+    .step-item.done .step-sublabel { color: #94a3b8; }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .title-wrap, .steps-list { animation: none; opacity: 1; }
+      .step-spinner { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells step by step · Cargando Bulletin Dells paso a paso"
+  >
+    <div class="title-wrap">
+      <p class="text-base font-semibold text-slate-800">Setting up your experience</p>
+      <p class="text-xs text-slate-400 mt-0.5">Preparando tu experiencia…</p>
+    </div>
+
+    <!-- BLAZOR HOOK: data-step="X" — actualizar desde Blazor según progreso real -->
+    <div class="steps-list" id="stepsList" data-step="0">
+
+      <div class="step-item" data-index="0">
+        <div class="step-icon">
+          <span class="step-num">1</span>
+          <div class="step-spinner" aria-hidden="true"></div>
+          <!-- Check SVG -->
+          <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <p class="step-label">Verifying identity</p>
+          <p class="step-sublabel">Verificando identidad</p>
+        </div>
+      </div>
+
+      <div class="step-item" data-index="1">
+        <div class="step-icon">
+          <span class="step-num">2</span>
+          <div class="step-spinner" aria-hidden="true"></div>
+          <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <p class="step-label">Loading catalog</p>
+          <p class="step-sublabel">Cargando catálogo</p>
+        </div>
+      </div>
+
+      <div class="step-item" data-index="2">
+        <div class="step-icon">
+          <span class="step-num">3</span>
+          <div class="step-spinner" aria-hidden="true"></div>
+          <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <p class="step-label">Checking permissions</p>
+          <p class="step-sublabel">Revisando permisos</p>
+        </div>
+      </div>
+
+      <div class="step-item" data-index="3">
+        <div class="step-icon">
+          <span class="step-num">4</span>
+          <div class="step-spinner" aria-hidden="true"></div>
+          <svg class="step-check" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="step-text">
+          <p class="step-label">Almost ready</p>
+          <p class="step-sublabel">Casi listo</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: reemplazar setInterval con StateHasChanged() de Blazor */
+    const list  = document.getElementById('stepsList');
+    const items = list.querySelectorAll('.step-item');
+    let current = -1;
+
+    function advance() {
+      if (current >= 0 && current < items.length) {
+        items[current].classList.remove('active');
+        items[current].classList.add('done');
+      }
+      current++;
+      if (current < items.length) {
+        items[current].classList.add('active');
+      }
+    }
+
+    // Empieza el primer paso tras 400ms
+    setTimeout(() => {
+      advance(); // paso 0 → activo
+      setTimeout(() => {
+        advance(); // paso 0 → done, paso 1 → activo
+        setTimeout(() => {
+          advance(); // paso 1 → done, paso 2 → activo
+          setTimeout(() => {
+            advance(); // paso 2 → done, paso 3 → activo
+            setTimeout(() => {
+              advance(); // paso 3 → done (todos completados)
+            }, 1400);
+          }, 1200);
+        }, 1100);
+      }, 1000);
+    }, 400);
+  </script>
+
+</body>
+</html>

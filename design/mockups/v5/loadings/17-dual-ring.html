@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Dual Ring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 17-dual-ring.html
+    SPEC:   Doble anillo SVG girando en direcciones opuestas. El anillo
+            exterior (naranja, trazo grueso con gap) gira en sentido
+            horario; el interior (slate suave, trazo delgado continuo)
+            gira en sentido antihorario. En el centro, texto de estado
+            bilingüe. Los anillos usan stroke-dasharray para crear el
+            efecto de "arco incompleto" que da sensación de movimiento
+            sin cabeza ni cola.
+    CUÁNDO: Verificación de cuenta del proveedor / revisión GM en proceso /
+            cualquier operación backend de mediana duración.
+    BLAZOR HOOK: Componente <DualRingLoader Label="@statusText" />.
+                 Controlar con @if (isProcessing).
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      pointer-events: none;
+    }
+
+    /* Contenedor del doble anillo */
+    .dual-wrap {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      opacity: 0;
+      animation: wrap-in 0.55s ease-out 0.2s forwards;
+    }
+    @keyframes wrap-in {
+      from { opacity: 0; transform: scale(0.7) rotate(-20deg); }
+      to   { opacity: 1; transform: scale(1)   rotate(0deg); }
+    }
+
+    /* SVGs absolutos encima del otro */
+    .ring-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Anillo exterior — gira horario */
+    .outer-ring {
+      animation: spin-cw 1.8s linear infinite;
+      transform-origin: 65px 65px;
+    }
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* Anillo interior — gira antihorario, más rápido */
+    .inner-ring {
+      animation: spin-ccw 1.2s linear infinite;
+      transform-origin: 65px 65px;
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(-360deg); }
+    }
+
+    /* Centro con texto */
+    .center-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Texto debajo */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.5s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .dual-wrap, .label { animation: none; opacity: 1; }
+      .outer-ring, .inner-ring { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Processing · Procesando"
+  >
+    <div class="dual-wrap">
+      <!-- Anillo exterior naranja con gap (dasharray) -->
+      <svg class="ring-svg" viewBox="0 0 130 130" aria-hidden="true">
+        <circle
+          class="outer-ring"
+          cx="65" cy="65" r="56"
+          fill="none"
+          stroke="#fd8c1b"
+          stroke-width="7"
+          stroke-linecap="round"
+          stroke-dasharray="88 264"
+        />
+      </svg>
+
+      <!-- Anillo interior slate continuo con pequeño gap -->
+      <svg class="ring-svg" viewBox="0 0 130 130" aria-hidden="true">
+        <circle
+          class="inner-ring"
+          cx="65" cy="65" r="38"
+          fill="none"
+          stroke="#cbd5e1"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-dasharray="48 190"
+        />
+      </svg>
+
+      <!-- Texto en centro -->
+      <div class="center-text" aria-hidden="true">
+        <span style="font-size:11px; font-weight:600; color:#fd8c1b; letter-spacing:0.04em;">BD</span>
+      </div>
+    </div>
+
+    <div class="label">
+      <!-- BLAZOR HOOK: texto dinámico inyectable desde @statusText -->
+      <p class="text-sm font-medium text-slate-700">Processing</p>
+      <p class="text-xs text-slate-400 mt-0.5">Procesando…</p>
+    </div>
+  </div>
+
+</body>
+</html>

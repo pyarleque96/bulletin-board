@@ -1,0 +1,29 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+@inject IStringLocalizer<SharedResource> _localizer
+
+@*  SafeContentPill — visual indicator for Manage Settings sections.
+    PillType="safe"    → green badge meaning the toggle applies instantly (no GM re-approval).
+    PillType="content" → amber badge meaning the field is a content edit (regla #5 → Pending).
+*@
+
+@if (string.Equals(PillType, "content", StringComparison.OrdinalIgnoreCase))
+{
+    <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200"
+          role="status"
+          aria-label="@_localizer["Manage_Settings_Pill_Content_Aria"]">
+        @_localizer["Manage_Settings_Pill_Content"]
+    </span>
+}
+else
+{
+    <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"
+          role="status"
+          aria-label="@_localizer["Manage_Settings_Pill_Safe_Aria"]">
+        @_localizer["Manage_Settings_Pill_Safe"]
+    </span>
+}
+
+@code {
+    /// <summary>"safe" or "content". Defaults to "safe".</summary>
+    [Parameter] public string PillType { get; set; } = "safe";
+}

@@ -1,0 +1,59 @@
+@namespace Bulletin.Board.Web.Client.Components.Buttons
+
+@*
+    Destructive-action button.
+    Used for: GM moderation (Reject listing), Reset filters, Delete actions.
+    Variant "outline" is less aggressive visually (used for secondary destructive actions).
+*@
+
+<button
+    type="@Type"
+    class="@ComputedClass"
+    @onclick="HandleClick"
+    disabled="@(Disabled || IsLoading)"
+    aria-disabled="@(Disabled || IsLoading)"
+    aria-busy="@IsLoading">
+    @if (IsLoading)
+    {
+        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span>@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool IsLoading { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>"solid" — red fill. "outline" — red border, transparent bg.</summary>
+    [Parameter] public string Variant { get; set; } = "outline";
+
+    private string VariantClass => Variant == "solid"
+        ? "bg-red-600 text-white hover:bg-red-700 border-transparent"
+        : "text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-400";
+
+    private string ComputedClass =>
+        $"flex items-center justify-center gap-2 {VariantClass} font-medium px-4 py-2 rounded-xl text-sm " +
+        "transition-colors duration-200 " +
+        "active:scale-[0.98] " +
+        "disabled:opacity-50 disabled:cursor-not-allowed " +
+        "cursor-pointer " +
+        (CssClass ?? string.Empty);
+
+    private async Task HandleClick()
+    {
+        if (Disabled || IsLoading) return;
+        await OnClick.InvokeAsync();
+    }
+}

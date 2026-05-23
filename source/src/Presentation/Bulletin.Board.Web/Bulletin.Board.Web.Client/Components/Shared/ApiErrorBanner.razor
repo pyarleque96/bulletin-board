@@ -1,0 +1,102 @@
+@* ApiErrorBanner — F6: renders structured API errors.
+   Accepts MessageKey + optional RawDetail directly.
+   Resolves the key to a bilingual EN/ES string via inline dictionary.
+   Dismissible. Tailwind styled.
+   Usage: <ApiErrorBanner MessageKey="@err.MessageKey" RawDetail="@err.RawDetail" /> *@
+
+@if (!string.IsNullOrEmpty(MessageKey) && !_dismissed)
+{
+    <div class="flex items-start gap-3 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 my-4"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+
+        @* Icon *@
+        <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+
+        @* Message *@
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-red-800">
+                @ResolvedMessage
+            </p>
+            @if (ShowDetail && !string.IsNullOrWhiteSpace(RawDetail))
+            {
+                <p class="text-xs text-red-600 mt-1 font-mono break-all">
+                    @RawDetail
+                </p>
+            }
+        </div>
+
+        @* Dismiss *@
+        <button type="button"
+                class="w-6 h-6 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer border-0"
+                aria-label="Dismiss error / Cerrar error"
+                @onclick="() => _dismissed = true">
+            <svg class="w-3 h-3 text-red-500" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+}
+
+@code {
+    // ── Parameters ─────────────────────────────────────────────────────────────
+
+    private string? _prevKey;
+
+    /// <summary>The i18n key from ApiResult&lt;T&gt;.Error.MessageKey.</summary>
+    [Parameter]
+    public string? MessageKey
+    {
+        get => _messageKey;
+        set
+        {
+            // Reset dismiss state when a new error arrives.
+            if (value != _prevKey)
+            {
+                _dismissed = false;
+                _prevKey   = value;
+            }
+            _messageKey = value;
+        }
+    }
+
+    /// <summary>Raw server detail string (optional, shown when ShowDetail = true).</summary>
+    [Parameter] public string? RawDetail   { get; set; }
+
+    /// <summary>When true, shows the raw server detail string for debug context.</summary>
+    [Parameter] public bool    ShowDetail  { get; set; } = false;
+
+    // ── Inline i18n dictionary (EN / ES) ───────────────────────────────────────
+
+    private static readonly Dictionary<string, string> Messages = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["errors.unauthorized"] = "Unauthorized / No autorizado",
+        ["errors.forbidden"]    = "Forbidden / Sin permisos",
+        ["errors.not_found"]    = "Not found / No encontrado",
+        ["errors.validation"]   = "Validation error / Error de validación",
+        ["errors.conflict"]     = "Conflict / Conflicto",
+        ["errors.server"]       = "Server error / Error del servidor",
+        ["errors.network"]      = "Network error / Error de red",
+        ["errors.unknown"]      = "Unknown error / Error desconocido",
+    };
+
+    // ── State ──────────────────────────────────────────────────────────────────
+
+    private string? _messageKey;
+    private bool    _dismissed;
+
+    private string ResolvedMessage =>
+        _messageKey is not null && Messages.TryGetValue(_messageKey, out var msg)
+            ? msg
+            : (_messageKey ?? string.Empty);
+}

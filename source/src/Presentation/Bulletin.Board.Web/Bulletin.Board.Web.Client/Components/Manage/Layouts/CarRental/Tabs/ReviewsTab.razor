@@ -1,0 +1,79 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ReviewsTab (CarRental) — Tab Reviews compartido Regular/VIP. Estructura
+   estándar usada en otras categorías: RatingSummaryCard + banner regla #7 +
+   sección Pending GM + sección Published, ambas con ManageEmptyState hasta
+   que el API responda. Reply moderada por GM.
+
+   Reglas:
+     #7 — ReviewStatusBadge + banner; toda review y reply pasa por GM.
+
+   TODO: API GET /api/v1/manage/listings/{id}/reviews/summary
+   TODO: API GET /api/v1/manage/listings/{id}/reviews?status=...
+   TODO: API POST /api/v1/manage/listings/{id}/reviews/{reviewId}/reply
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-reviews"
+      role="tabpanel"
+      aria-labelledby="tab-reviews"
+      tabindex="0">
+
+    @* Summary card. *@
+    <div class="mb-6">
+        <RatingSummaryCard Average="0"
+                           TotalReviews="0"
+                           Distribution="@_emptyDistribution" />
+    </div>
+
+    @* Regla #7 banner. *@
+    <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200" role="note">
+        <svg class="w-4 h-4 text-slate-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <p class="text-xs text-ink">@_localizer["Manage_CarRental_Reviews_Banner"]</p>
+    </div>
+
+    @* Pending GM — placeholder. *@
+    <section class="mb-8">
+        <h2 class="text-sm font-semibold text-ink mb-3 inline-flex items-center gap-2">
+            @_localizer["Manage_Reviews_PendingGm_Title"]
+            <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                @_localizer["Manage_Reviews_NotYetPublic"]
+            </span>
+        </h2>
+        <ManageEmptyState Title="@_localizer["Manage_Reviews_PendingGm_Empty_Title"]"
+                          Description="@_localizer["Manage_Reviews_PendingGm_Empty_Description"]" />
+    </section>
+
+    @* Published — placeholder. *@
+    <section>
+        <h2 class="text-sm font-semibold text-ink mb-3">@_localizer["Manage_Reviews_Published_Title"]</h2>
+        <ManageEmptyState Title="@_localizer["Manage_Reviews_Published_Empty_Title"]"
+                          Description="@_localizer["Manage_Reviews_Published_Empty_Description"]" />
+    </section>
+
+    @if (IsVip)
+    {
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_CarRental_VipFooter_Reviews"]
+        </div>
+    }
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public bool IsVip { get; set; }
+
+    private static readonly IReadOnlyDictionary<int, int> _emptyDistribution =
+        new Dictionary<int, int> { [5] = 0, [4] = 0, [3] = 0, [2] = 0, [1] = 0 };
+}

@@ -1,0 +1,24 @@
+/* VerifiedBadge — verde esmeralda canónico de manage/index.html */
+/* .tier-verified: background:#d1fae5; color:#065f46; border:1px solid #6ee7b7 */
+/* Dimensiones del mockup v5: text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full gap-1 SVG w-2.5 h-2.5 */
+.verified-badge {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    line-height: 8px;
+    white-space: nowrap;
+}
+
+/* Modo icono solo: padding cuadrado sin el px extra */
+.verified-badge--icon-only {
+    padding: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+}

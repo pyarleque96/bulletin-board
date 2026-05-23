@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — /manage/{listingId} — Detalle Car Rental — Tab: Reservations
+  ===============================================================================
+  Archivo:    design/mockups/v5/manage/detail-reservations.html
+  Ruta:       /manage/{listingId}  (Nivel 2 — type-specific)
+  Tab activo: Reservations
+  ===============================================================================
+  DATOS QUE ESPERA DEL BACKEND:
+    - Listing: ProviderListingDto (Id, Title, Status, ProviderTier, CategorySlug)
+    - Reservations: ReservationRequestDto[]
+        · Id: Guid
+        · ClientName: string
+        · ClientPhone: string (para WhatsApp link wa.me/...)
+        · VehicleId: Guid
+        · VehicleSummary: string ("2022 Toyota Corolla")
+        · PickupDate, ReturnDate: DateOnly
+        · TotalDays: int
+        · Status: Pending | Confirmed | Completed | Cancelled
+        · Note: string? (nota del cliente)
+        · CreatedAt: DateTime
+    - Filter: status (all, pending, confirmed, completed, cancelled)
+    - PendingCount: int (para badge en tab)
+  ===============================================================================
+  BINDING BLAZOR:
+    - @foreach (var r in _filteredReservations) → lista de reservas
+    - @_filterStatus → <select>
+    - @onclick="() => ConfirmReservation(r.Id)" → confirmar
+    - @onclick="() => CancelReservation(r.Id)" → cancelar
+    - WhatsApp CTA: href="https://wa.me/@r.ClientPhone?text=..."
+      → Regla de negocio: contacto cliente↔proveedor vía WhatsApp
+      → GM recibe email con la interacción (backend)
+    - @_pendingCount → badge del tab
+  ===============================================================================
+  REGLAS DE NEGOCIO:
+    - Contacto SOLO por WhatsApp (wa.me deep link)
+    - GM recibe email en cada interacción (backend lo maneja, no UI)
+    - Reservas solo de usuarios que contactaron vía plataforma
+  ===============================================================================
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations — Dells Premier Car Rentals — Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',
+              300:'#fdba74',400:'#fb923c',500:'#f97316',
+              600:'#ea580c',700:'#c2410c',
+            },
+            ink: '#0f172a', muted: '#64748b',
+          },
+          fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+          boxShadow: {
+            soft: '0 4px 24px -4px rgba(30,41,59,0.08)',
+            lift: '0 8px 32px -6px rgba(30,41,59,0.12)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Approved: shield icon + blue-brand (home-8 trust banner pattern) */
+    .status-approved    { background:#dbeafe; color:#1d4ed8; }
+    .status-pending     { background:#fef9c3; color:#854d0e; }
+    .status-rejected    { background:#fee2e2; color:#b91c1c; }
+    .status-needschange { background:#ffedd5; color:#c2410c; }
+    /* VIP: orange gradient + white text (home-8 .badge-vip) */
+    .tier-vip           { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; border:none; }
+    /* Verified: emerald green + check-circle icon (home-8 trust banner) */
+    .tier-verified      { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+    .tier-regular       { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+
+    /* ── Water-drop tab indicator ── */
+    .manage-tablist-wrap { position: relative; }
+    .tab-indicator {
+      position: absolute; bottom: 0; height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+      box-shadow: 0 -1px 8px -1px rgba(249,115,22,0.35);
+      transition: left 0.38s cubic-bezier(0.32,0.72,0,1),
+                  width 0.38s cubic-bezier(0.32,0.72,0,1),
+                  opacity 0.2s ease;
+      pointer-events: none;
+      will-change: left, width;
+    }
+    .tab-indicator::after {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit;
+      background: inherit; opacity: 0.25; filter: blur(4px);
+    }
+    .manage-tab { position:relative; transition:color 0.18s cubic-bezier(0.32,0.72,0,1); caret-color:transparent; }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab:hover { color:#0f172a; }
+
+    /* Reservation status badges */
+    .res-pending   { background:#fef9c3; color:#854d0e; }
+    .res-confirmed { background:#dcfce7; color:#15803d; }
+    .res-completed { background:#f1f5f9; color:#475569; }
+    .res-cancelled { background:#fee2e2; color:#b91c1c; }
+
+    /* Reservation card hover */
+    .res-card {
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1),
+                  box-shadow 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .res-card:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.12); }
+
+    /* Pending card — borde amarillo (requiere acción del proveedor) */
+    .res-card.is-pending { border-color:#fbbf24; }
+
+    /* Pulse dot */
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .pulse-dot { animation:pulse-dot 2s ease-in-out infinite; }
+
+    /* Filter pill buttons */
+    .filter-pill {
+      padding:5px 12px; border-radius:999px; font-size:11px; font-weight:600;
+      border:1px solid #e2e8f0; background:#fff; color:#64748b;
+      cursor:pointer; transition:all 0.15s ease; caret-color:transparent;
+      user-select:none;
+    }
+    .filter-pill:hover { border-color:#cbd5e1; color:#0f172a; }
+    .filter-pill.active { background:#0f172a; color:#fff; border-color:#0f172a; }
+    .filter-pill.active-pending { background:#fef9c3; color:#854d0e; border-color:#fbbf24; }
+    .filter-pill.active-confirmed { background:#dcfce7; color:#15803d; border-color:#86efac; }
+    .filter-pill.active-completed { background:#f1f5f9; color:#475569; border-color:#cbd5e1; }
+    .filter-pill.active-cancelled { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+
+    /* Tooltip */
+    [data-tooltip] { position:relative; }
+    [data-tooltip]::after {
+      content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px);
+      left:50%; transform:translateX(-50%); white-space:nowrap;
+      background:#1e293b; color:#fff; font-size:11px; padding:5px 9px;
+      border-radius:8px; pointer-events:none; opacity:0;
+      transition:opacity 0.15s ease; z-index:50;
+    }
+    [data-tooltip]:hover::after { opacity:1; }
+
+    /* Fade up */
+    .fade-up { opacity:0; transform:translateY(12px);
+               transition:opacity 0.45s ease, transform 0.45s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+      .fade-up { opacity:1; transform:none; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink min-h-[100dvh]">
+
+<!-- ======================================================
+     NAVBAR
+     ====================================================== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"
+     aria-label="Main navigation / Navegación principal">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-soft"
+       style="backdrop-filter:blur(20px);">
+    <a href="/" class="flex items-center gap-2 no-underline" aria-label="Bulletin Dells — home">
+      <div class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center" aria-hidden="true">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="font-bold text-sm tracking-tight text-ink">Bulletin <span class="text-brand-500">Dells</span></span>
+    </a>
+    <div class="flex items-center gap-2">
+      <button class="text-xs text-muted px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer border-0"
+              aria-label="Switch language / Cambiar idioma">EN / ES</button>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold cursor-pointer"
+           title="Account settings" aria-label="Account menu">P</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     1. BANDA HEADER CON TABS (sticky)
+     ============================================================ -->
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3" aria-label="Breadcrumb">
+      <a href="index.html" class="hover:text-ink transition-colors duration-150 cursor-pointer">Manage</a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium truncate max-w-[180px]" aria-current="page">Dells Premier Car Rentals</span>
+    </nav>
+
+    <!-- Título del listing -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+          <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-lg font-bold text-ink leading-tight">Dells Premier Car Rentals</h1>
+            <span class="status-approved inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Approved <!-- ES: Aprobado -->
+            </span>
+            <span class="tier-vip inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              VIP
+            </span>
+          </div>
+          <p class="text-xs text-muted mt-0.5">Car Rental <span class="text-slate-300 mx-1">·</span> Since March 2024</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        <a href="/listing/dells-premier-car-rentals"
+           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer no-underline"
+           aria-label="View public listing" target="_blank" rel="noopener">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Public view
+        </a>
+        <button type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer"
+                data-tooltip="Editing sends listing back to Pending review"
+                aria-label="Edit listing info">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit listing
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs + water-drop indicator -->
+    <div class="manage-tablist-wrap border-b border-slate-100 -mb-px">
+      <div class="flex items-center gap-0 overflow-x-auto"
+           role="tablist" id="manage-tablist" aria-label="Listing management sections">
+
+        <a href="detail-overview.html"
+           role="tab" aria-selected="false" aria-controls="panel-overview" id="tab-overview"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+
+        <a href="detail-vehicles.html"
+           role="tab" aria-selected="false" aria-controls="panel-vehicles" id="tab-vehicles"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          Vehicles
+          <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span>
+        </a>
+
+        <a href="detail-reservations.html"
+           role="tab" aria-selected="true" aria-controls="panel-reservations" id="tab-reservations"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-ink cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Reservations
+          <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="2 pending reservations">2</span>
+        </a>
+
+        <button type="button"
+                role="tab" aria-selected="false" aria-controls="panel-photos" id="tab-photos"
+                class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer border-0 bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Photos
+          <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span>
+        </button>
+
+        <button type="button"
+                role="tab" aria-selected="false" aria-controls="panel-settings" id="tab-settings"
+                class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer border-0 bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+
+      </div>
+      <div id="tab-indicator" class="tab-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var tablist   = document.getElementById('manage-tablist');
+  var indicator = document.getElementById('tab-indicator');
+  if (!tablist || !indicator) return;
+  function positionIndicator(tab, animate) {
+    if (!animate) indicator.style.transition = 'none';
+    var lr = tablist.getBoundingClientRect();
+    var tr = tab.getBoundingClientRect();
+    indicator.style.left  = (tr.left - lr.left + tablist.scrollLeft) + 'px';
+    indicator.style.width = tr.width + 'px';
+    if (!animate) requestAnimationFrame(function(){ indicator.style.transition = ''; });
+  }
+  var active = tablist.querySelector('[aria-selected="true"]');
+  if (active) positionIndicator(active, false);
+  tablist.querySelectorAll('.manage-tab').forEach(function(tab) {
+    tab.addEventListener('mouseenter', function() { positionIndicator(tab, true); });
+    tab.addEventListener('mouseleave', function() {
+      var sel = tablist.querySelector('[aria-selected="true"]');
+      if (sel) positionIndicator(sel, true);
+    });
+  });
+})();
+</script>
+
+<!-- ============================================================
+     2. PANEL: RESERVATIONS
+     ============================================================ -->
+<main class="max-w-6xl mx-auto px-4 py-8"
+      id="panel-reservations" role="tabpanel" aria-labelledby="tab-reservations" tabindex="0">
+
+  <!-- Sub-header + filtros -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 fade-up">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Reservations <!-- ES: Reservas --></h2>
+      <p class="text-sm text-muted mt-0.5">
+        <!-- data-binding: @_reservations.Count + @_pendingCount -->
+        <span class="font-medium text-ink" aria-live="polite">6 total</span>
+        &nbsp;·&nbsp;
+        <span class="font-medium text-amber-700">2 pending response</span>
+        <!-- ES: 2 pendientes de respuesta -->
+      </p>
+    </div>
+    <!-- Filtros por estado — pill buttons -->
+    <!-- data-binding: @onclick="() => _filterStatus = \"all\""  etc. -->
+    <div class="flex flex-wrap gap-2" role="group" aria-label="Filter reservations by status">
+      <button type="button" class="filter-pill active" aria-pressed="true" aria-label="Show all reservations">
+        All <!-- ES: Todas -->
+      </button>
+      <button type="button" class="filter-pill" aria-pressed="false" aria-label="Show pending reservations">
+        Pending
+        <!-- data-binding: badge @_pendingCount — solo si > 0 -->
+        <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full">2</span>
+      </button>
+      <button type="button" class="filter-pill" aria-pressed="false" aria-label="Show confirmed reservations">
+        Confirmed <!-- ES: Confirmadas -->
+      </button>
+      <button type="button" class="filter-pill" aria-pressed="false" aria-label="Show completed reservations">
+        Completed <!-- ES: Completadas -->
+      </button>
+      <button type="button" class="filter-pill" aria-pressed="false" aria-label="Show cancelled reservations">
+        Cancelled <!-- ES: Canceladas -->
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Lista de reservas ── -->
+  <ul class="space-y-4" role="list" aria-label="Reservations list / Lista de reservas">
+
+    <!-- RESERVA 1: Pending — requiere respuesta del proveedor -->
+    <li class="res-card is-pending bg-white rounded-2xl border shadow-soft overflow-hidden fade-up"
+        aria-label="Reservation from Maria Guadalupe — Pending">
+
+      <!-- Indicador de acción requerida -->
+      <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
+        <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+        <span class="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
+          Response required — client is waiting
+          <!-- ES: Respuesta requerida — el cliente está esperando -->
+        </span>
+        <!-- data-binding: @r.CreatedAt.Humanize() -->
+        <span class="ml-auto text-[10px] text-amber-600 font-medium">Received 2h ago</span><!-- ES: Recibida hace 2h -->
+      </div>
+
+      <div class="p-5">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+
+          <!-- Avatar del cliente -->
+          <div class="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0 text-brand-700 text-base font-bold" aria-hidden="true">
+            <!-- data-binding: @r.ClientName[0] -->
+            MG
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <!-- Meta del cliente + vehículo -->
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+              <div>
+                <!-- data-binding: @r.ClientName -->
+                <h3 class="text-sm font-semibold text-ink">Maria Guadalupe</h3>
+                <!-- data-binding: @r.VehicleSummary -->
+                <p class="text-xs text-muted mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                  2023 Honda CR-V
+                </p>
+              </div>
+              <span class="res-pending text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full flex-shrink-0">
+                Pending <!-- ES: Pendiente -->
+              </span>
+            </div>
+
+            <!-- Fechas y duración -->
+            <div class="flex flex-wrap items-center gap-3 mb-3">
+              <div class="flex items-center gap-1.5 text-xs text-ink font-medium">
+                <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <!-- data-binding: @r.PickupDate.ToString("MMM dd") — @r.ReturnDate.ToString("MMM dd, yyyy") -->
+                May 14 — May 17, 2025
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-muted">
+                3 days <!-- ES: 3 días -->
+              </span>
+            </div>
+
+            <!-- Nota del cliente -->
+            <!-- data-binding: @if (!string.IsNullOrEmpty(r.Note)) -->
+            <div class="flex items-start gap-2 mb-4 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <svg class="w-3.5 h-3.5 text-muted flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <p class="text-xs text-slate-600 italic">
+                "I'll arrive at the resort at 3pm. Is it possible to pick up the car there? Also need a child seat if available."
+                <!-- ES: Nota del cliente visible solo al proveedor -->
+              </p>
+            </div>
+
+            <!-- CTAs de respuesta -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- WhatsApp — Regla de negocio: contacto vía WhatsApp -->
+              <!-- data-binding: href="https://wa.me/@r.ClientPhone?text=..." -->
+              <a href="https://wa.me/15551234567?text=Hello%20Maria%2C%20I%20received%20your%20reservation%20request..."
+                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline"
+                 aria-label="Contact client via WhatsApp / Contactar cliente por WhatsApp"
+                 target="_blank" rel="noopener noreferrer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.849L0 24l6.335-1.493A11.965 11.965 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.913 0-3.698-.508-5.234-1.394l-.374-.221-3.756.885.898-3.665-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                Contact on WhatsApp <!-- ES: Contactar por WhatsApp -->
+              </a>
+              <!-- Confirmar directamente en plataforma -->
+              <!-- data-binding: @onclick="() => ConfirmReservation(r.Id)" disabled="@_busy" -->
+              <button type="button"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white hover:bg-green-50 active:scale-[0.98] text-green-700 text-xs font-semibold border border-green-200 hover:border-green-300 transition-colors duration-150 cursor-pointer"
+                      aria-label="Confirm reservation / Confirmar reserva">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Confirm <!-- ES: Confirmar -->
+              </button>
+              <!-- Cancelar -->
+              <!-- data-binding: @onclick="() => CancelReservation(r.Id)" -->
+              <button type="button"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer"
+                      aria-label="Cancel reservation / Cancelar reserva">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Cancel <!-- ES: Cancelar -->
+              </button>
+            </div>
+            <!-- Nota informativa: GM recibe email de la interacción -->
+            <p class="text-[10px] text-muted mt-2 flex items-center gap-1">
+              <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              The GM is notified by email of all client interactions.
+              <!-- ES: El GM recibe un correo de cada interacción con el cliente. -->
+            </p>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- RESERVA 2: Pending — otro cliente -->
+    <li class="res-card is-pending bg-white rounded-2xl border shadow-soft overflow-hidden fade-up"
+        aria-label="Reservation from James Kowalski — Pending">
+      <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
+        <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" aria-hidden="true"></span>
+        <span class="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">Response required</span>
+        <span class="ml-auto text-[10px] text-amber-600 font-medium">Received 5h ago</span>
+      </div>
+      <div class="p-5">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-700 text-base font-bold" aria-hidden="true">JK</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+              <div>
+                <h3 class="text-sm font-semibold text-ink">James Kowalski</h3>
+                <p class="text-xs text-muted mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                  2022 Toyota Corolla
+                </p>
+              </div>
+              <span class="res-pending text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full flex-shrink-0">Pending</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+              <div class="flex items-center gap-1.5 text-xs text-ink font-medium">
+                <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                May 18 — May 25, 2025
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-muted">7 days</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <a href="https://wa.me/15557891234"
+                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer no-underline"
+                 aria-label="Contact via WhatsApp" target="_blank" rel="noopener noreferrer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.849L0 24l6.335-1.493A11.965 11.965 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.913 0-3.698-.508-5.234-1.394l-.374-.221-3.756.885.898-3.665-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                WhatsApp
+              </a>
+              <button type="button"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white hover:bg-green-50 active:scale-[0.98] text-green-700 text-xs font-semibold border border-green-200 hover:border-green-300 transition-colors duration-150 cursor-pointer"
+                      aria-label="Confirm reservation">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Confirm
+              </button>
+              <button type="button"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-400 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer"
+                      aria-label="Cancel reservation">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- RESERVA 3: Confirmed — en curso -->
+    <li class="res-card bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden fade-up"
+        aria-label="Reservation from Andrei Bogdan — Confirmed, in progress">
+      <div class="p-5">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center flex-shrink-0 text-green-700 text-base font-bold" aria-hidden="true">AB</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+              <div>
+                <h3 class="text-sm font-semibold text-ink">Andrei Bogdan</h3>
+                <p class="text-xs text-muted mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                  2023 Honda CR-V
+                </p>
+              </div>
+              <span class="res-confirmed text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full flex-shrink-0">
+                Confirmed — In progress <!-- ES: Confirmada — En curso -->
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 mb-3">
+              <div class="flex items-center gap-1.5 text-xs text-ink font-medium">
+                <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                May 10 — May 13, 2025
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-muted">3 days</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Returns tomorrow</span><!-- ES: Devuelve mañana -->
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <a href="https://wa.me/15553456789"
+                 class="inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-white hover:bg-green-50 active:scale-[0.98] text-green-700 text-xs font-semibold border border-green-200 hover:border-green-300 transition-colors duration-150 cursor-pointer no-underline"
+                 aria-label="Contact via WhatsApp" target="_blank" rel="noopener noreferrer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.849L0 24l6.335-1.493A11.965 11.965 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.913 0-3.698-.508-5.234-1.394l-.374-.221-3.756.885.898-3.665-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                WhatsApp
+              </a>
+              <!-- Mark as completed (cuando el cliente devuelve el vehículo) -->
+              <!-- data-binding: @onclick="() => MarkCompleted(r.Id)" -->
+              <button type="button"
+                      class="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                      aria-label="Mark as returned / completed">
+                Mark as returned <!-- ES: Marcar como devuelto -->
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- RESERVAS 4–6: Completed (historial) — comprimidas -->
+    <li class="bg-white rounded-2xl border border-slate-100 overflow-hidden fade-up" aria-label="Completed reservations history">
+      <div class="px-4 pt-4 pb-2">
+        <h3 class="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
+          Completed (3) <!-- ES: Completadas (3) -->
+        </h3>
+      </div>
+      <ul class="divide-y divide-slate-50" role="list">
+
+        <li class="flex items-center gap-3 px-4 py-3 opacity-70">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-muted text-xs font-bold" aria-hidden="true">DK</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-500">David Kowalczyk · Toyota Corolla</p>
+            <p class="text-[10px] text-muted">May 5 — May 8 · 3 days</p>
+          </div>
+          <span class="res-completed text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0">Completed</span>
+        </li>
+
+        <li class="flex items-center gap-3 px-4 py-3 opacity-70">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-muted text-xs font-bold" aria-hidden="true">LC</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-500">Laura Chen · Ford Escape</p>
+            <p class="text-[10px] text-muted">Apr 28 — May 2 · 4 days</p>
+          </div>
+          <span class="res-completed text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0">Completed</span>
+        </li>
+
+        <li class="flex items-center gap-3 px-4 py-3 opacity-70">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-muted text-xs font-bold" aria-hidden="true">OM</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-500">Olga Marchetti · Honda CR-V</p>
+            <p class="text-[10px] text-muted">Apr 20 — Apr 23 · 3 days</p>
+          </div>
+          <span class="res-completed text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0">Completed</span>
+        </li>
+
+      </ul>
+      <div class="px-4 pb-4 pt-2">
+        <button type="button"
+                class="text-xs text-brand-600 hover:text-brand-700 font-medium cursor-pointer bg-transparent border-0 p-0 transition-colors"
+                aria-label="Load more history">
+          Load more history <!-- ES: Cargar más historial -->
+        </button>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- Empty state (sin reservas, o filtro sin resultados) -->
+  <!-- data-binding: @if (_filteredReservations.Count == 0) -->
+  <!--
+  <div class="text-center py-16" role="status" aria-live="polite">
+    <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <h3 class="text-base font-semibold text-ink mb-1">No reservations yet</h3>
+    <p class="text-sm text-muted">When clients contact you through the platform, their requests will appear here.</p>
+  </div>
+  -->
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="border-t border-slate-100 bg-white mt-8 py-6">
+  <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-xs text-muted">&copy; 2025 Bulletin Dells · Wisconsin Dells, WI</p>
+    <div class="flex items-center gap-4 text-xs text-muted">
+      <a href="/terms" class="hover:text-ink transition-colors cursor-pointer">Terms</a>
+      <a href="/privacy" class="hover:text-ink transition-colors cursor-pointer">Privacy</a>
+      <a href="/help" class="hover:text-ink transition-colors cursor-pointer">Help</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // IntersectionObserver fade-up
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+  // Filter pills (solo para prototipo — En Blazor: @bind="_filterStatus")
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => {
+        p.classList.remove('active');
+        p.setAttribute('aria-pressed', 'false');
+      });
+      pill.classList.add('active');
+      pill.setAttribute('aria-pressed', 'true');
+    });
+  });
+</script>
+
+</body>
+</html>

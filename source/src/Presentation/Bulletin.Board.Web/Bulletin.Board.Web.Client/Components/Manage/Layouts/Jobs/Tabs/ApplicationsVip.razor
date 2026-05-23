@@ -1,0 +1,97 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   ApplicationsVip (Jobs) — Pipeline kanban VIP: New / Contacted / Interview / Hired.
+   Filtros avanzados (posting, source), bulk actions implícitos.
+
+   Reglas:
+     #5 — PendingReviewTooltip en mutadores (drag-between-columns implícito).
+     #8 — GmCopyNotice + WhatsAppCtaButton; toda comunicación pasa por WhatsApp + GM copy.
+   TODO: API GET /api/v1/manage/listings/{id}/applications?stage=...
+   TODO: API PATCH /api/v1/manage/applications/{id}/stage  (BACKEND_AUDIT §1.5)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Jobs.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+</style>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-applications"
+      role="tabpanel"
+      aria-labelledby="tab-applications"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+                @_localizer["Manage_Jobs_Pipeline_Title"]
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            </h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Jobs_Pipeline_Subtitle"]</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <select class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-ink bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    aria-label="@_localizer["Manage_Jobs_Filter_Posting"]">
+                <option>@_localizer["Manage_Jobs_Filter_AllPostings"]</option>
+            </select>
+            <select class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-ink bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    aria-label="@_localizer["Manage_Jobs_Filter_Source"]">
+                <option>@_localizer["Manage_Jobs_Filter_AllSources"]</option>
+                <option>@_localizer["Manage_Jobs_Filter_J1Only"]</option>
+                <option>@_localizer["Manage_Jobs_Filter_Local"]</option>
+            </select>
+        </div>
+    </div>
+
+    @* Kanban board — TODO: API GET /api/v1/manage/listings/{id}/applications grouped by stage *@
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+        @foreach (var col in _columns)
+        {
+            <div class="rounded-3xl border @(col.IsTerminal ? "border-green-100 bg-green-50/60" : "border-slate-100 bg-slate-50/60") p-3"
+                 role="region"
+                 aria-label="@col.Label">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-semibold @(col.IsTerminal ? "text-green-800" : "text-ink") uppercase tracking-wider inline-flex items-center gap-1.5">
+                        @col.Label
+                        <span class="text-muted">·</span>
+                        <span class="tabular-nums @(col.IsTerminal ? "text-green-700" : "text-muted")">—</span>
+                    </h3>
+                </div>
+                <ul class="space-y-2 min-h-[80px]" role="list" aria-label="@col.Label">
+                    <li class="p-4 text-center bg-white/60 rounded-2xl border border-dashed border-slate-200">
+                        <p class="text-[11px] text-muted">@_localizer["Manage_Jobs_Pipeline_EmptyColumn"]</p>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+
+    <p class="text-[11px] text-muted mt-5">@_localizer["Manage_Jobs_Pipeline_GmCopyFootnote"]</p>
+
+    <div class="mt-4">
+        <GmCopyNotice />
+    </div>
+
+    <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        @_localizer["Manage_Jobs_Pipeline_VipFooter"]
+    </div>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+
+    private record PipelineColumn(string Key, string Label, bool IsTerminal);
+
+    private PipelineColumn[] _columns => new[]
+    {
+        new PipelineColumn("new",       _localizer["Manage_Jobs_Pipeline_Col_New"],       false),
+        new PipelineColumn("contacted", _localizer["Manage_Jobs_Pipeline_Col_Contacted"], false),
+        new PipelineColumn("interview", _localizer["Manage_Jobs_Pipeline_Col_Interview"], false),
+        new PipelineColumn("hired",     _localizer["Manage_Jobs_Pipeline_Col_Hired"],     true),
+    };
+}

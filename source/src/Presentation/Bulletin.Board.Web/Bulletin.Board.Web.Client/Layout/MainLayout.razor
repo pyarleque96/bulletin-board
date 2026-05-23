@@ -1,0 +1,44 @@
+@using Bulletin.Board.Web.Client.States
+@inherits LayoutComponentBase
+@implements IDisposable
+
+@inject FooterState FooterState
+@inject NavBarState NavBarState
+
+<div class="min-h-screen flex flex-col">
+
+    <NavBar />
+
+    <main class="flex-1 flex flex-col">
+        @Body
+    </main>
+
+    <Footer IsCompact="FooterState.IsCompact" IsDark="FooterState.IsDark" />
+
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        NavBarState.OnChange += HandleStateChange;
+        FooterState.OnChange += HandleStateChange;
+    }
+
+    private void HandleStateChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavBarState.OnChange -= HandleStateChange;
+        FooterState.OnChange -= HandleStateChange;
+    }
+}

@@ -1,0 +1,21 @@
+.vip-badge {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    line-height: 8px;
+    white-space: nowrap;
+}
+
+/* Modo icono solo: padding cuadrado sin el px extra */
+.vip-badge--icon-only {
+    padding: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+}

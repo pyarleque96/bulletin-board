@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marisol Beauty Studio — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            soft: '0 4px 24px -4px rgba(30,41,59,0.08)',
+            lift: '0 12px 40px -8px rgba(30,41,59,0.14)',
+            float: '0 24px 64px -12px rgba(30,41,59,0.18)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    .nav-pill {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+    .badge-vip { background: linear-gradient(135deg, #fb923c, #f97316); }
+    .vip-ring { box-shadow: 0 0 0 2px rgba(249,115,22,0.3), 0 8px 32px -4px rgba(249,115,22,0.15); }
+    .badge-regular { background: #f1f5f9; color: #475569; }
+    .btn-wa {
+      background: #22c55e;
+      transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .btn-wa:hover { background: #16a34a; transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(34,197,94,0.4); }
+    .btn-wa:active { transform: scale(0.98); }
+    .gallery-thumb { transition: opacity 0.2s ease, transform 0.2s ease; cursor: pointer; }
+    .gallery-thumb:hover { opacity: 1 !important; transform: scale(1.03); }
+    .gallery-thumb.active { opacity: 1; box-shadow: 0 0 0 2px #3B82F6; }
+    .sticky-cta {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.96);
+      border-top: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 -8px 32px -4px rgba(30,41,59,0.08);
+    }
+    .tab-btn { transition: color 0.15s ease, border-color 0.15s ease; }
+    .tab-btn.active { color: #1E293B; border-bottom: 2px solid #3B82F6; font-weight: 600; }
+    .modal-bg { background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .service-card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    .service-card:hover { border-color: #bfdbfe; box-shadow: 0 4px 16px -4px rgba(59,130,246,0.12); }
+    .review-card { transition: box-shadow 0.2s ease; }
+    .review-card:hover { box-shadow: 0 8px 24px -4px rgba(30,41,59,0.10); }
+    /* State: Pending — shown when listing is in review (GM not yet approved) */
+    .pending-banner { background: linear-gradient(90deg, #fef3c7, #fde68a); }
+    /* State: Needs Changes — shown to provider when GM requests edits */
+    .needs-changes-banner { background: linear-gradient(90deg, #fee2e2, #fecaca); }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <!-- NAVBAR -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center gap-4" aria-label="Main navigation">
+      <a href="landing.html" class="flex items-center gap-2 cursor-pointer flex-shrink-0" aria-label="Bulletin Dells home">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="font-semibold text-ink tracking-tight text-sm hidden sm:block">Bulletin Dells</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1.5 text-xs text-muted flex-1" aria-label="Breadcrumb">
+        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <a href="home-listings.html" class="hover:text-ink transition-colors duration-150 cursor-pointer">Beauty &amp; Wellness</a>
+        <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="text-ink font-medium truncate max-w-[200px]" aria-current="page">Marisol Beauty Studio</span>
+      </nav>
+      <div class="flex items-center gap-2 ml-auto flex-shrink-0">
+        <button class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="pt-24 pb-32">
+    <div class="max-w-6xl mx-auto px-4">
+
+      <!-- ============================================================
+           STATE BANNERS (conditional — shown based on listing state)
+           These are mutually exclusive states; only one shows at a time.
+           In Blazor, render based on ListingDto.Status enum.
+           ============================================================ -->
+
+      <!-- STATE: Approved (default — no banner shown) -->
+
+      <!-- STATE: Pending review (hidden by default in this mockup) -->
+      <div class="hidden pending-banner rounded-2xl px-5 py-3.5 mb-6 flex items-center gap-3" role="status" aria-label="Listing pending review">
+        <svg class="w-4 h-4 text-amber-700 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p class="text-sm text-amber-900 font-medium">This listing is pending GM review and is not visible to the public yet.</p>
+        <!-- ES: Este listing esta pendiente de revision por el GM y aun no es visible para el publico. -->
+      </div>
+
+      <!-- STATE: Needs Changes (hidden by default in this mockup) -->
+      <div class="hidden needs-changes-banner rounded-2xl px-5 py-3.5 mb-6 flex items-center gap-3" role="alert" aria-label="Listing needs changes">
+        <svg class="w-4 h-4 text-red-700 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <p class="text-sm text-red-900 font-medium">Your listing needs changes before it can be approved.</p>
+          <!-- ES: Tu listing necesita cambios antes de poder ser aprobado. -->
+          <p class="text-xs text-red-800 mt-0.5">GM note: "Please add clearer photos and update your pricing section."</p>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           HERO: Gallery + Identity
+           ============================================================ -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Gallery -->
+        <div class="lg:col-span-2 space-y-3">
+          <!-- Main image -->
+          <div class="rounded-3xl overflow-hidden h-72 md:h-96 relative vip-ring" role="img" aria-label="Main gallery image: studio interior">
+            <img id="gallery-main-img" src="https://picsum.photos/seed/beauty-studio-main/1200/768" alt="Marisol Beauty Studio — studio interior" class="w-full h-full object-cover" />
+            <!-- VIP badge -->
+            <div class="absolute top-4 left-4">
+              <span class="inline-flex items-center gap-1.5 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-soft">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                VIP
+              </span>
+            </div>
+            <!-- GM approved photos badge -->
+            <div class="absolute bottom-4 right-4 bg-white/90 text-green-700 text-[10px] font-semibold px-2.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-soft">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Photos approved by GM
+              <!-- ES: Fotos aprobadas por GM -->
+            </div>
+          </div>
+          <!-- Thumbnails -->
+          <div class="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Gallery thumbnails">
+            <button onclick="switchGallery(this,'beauty-studio-main','studio interior')" class="gallery-thumb active flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View studio interior photo">
+              <img src="https://picsum.photos/seed/beauty-studio-main/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this,'beauty-studio-2','styling station')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View styling station photo">
+              <img src="https://picsum.photos/seed/beauty-studio-2/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this,'beauty-studio-3','nail station')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View nail station photo">
+              <img src="https://picsum.photos/seed/beauty-studio-3/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+            <button onclick="switchGallery(this,'beauty-studio-4','finished hairstyle')" class="gallery-thumb opacity-70 flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 border-transparent" role="listitem" aria-label="View finished hairstyle photo">
+              <img src="https://picsum.photos/seed/beauty-studio-4/160/112" alt="" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Identity card -->
+        <div class="flex flex-col gap-4">
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 flex-1">
+            <!-- Name + rating -->
+            <div class="mb-4">
+              <h1 class="text-2xl font-bold text-ink tracking-tight leading-tight">Marisol Beauty Studio</h1>
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <div class="flex items-center gap-1" aria-label="Rating: 4.8 out of 5">
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <svg class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <span class="font-bold text-ink">4.8</span>
+                </div>
+                <a href="#reviews" class="text-xs text-brand-500 hover:text-brand-700 cursor-pointer">61 reviews</a>
+                <!-- ES: 61 opiniones -->
+              </div>
+            </div>
+
+            <!-- Meta -->
+            <div class="space-y-2.5 mb-5">
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Lake Delton, WI
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Beauty &amp; Wellness
+              </div>
+              <div class="flex items-center gap-2 text-sm text-muted">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                English &amp; Spanish / Ingles y Espanol
+              </div>
+            </div>
+
+            <!-- Trust badges -->
+            <div class="flex flex-wrap gap-2 mb-5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Phone Verified
+                <!-- ES: Telefono verificado -->
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                ID Verified
+                <!-- ES: ID verificado -->
+              </span>
+            </div>
+
+            <!-- Services quick list -->
+            <div class="border border-slate-100 rounded-2xl p-4 bg-surface mb-5">
+              <p class="text-xs text-muted uppercase tracking-wider font-semibold mb-2">Services</p>
+              <!-- ES: Servicios -->
+              <div class="flex flex-wrap gap-1.5">
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Haircuts</span>
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Coloring</span>
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Nails</span>
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Eyebrows</span>
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Waxing</span>
+                <span class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 text-[11px] font-medium">Braids</span>
+              </div>
+            </div>
+
+            <!-- WhatsApp CTA -->
+            <button onclick="openWaiverModal()" class="btn-wa w-full flex items-center justify-center gap-2.5 text-white font-semibold py-3.5 rounded-2xl text-sm cursor-pointer" aria-label="Contact provider via WhatsApp">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+              Contact via WhatsApp
+              <!-- ES: Contactar por WhatsApp -->
+              <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </span>
+            </button>
+            <p class="text-center text-[10px] text-muted mt-2">A quick disclaimer appears before connecting.</p>
+            <!-- ES: Aparece un aviso rapido antes de conectar. -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           CONTENT: Tabs + Reviews
+           ============================================================ -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main column -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Tab nav -->
+          <div class="flex items-center gap-0 border-b border-slate-200 -mx-px" role="tablist">
+            <button id="tab-about" role="tab" aria-selected="true" aria-controls="panel-about" class="tab-btn active px-5 py-3 text-sm cursor-pointer -mb-px" onclick="switchTab('about')">
+              About
+              <!-- ES: Acerca de -->
+            </button>
+            <button id="tab-services" role="tab" aria-selected="false" aria-controls="panel-services" class="tab-btn px-5 py-3 text-sm text-muted cursor-pointer -mb-px" onclick="switchTab('services')">
+              Services &amp; Pricing
+              <!-- ES: Servicios y Precios -->
+            </button>
+            <button id="tab-reviews" role="tab" aria-selected="false" aria-controls="panel-reviews" class="tab-btn px-5 py-3 text-sm text-muted cursor-pointer -mb-px flex items-center gap-1.5" onclick="switchTab('reviews')">
+              Reviews
+              <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">61</span>
+            </button>
+          </div>
+
+          <!-- PANEL: About -->
+          <div id="panel-about" role="tabpanel" aria-labelledby="tab-about">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 space-y-6">
+              <div>
+                <h2 class="text-base font-semibold text-ink mb-3">About this provider</h2>
+                <!-- ES: Sobre este proveedor -->
+                <p class="text-muted leading-relaxed text-sm">
+                  Marisol Beauty Studio is a full-service bilingual beauty salon serving Wisconsin Dells, Lake Delton, and the surrounding area. Owned and operated by Marisol Reyes, with over 8 years of professional experience in hair, nails, and aesthetics.
+                </p>
+                <!-- ES: Marisol Beauty Studio es un salon de belleza bilingue de servicio completo que atiende a Wisconsin Dells, Lake Delton y los alrededores. Propiedad y operacion de Marisol Reyes, con mas de 8 anos de experiencia profesional en cabello, unas y estetica. -->
+                <p class="text-muted leading-relaxed text-sm mt-3">
+                  We serve everyone — residents, J1 students, seasonal workers, and visitors. Appointments preferred but walk-ins welcome when available. Home visits by appointment.
+                </p>
+                <!-- ES: Atendemos a todos — residentes, estudiantes J1, trabajadores de temporada y visitantes. Se prefieren citas pero se aceptan visitas sin cita cuando hay disponibilidad. Visitas a domicilio con cita previa. -->
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold text-ink mb-3">Highlights</h3>
+                <!-- ES: Puntos destacados -->
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm" role="list">
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    8+ years experience
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Home visits available
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    English &amp; Spanish
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    All hair textures
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Walk-ins welcome
+                  </li>
+                  <li class="flex items-center gap-2 text-muted">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Cash &amp; card accepted
+                  </li>
+                </ul>
+              </div>
+              <!-- Disclaimer -->
+              <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                  <strong>Platform disclaimer:</strong> Bulletin Dells connects you with this provider but does not guarantee, endorse, or provide any service. Confirm all details and pricing directly with the provider.
+                  <!-- ES: Aviso de plataforma: Bulletin Dells te conecta con este proveedor pero no garantiza, avala ni presta ningun servicio. Confirma todos los detalles y precios directamente con el proveedor. -->
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL: Services & Pricing (hidden by default) -->
+          <div id="panel-services" role="tabpanel" aria-labelledby="tab-services" class="hidden">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+              <h2 class="text-base font-semibold text-ink mb-5">Services &amp; Pricing</h2>
+              <!-- ES: Servicios y Precios -->
+              <p class="text-xs text-muted mb-5">Prices are approximate. Confirm current pricing directly with the provider via WhatsApp.</p>
+              <!-- ES: Los precios son aproximados. Confirma el precio actual directamente con el proveedor por WhatsApp. -->
+
+              <!-- Service groups -->
+              <div class="space-y-6">
+                <!-- Hair -->
+                <div>
+                  <h3 class="text-sm font-semibold text-ink mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-rose-100 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                    </span>
+                    Hair
+                    <!-- ES: Cabello -->
+                  </h3>
+                  <div class="space-y-2">
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <div>
+                        <p class="text-sm text-ink font-medium">Women's Haircut</p>
+                        <p class="text-xs text-muted">Wash, cut &amp; blow dry</p>
+                        <!-- ES: Corte de cabello para mujer · Lavado, corte y secado -->
+                      </div>
+                      <span class="text-sm font-bold text-ink flex-shrink-0">$35+</span>
+                    </div>
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <div>
+                        <p class="text-sm text-ink font-medium">Men's Haircut</p>
+                        <!-- ES: Corte de cabello para hombre -->
+                      </div>
+                      <span class="text-sm font-bold text-ink flex-shrink-0">$20+</span>
+                    </div>
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <div>
+                        <p class="text-sm text-ink font-medium">Full Color</p>
+                        <p class="text-xs text-muted">Single process · price varies by length</p>
+                        <!-- ES: Color completo · proceso simple · precio varia segun largo -->
+                      </div>
+                      <span class="text-sm font-bold text-ink flex-shrink-0">$70+</span>
+                    </div>
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <div>
+                        <p class="text-sm text-ink font-medium">Box Braids</p>
+                        <!-- ES: Trenzas box braids -->
+                      </div>
+                      <span class="text-sm font-bold text-ink flex-shrink-0">$120+</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nails -->
+                <div>
+                  <h3 class="text-sm font-semibold text-ink mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-pink-100 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </span>
+                    Nails
+                    <!-- ES: Unas -->
+                  </h3>
+                  <div class="space-y-2">
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <p class="text-sm text-ink font-medium">Manicure</p>
+                      <span class="text-sm font-bold text-ink">$25</span>
+                    </div>
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <p class="text-sm text-ink font-medium">Pedicure</p>
+                      <span class="text-sm font-bold text-ink">$35</span>
+                    </div>
+                    <div class="service-card flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-surface">
+                      <div>
+                        <p class="text-sm text-ink font-medium">Gel Nails</p>
+                        <p class="text-xs text-muted">Hands or feet</p>
+                        <!-- ES: Manos o pies -->
+                      </div>
+                      <span class="text-sm font-bold text-ink">$45+</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL: Reviews -->
+          <div id="panel-reviews" role="tabpanel" aria-labelledby="tab-reviews" class="hidden" id="reviews">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+              <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+                <div>
+                  <h2 class="text-base font-semibold text-ink">Reviews</h2>
+                  <!-- ES: Opiniones -->
+                  <p class="text-xs text-muted mt-0.5">Only from users who contacted this provider via Bulletin Dells.</p>
+                  <!-- ES: Solo de usuarios que contactaron a este proveedor via Bulletin Dells. -->
+                </div>
+                <div class="flex items-center gap-4">
+                  <div class="text-center">
+                    <p class="text-3xl font-bold text-ink">4.8</p>
+                    <div class="flex mt-1" aria-label="Average 4.8 stars">
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <svg class="w-3.5 h-3.5 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <p class="text-[10px] text-muted mt-0.5">61 reviews</p>
+                  </div>
+                  <div class="space-y-1 text-[10px] text-muted w-24">
+                    <div class="flex items-center gap-1.5"><span class="w-3">5</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:78%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">4</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:16%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">3</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:4%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">2</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:1%"></div></div></div>
+                    <div class="flex items-center gap-1.5"><span class="w-3">1</span><div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-400 rounded-full" style="width:1%"></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty state (for when 0 reviews) — hidden by default -->
+              <div class="hidden text-center py-12">
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-6 h-6 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <p class="text-sm font-medium text-ink">No reviews yet</p>
+                <!-- ES: Sin opiniones todavia -->
+                <p class="text-xs text-muted mt-1">Contact this provider to be the first to leave a review.</p>
+                <!-- ES: Contacta a este proveedor para ser el primero en dejar una opinion. -->
+              </div>
+
+              <div class="space-y-4">
+                <!-- Review 1 -->
+                <div class="review-card rounded-2xl border border-slate-100 p-4">
+                  <div class="flex items-start gap-3">
+                    <img src="https://picsum.photos/seed/rev-marta/80/80" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="font-semibold text-ink text-sm">Marta Riquelme</span>
+                        <div class="flex" aria-label="5 stars">
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                      </div>
+                      <p class="text-[11px] text-muted mt-0.5">J1 Student · August 2025</p>
+                      <p class="text-sm text-muted mt-2 leading-relaxed">Marisol es increible! Me hizo un box braid perfecto. Habla espanol y fue muy paciente explicando todo. Definitivamente regreso.</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- Review 2 -->
+                <div class="review-card rounded-2xl border border-slate-100 p-4">
+                  <div class="flex items-start gap-3">
+                    <img src="https://picsum.photos/seed/rev-jennifer/80/80" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="font-semibold text-ink text-sm">Jennifer Holbrook</span>
+                        <div class="flex" aria-label="4 stars">
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                          <svg class="w-3.5 h-3.5 text-slate-200" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                      </div>
+                      <p class="text-[11px] text-muted mt-0.5">Local resident · July 2025</p>
+                      <p class="text-sm text-muted mt-2 leading-relaxed">Very professional and clean studio. Got a gel manicure and it lasted over 3 weeks. Prices are fair for the quality. Would recommend!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="space-y-4">
+          <!-- Verification status -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <h3 class="text-sm font-semibold text-ink mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Provider status
+              <!-- ES: Estado del proveedor -->
+            </h3>
+            <div class="space-y-2.5 text-xs text-muted">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                Phone number verified
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                Government ID verified
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                Social media — pending
+                <!-- ES: Redes sociales — pendiente -->
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-orange-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                VIP tier active
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 text-[11px] text-muted">
+              Listing approved by GM · Feb 14, 2025
+              <!-- ES: Listing aprobado por el GM · 14 de febrero de 2025 -->
+            </div>
+          </div>
+
+          <!-- Quick contact reminder -->
+          <div class="bg-brand-50 border border-brand-100 rounded-3xl p-5">
+            <h3 class="text-sm font-semibold text-ink mb-2">Book your appointment</h3>
+            <!-- ES: Reserva tu cita -->
+            <p class="text-xs text-muted leading-relaxed mb-4">Message Marisol on WhatsApp to check availability and book your service.</p>
+            <!-- ES: Escribe a Marisol por WhatsApp para verificar disponibilidad y reservar tu servicio. -->
+            <button onclick="openWaiverModal()" class="btn-wa w-full flex items-center justify-center gap-2 text-white font-medium py-3 rounded-xl text-sm cursor-pointer">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+              WhatsApp Marisol
+            </button>
+          </div>
+
+          <!-- Similar providers -->
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+            <h3 class="text-sm font-semibold text-ink mb-4">Similar providers</h3>
+            <!-- ES: Proveedores similares -->
+            <div class="space-y-3">
+              <a href="#" class="flex items-center gap-3 group cursor-pointer">
+                <div class="w-12 h-9 rounded-lg overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/beauty-sim1/96/72" alt="" class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink group-hover:text-brand-600 transition-colors duration-150 truncate">Dells Nail &amp; Spa</p>
+                  <p class="text-xs text-muted flex items-center gap-1">
+                    <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.5 (23)
+                  </p>
+                </div>
+                <span class="bg-slate-100 text-slate-600 text-[9px] font-medium uppercase px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
+              </a>
+              <a href="#" class="flex items-center gap-3 group cursor-pointer">
+                <div class="w-12 h-9 rounded-lg overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/beauty-sim2/96/72" alt="" class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-ink group-hover:text-brand-600 transition-colors duration-150 truncate">Liz Hair Studio</p>
+                  <p class="text-xs text-muted flex items-center gap-1">
+                    <svg class="w-3 h-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.4 (17)
+                  </p>
+                </div>
+                <span class="bg-slate-100 text-slate-600 text-[9px] font-medium uppercase px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- STICKY CTA mobile -->
+  <div class="sticky-cta fixed bottom-0 left-0 right-0 z-30 px-4 py-4 lg:hidden" role="region" aria-label="Contact action">
+    <button onclick="openWaiverModal()" class="btn-wa w-full flex items-center justify-center gap-2.5 text-white font-semibold py-4 rounded-2xl text-sm cursor-pointer" aria-label="Contact provider via WhatsApp">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+      Contact via WhatsApp
+      <!-- ES: Contactar por WhatsApp -->
+    </button>
+  </div>
+
+  <!-- WAIVER MODAL -->
+  <div id="waiver-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg px-4" role="dialog" aria-modal="true" aria-labelledby="waiver-title">
+    <div class="bg-white rounded-3xl shadow-float max-w-md w-full p-8">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h2 id="waiver-title" class="text-lg font-bold text-ink" tabindex="-1">Before you connect</h2>
+        <!-- ES: Antes de conectar -->
+      </div>
+      <p class="text-sm text-muted leading-relaxed mb-4">
+        Bulletin Dells is a <strong class="text-ink">connection platform only</strong>. We connect you with local providers but we do not provide, guarantee, or endorse any service, product, or pricing.
+      </p>
+      <!-- ES: Bulletin Dells es una plataforma de conexion unicamente. Te conectamos con proveedores locales pero no prestamos, garantizamos ni avalamos ningun servicio, producto o precio. -->
+      <p class="text-sm text-muted leading-relaxed mb-6">
+        By continuing, you agree to contact the provider directly and confirm all terms before any payment.
+      </p>
+      <!-- ES: Al continuar, aceptas contactar al proveedor directamente y confirmar todos los terminos antes de cualquier pago. -->
+      <div class="flex flex-col gap-3">
+        <a href="https://wa.me/15715550278?text=Hola%2C+encontre+tu+perfil+en+Bulletin+Dells." target="_blank" rel="noopener noreferrer" class="btn-wa flex items-center justify-center gap-2.5 text-white font-semibold py-3.5 rounded-2xl text-sm cursor-pointer" onclick="closeWaiverModal()">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+          I understand — open WhatsApp
+          <!-- ES: Entiendo — abrir WhatsApp -->
+        </a>
+        <button onclick="closeWaiverModal()" class="text-sm text-muted hover:text-ink text-center py-2 cursor-pointer transition-colors duration-200">Go back</button>
+        <!-- ES: Volver -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-ink text-white/50 py-10 px-4" role="contentinfo">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-brand-500 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="text-white/70 font-medium">Bulletin Dells</span>
+      </div>
+      <p>Platform connects clients with providers. Does not provide services.</p>
+      <!-- ES: La plataforma conecta clientes con proveedores. No presta servicios. -->
+      <div class="flex gap-3">
+        <button class="hover:text-white/80 cursor-pointer">EN</button>
+        <span class="text-white/20">|</span>
+        <button class="hover:text-white/80 cursor-pointer">ES</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      ['about','services','reviews'].forEach(t => {
+        const panel = document.getElementById('panel-' + t);
+        if (panel) panel.classList.add('hidden');
+        const btn = document.getElementById('tab-' + t);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.classList.add('text-muted');
+          btn.setAttribute('aria-selected', 'false');
+        }
+      });
+      const activePanel = document.getElementById('panel-' + tab);
+      if (activePanel) activePanel.classList.remove('hidden');
+      const activeBtn = document.getElementById('tab-' + tab);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.classList.remove('text-muted');
+        activeBtn.setAttribute('aria-selected', 'true');
+      }
+    }
+
+    // Gallery
+    function switchGallery(btn, seed, alt) {
+      document.querySelectorAll('.gallery-thumb').forEach(t => {
+        t.classList.remove('active');
+        t.classList.add('opacity-70');
+      });
+      btn.classList.add('active');
+      btn.classList.remove('opacity-70');
+      const img = document.getElementById('gallery-main-img');
+      img.src = 'https://picsum.photos/seed/' + seed + '/1200/768';
+      img.alt = 'Marisol Beauty Studio — ' + alt;
+    }
+
+    // Waiver modal
+    function openWaiverModal() {
+      const m = document.getElementById('waiver-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      const h = m.querySelector('h2');
+      if (h) h.focus();
+    }
+    function closeWaiverModal() {
+      const m = document.getElementById('waiver-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('waiver-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeWaiverModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeWaiverModal();
+    });
+
+    /* NOTE FOR BLAZOR:
+      - Replace tab switching with Blazor conditional @if blocks and @onclick EventCallbacks
+      - Replace gallery with @bind:SelectedPhotoId + @onclick callbacks
+      - Waiver modal: show once per user session (use localStorage or cookie flag "waiver_accepted")
+        In Blazor, use IJSRuntime to read/write localStorage
+      - State banners: render based on ListingDto.Status == ListingStatus.Pending | NeedsChanges | Approved
+      - WhatsApp deep link: $"https://wa.me/{ProviderDto.WhatsAppNumber}?text={Uri.EscapeDataString(prefilledMsg)}"
+      - Photos shown: only ListingPhotoDto where IsPublic = true (GM approved)
+      - Service list: rendered from ServiceDto collection on ListingDto
+      - Reviews: rendered from ReviewDto collection (only GM-approved reviews visible)
+      - Similar providers: from API endpoint /listings/{id}/similar
+    */
+  </script>
+</body>
+</html>

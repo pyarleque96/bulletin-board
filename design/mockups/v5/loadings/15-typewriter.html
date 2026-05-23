@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Typewriter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 15-typewriter.html
+    SPEC:   Efecto máquina de escribir que tipea frases bilingües
+            alternadas. Cada frase se escribe letra a letra, pausa,
+            borra y pasa a la siguiente. Cursor parpadeante naranja.
+            Frases: "Conectando con proveedores locales…",
+            "Connecting to local providers…",
+            "Encontrando las mejores opciones…",
+            "Finding the best options for you…"
+    CUÁNDO: Esperas largas (> 3 s): envío del formulario de listing,
+            proceso de verificación de proveedor, generación de reportes GM.
+    BLAZOR HOOK: El JS puede ser reemplazado por un componente Blazor
+                 con un Timer y JSRuntime.InvokeVoidAsync para actualizar
+                 el span#tw-output. O usar un componente <Typewriter />.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      pointer-events: none;
+      padding: 0 24px;
+    }
+
+    /* Logo / marca pequeña */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: brand-in 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes brand-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fd8c1b;
+    }
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Área de texto */
+    .tw-container {
+      text-align: center;
+      max-width: 480px;
+      opacity: 0;
+      animation: brand-in 0.5s ease-out 0.35s forwards;
+    }
+    .tw-text {
+      font-size: 22px;
+      font-weight: 500;
+      color: #1e293b;
+      line-height: 1.4;
+      min-height: 2.8em;
+      display: inline;
+    }
+
+    /* Cursor parpadeante */
+    .tw-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: #fd8c1b;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: cursor-blink 0.85s step-end infinite;
+    }
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Indicador de idioma */
+    .lang-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #64748b;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .lang-badge.visible { opacity: 1; }
+    .lang-badge.es { background: #fde8c8; color: #c2540a; }
+    .lang-badge.en { background: #f1f5f9; color: #64748b; }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .brand, .tw-container { animation: none; opacity: 1; }
+      .tw-cursor { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells · Cargando Bulletin Dells"
+  >
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-name">Bulletin Dells</span>
+    </div>
+
+    <div class="tw-container">
+      <!-- BLAZOR HOOK: actualizar span#tw-output via JSRuntime o componente Typewriter -->
+      <span class="tw-text" id="tw-output"></span><span class="tw-cursor" aria-hidden="true"></span>
+    </div>
+
+    <span class="lang-badge" id="langBadge">EN</span>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: reemplazar con Timer de Blazor + JSRuntime.InvokeVoidAsync */
+    const phrases = [
+      { text: 'Conectando con proveedores locales…', lang: 'es' },
+      { text: 'Connecting to local providers…',      lang: 'en' },
+      { text: 'Encontrando las mejores opciones…',   lang: 'es' },
+      { text: 'Finding the best options for you…',   lang: 'en' },
+    ];
+
+    const output = document.getElementById('tw-output');
+    const badge  = document.getElementById('langBadge');
+    let phraseIdx = 0;
+    let charIdx   = 0;
+    let isDeleting = false;
+    let isPaused   = false;
+
+    const TYPE_SPEED   = 42;
+    const DELETE_SPEED = 22;
+    const PAUSE_MS     = 1800;
+    const START_DELAY  = 500;
+
+    function setLang(lang) {
+      badge.textContent = lang.toUpperCase();
+      badge.className = `lang-badge visible ${lang}`;
+    }
+
+    function type() {
+      const phrase = phrases[phraseIdx].text;
+      const lang   = phrases[phraseIdx].lang;
+
+      setLang(lang);
+
+      if (isPaused) {
+        isPaused = false;
+        isDeleting = true;
+        setTimeout(type, DELETE_SPEED);
+        return;
+      }
+
+      if (!isDeleting) {
+        output.textContent = phrase.slice(0, charIdx + 1);
+        charIdx++;
+        if (charIdx === phrase.length) {
+          isPaused = true;
+          setTimeout(type, PAUSE_MS);
+          return;
+        }
+        setTimeout(type, TYPE_SPEED);
+      } else {
+        output.textContent = phrase.slice(0, charIdx - 1);
+        charIdx--;
+        if (charIdx === 0) {
+          isDeleting = false;
+          phraseIdx  = (phraseIdx + 1) % phrases.length;
+        }
+        setTimeout(type, DELETE_SPEED);
+      }
+    }
+
+    setTimeout(type, START_DELAY);
+  </script>
+
+</body>
+</html>

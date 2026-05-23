@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<!--
+  BULLETIN DELLS — Manage / Reservations Panel
+  =============================================
+  Mockup: manage-reservations-panel.html
+  Estado: Tab "Reservations" activo — lista con filtro "Pending" seleccionado
+  Bilingüe: EN / ES (comentarios para Blazor binding)
+  =============================================
+  DATOS QUE ESPERA:
+    - ListingId: Guid
+    - Status filter: All | Pending | Accepted | Rejected | Cancelled
+    - ReservationRequestDto[]: Id, RequesterName, RequesterEmail, RequesterPhone,
+      Status, VehicleName, StartDate, EndDate, Comment, ResponseNote, CreatedAt
+  BINDING POINTS:
+    - @foreach (var s in _statuses): filter pill buttons
+    - @onclick="() => SetFilterAsync(s)" → recarga la lista
+    - @foreach (var r in _items): reservation cards
+    - r.Status == "Pending" → mostrar botones Accept/Reject
+    - r.Status == "Accepted" → mostrar botón Cancel
+    - <input @bind="_decision.Note" ...>
+    - @onclick="ConfirmDecisionAsync" / @onclick="() => _decision = null"
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c' },
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+          boxShadow: { soft: '0 4px 24px -4px rgba(30,41,59,0.08)' },
+        },
+      },
+    };
+  </script>
+  <style>
+    .manage-tab[aria-selected="true"]::after {
+      content:''; position:absolute; bottom:-1px; left:0; right:0;
+      height:2px; background:#f97316; border-radius:2px 2px 0 0;
+    }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .card-hover {
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s;
+    }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<!-- NavBar placeholder -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">P</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HEADER BAND ===== -->
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home</a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings</a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="#" class="hover:text-ink transition-colors duration-150 cursor-pointer">Dells Premier Car Rentals</a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Reservations <!-- ES: Reservas --></span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage <!-- ES: Gestionar --></h1>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+        </div>
+        <p class="text-sm text-muted mt-1">Dells Premier Car Rentals · Car Rental</p>
+      </div>
+      <a href="#" class="flex-shrink-0 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-xl transition-colors duration-150 cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Public view <!-- ES: Ver público -->
+      </a>
+    </div>
+
+    <!-- Tabs — Reservations activo -->
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px" role="tablist" aria-label="Manage sections">
+      <a href="#" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer no-underline">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+            <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+          </svg>
+          Vehicles <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span>
+        </span>
+      </a>
+      <span role="tab" aria-selected="true" class="manage-tab px-4 py-2.5 text-sm text-ink font-semibold cursor-pointer" style="border-bottom:2px solid #f97316;">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Reservations <!-- ES: Reservas -->
+          <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="2 pending">2</span>
+        </span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- Sub-header: título + filtros de estado -->
+  <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+    <div>
+      <h2 class="text-base font-semibold text-ink">
+        Reservation requests
+        <!-- ES: Solicitudes de reserva -->
+      </h2>
+      <p class="text-sm text-muted mt-0.5">
+        Accepting a request automatically blocks the dates on the vehicle's calendar.
+        <!-- ES: Aceptar una solicitud bloquea automáticamente las fechas en el calendario del vehículo. -->
+      </p>
+    </div>
+
+    <!-- Status filter pills — data-binding: @foreach (var s in _statuses) { <button @onclick="() => SetFilterAsync(s)" ...> } -->
+    <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Filter by status / Filtrar por estado">
+      <!-- All -->
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 cursor-pointer bg-slate-100 hover:bg-slate-200 text-ink focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+              aria-pressed="false">
+        All
+        <!-- ES: Todos -->
+      </button>
+      <!-- Pending — activo -->
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 cursor-pointer bg-ink text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+              aria-pressed="true">
+        Pending
+        <!-- ES: Pendiente -->
+      </button>
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 cursor-pointer bg-slate-100 hover:bg-slate-200 text-ink focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+              aria-pressed="false">
+        Accepted
+        <!-- ES: Aceptada -->
+      </button>
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 cursor-pointer bg-slate-100 hover:bg-slate-200 text-ink focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+              aria-pressed="false">
+        Rejected
+        <!-- ES: Rechazada -->
+      </button>
+      <button type="button"
+              class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-150 cursor-pointer bg-slate-100 hover:bg-slate-200 text-ink focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+              aria-pressed="false">
+        Cancelled
+        <!-- ES: Cancelada -->
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       RESERVATION CARDS
+       ===================================================== -->
+  <ul class="space-y-3" role="list" aria-label="Reservation requests / Solicitudes de reserva">
+
+    <!-- ── Card 1: Pending con decisión expandida ── -->
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- data-binding: @r.RequesterName -->
+            <h3 class="font-semibold text-ink">María González</h3>
+            <!-- data-binding: StatusBadgeClass(@r.Status) -->
+            <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+              Pending
+              <!-- ES: Pendiente -->
+            </span>
+            <!-- data-binding: @r.CreatedAt.LocalDateTime.ToString("MMM d, HH:mm") -->
+            <span class="text-[11px] text-muted">submitted May 8, 14:23</span>
+          </div>
+          <!-- data-binding: @r.RequesterEmail, @r.RequesterPhone -->
+          <p class="text-muted text-xs mt-1">maria.gonzalez@email.com · +1 (608) 555-0142</p>
+          <p class="text-sm text-ink mt-2">
+            <!-- data-binding: @r.VehicleName -->
+            <strong>Toyota Corolla 2022</strong>
+            <span class="text-muted">·</span>
+            <!-- data-binding: @r.StartDate.ToString("MMM d") → @r.EndDate.ToString("MMM d, yyyy") -->
+            May 15 → May 20, 2025
+          </p>
+          <!-- data-binding: @if (!string.IsNullOrWhiteSpace(r.Comment)) { ... } -->
+          <p class="text-muted text-sm mt-2 leading-relaxed">
+            Necesito el carro para ir al aeropuerto y luego quedarme en Dells por el fin de semana. ¿Tienen GPS incluido?
+          </p>
+        </div>
+
+        <!-- data-binding: @if (r.Status == "Pending") { ... } -->
+        <div class="flex items-center gap-1 flex-wrap flex-shrink-0">
+          <button type="button"
+                  class="px-3 py-1.5 rounded-xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                  aria-label="Accept reservation from María González">
+            Accept
+            <!-- ES: Aceptar -->
+          </button>
+          <button type="button"
+                  class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 active:scale-[0.98] text-red-700 text-xs font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                  aria-label="Reject reservation from María González">
+            Reject
+            <!-- ES: Rechazar -->
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Inline decision panel (expandido: Accept seleccionado) ──
+           data-binding: @if (_decision?.Reservation.Id == r.Id) { ... }
+      ── -->
+      <div class="mt-4 pt-4 border-t border-slate-100">
+        <div class="flex items-start gap-2 mb-3">
+          <div class="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1.5 rounded-lg">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Accepting this reservation
+            <!-- ES: Aceptando esta reserva -->
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- data-binding: <input @bind="_decision.Note" ...> -->
+          <input type="text"
+                 placeholder="Optional note for María (e.g. Pick up time, location) / Nota opcional para María"
+                 class="flex-1 min-w-[14rem] rounded-xl border border-slate-200 px-3 py-2 text-sm text-ink placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow duration-150"
+                 aria-label="Note for requester" />
+          <!-- data-binding: @onclick="ConfirmDecisionAsync" -->
+          <button type="button"
+                  class="px-3 py-2 rounded-xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer">
+            Confirm accept
+            <!-- ES: Confirmar aceptación -->
+          </button>
+          <!-- data-binding: @onclick="() => _decision = null" -->
+          <button type="button"
+                  class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs transition-colors duration-150 cursor-pointer">
+            Back
+            <!-- ES: Atrás -->
+          </button>
+        </div>
+        <p class="text-[11px] text-muted mt-2">
+          Accepting will block May 15–20 on the Toyota Corolla 2022 calendar.
+          <!-- ES: Aceptar bloqueará May 15–20 en el calendario del Toyota Corolla 2022. -->
+        </p>
+      </div>
+    </li>
+
+    <!-- ── Card 2: Pending — sin decisión expandida ── -->
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">James Chen</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Pending</span>
+            <span class="text-[11px] text-muted">submitted May 9, 09:05</span>
+          </div>
+          <p class="text-muted text-xs mt-1">j.chen@email.com</p>
+          <p class="text-sm text-ink mt-2">
+            <strong>Nissan Sentra 2021</strong>
+            <span class="text-muted">·</span>
+            May 22 → May 25, 2025
+          </p>
+        </div>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer">Accept</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 active:scale-[0.98] text-red-700 text-xs font-semibold transition-colors duration-150 cursor-pointer">Reject</button>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- =====================================================
+       ESTADO VACÍO — sin reservaciones con el filtro actual
+       data-binding: @else if (_items is null || _items.Count == 0) { ... }
+       ===================================================== -->
+  <!--
+  <div class="bg-white rounded-3xl border border-dashed border-slate-200 p-10 text-center mt-4">
+    <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </div>
+    <p class="font-medium text-ink text-sm mb-1">No reservations found</p>
+    <p class="text-muted text-xs">No reservations match the selected filter.</p>
+    <button type="button" class="mt-3 text-xs text-brand-500 hover:text-brand-700 font-medium cursor-pointer transition-colors duration-150">
+      Show all
+    </button>
+  </div>
+  -->
+
+  <!-- =====================================================
+       REFERENCIA: Card con estado Accepted (tiene botón Cancel)
+       data-binding: @else if (r.Status == "Accepted") { ... Cancel button ... }
+       ===================================================== -->
+  <div class="mt-8 bg-slate-50 rounded-3xl border border-dashed border-slate-200 p-5">
+    <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Reference: Accepted reservation card</h3>
+    <div class="bg-white rounded-2xl border border-slate-100 p-5">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">Carlos Mendez</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Accepted</span>
+            <span class="text-[11px] text-muted">submitted May 1, 11:30</span>
+          </div>
+          <p class="text-muted text-xs mt-1">c.mendez@email.com</p>
+          <p class="text-sm text-ink mt-2"><strong>Honda Civic 2020</strong> <span class="text-muted">·</span> May 10 → May 14, 2025</p>
+          <!-- Response note -->
+          <p class="text-[11px] text-muted mt-2 italic">Note: Pick up at Main St location, 9am.</p>
+        </div>
+        <!-- data-binding: @else if (r.Status == "Accepted") { <button @onclick="() => CancelAsync(r)"> } -->
+        <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs transition-colors duration-150 cursor-pointer flex-shrink-0">
+          Cancel reservation
+          <!-- ES: Cancelar reserva -->
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /max-w-6xl -->
+</body>
+</html>

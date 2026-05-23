@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Mechanics (VIP tier)
+  =====================================================
+  Mockup: mechanics-manage-vip.html
+  Tier: VIP — Emergency 24/7 badge, specialties, coverage map (SVG), response time metric
+  Active tab: Services
+  =====================================================
+  BINDING:
+    - SpecialtyDto[]: predefined list (Diesel, EV/Hybrid, Transmission, Foreign, Heavy duty)
+    - CoverageDto: GeoJsonPolygon[] of service area
+    - ResponseMetricDto: AvgResponseMin, FastestMin, SlowestMin, RequestsLast30d
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Mechanic VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'}, ink:'#0f172a', muted:'#64748b' },
+      fontFamily: { sans:['"DM Sans"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+    } } };
+  </script>
+  <style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .badge-emergency { background: linear-gradient(135deg,#ef4444,#dc2626); }
+    .pulse-emergency::before { content:''; position:absolute; inset:-2px; border-radius:9999px; border:2px solid #ef4444; opacity:0.6; animation:pulseGlow 2s ease-out infinite; }
+    @keyframes pulseGlow { 0% { transform:scale(1); opacity:0.6; } 100% { transform:scale(1.4); opacity:0; } }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">R</div>
+    </div>
+  </div>
+</nav>
+
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Northwoods 24/7 Auto</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage</h1>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+          <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold inline-flex items-center gap-1">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            VIP
+          </span>
+          <!-- Emergency 24/7 prominent badge (VIP) -->
+          <span class="relative inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-emergency text-white font-semibold pulse-emergency">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Emergency 24/7
+          </span>
+        </div>
+        <p class="text-sm text-muted mt-1">Northwoods 24/7 Auto · Mechanics</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections">
+      <button type="button" role="tab" aria-selected="true" class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          Services <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">18</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Requests <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span></span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Inquiries <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">13</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- Response time + specialties metrics row -->
+  <section aria-label="VIP metrics" class="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Response time card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-center gap-2 mb-1">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Avg response time</p>
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+      </div>
+      <p class="text-3xl font-bold text-ink mt-1 tabular-nums">14<span class="text-base text-muted ml-1">min</span></p>
+      <p class="text-[11px] text-muted mt-1">Last 30d · 47 requests · Fastest 4 min</p>
+      <div class="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div class="h-full bg-green-500 rounded-full" style="width:78%"></div>
+      </div>
+      <p class="text-[11px] text-green-700 mt-1">Top 22% of mechanics in Wisconsin Dells</p>
+    </div>
+
+    <!-- Specialties card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <div class="flex items-center gap-2 mb-3">
+        <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Specialties<!-- ES: Especialidades --></p>
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        <span class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">Diesel</span>
+        <span class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">EV / Hybrid</span>
+        <span class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">Transmission</span>
+        <span class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">Foreign cars</span>
+        <span class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">Heavy duty</span>
+        <button type="button" class="text-xs text-brand-500 hover:text-brand-700 border border-dashed border-slate-300 hover:border-brand-400 px-2.5 py-1 rounded-full cursor-pointer">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Requests card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+      <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Requests · 30d</p>
+      <p class="text-3xl font-bold text-ink mt-1 tabular-nums">47</p>
+      <p class="text-[11px] text-muted mt-1">38 completed · 5 active · 4 quoted</p>
+      <p class="text-[11px] text-green-700 mt-2 inline-flex items-center gap-1">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        +9 vs prev month
+      </p>
+    </div>
+
+  </section>
+
+  <!-- Coverage map (SVG placeholder) -->
+  <section aria-label="Coverage area" class="mb-6 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <h2 class="text-sm font-semibold text-ink inline-flex items-center gap-2">
+          Coverage area<!-- ES: Área de cobertura -->
+          <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        </h2>
+        <p class="text-xs text-muted mt-0.5">Mobile service within this perimeter · Beyond Dells: $1.50/mi surcharge</p>
+      </div>
+      <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit perimeter</button>
+    </div>
+
+    <!-- Coverage map SVG placeholder -->
+    <div class="aspect-[16/7] rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden relative">
+      <svg viewBox="0 0 800 350" class="w-full h-full" role="img" aria-label="Service coverage map around Wisconsin Dells">
+        <!-- Background grid -->
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/>
+          </pattern>
+          <radialGradient id="cov" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f97316" stop-opacity="0.35"/>
+            <stop offset="60%" stop-color="#f97316" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#f97316" stop-opacity="0.02"/>
+          </radialGradient>
+        </defs>
+        <rect width="800" height="350" fill="url(#grid)"/>
+        <!-- Wisconsin River illustration -->
+        <path d="M 100 320 Q 220 180 360 220 T 700 80" fill="none" stroke="#93c5fd" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+        <!-- Coverage polygon -->
+        <ellipse cx="400" cy="175" rx="240" ry="130" fill="url(#cov)" stroke="#f97316" stroke-width="2" stroke-dasharray="6 4"/>
+        <!-- Markers -->
+        <g>
+          <circle cx="400" cy="175" r="10" fill="#f97316"/>
+          <circle cx="400" cy="175" r="20" fill="none" stroke="#f97316" stroke-width="2" opacity="0.5"/>
+          <text x="416" y="180" font-family="DM Sans, sans-serif" font-size="13" font-weight="600" fill="#0f172a">Wisconsin Dells (HQ)</text>
+        </g>
+        <g>
+          <circle cx="250" cy="240" r="5" fill="#0f172a"/>
+          <text x="260" y="245" font-family="DM Sans, sans-serif" font-size="11" fill="#475569">Lake Delton</text>
+        </g>
+        <g>
+          <circle cx="555" cy="140" r="5" fill="#0f172a"/>
+          <text x="565" y="145" font-family="DM Sans, sans-serif" font-size="11" fill="#475569">Baraboo</text>
+        </g>
+        <g>
+          <circle cx="180" cy="100" r="5" fill="#0f172a"/>
+          <text x="190" y="105" font-family="DM Sans, sans-serif" font-size="11" fill="#475569">Reedsburg</text>
+        </g>
+      </svg>
+    </div>
+    <p class="text-[11px] text-muted mt-2">Approximate radius: 22 miles · Includes Lake Delton, Baraboo, Reedsburg, Portage</p>
+  </section>
+
+  <!-- Services list -->
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Services</h2>
+      <p class="text-sm text-muted mt-0.5">Unlimited services across specialties.</p>
+    </div>
+    <button type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold cursor-pointer">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add service
+    </button>
+  </div>
+
+  <ul class="space-y-3" role="list" aria-label="Services">
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">EV battery diagnostics (Tesla / Bolt / Leaf)</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">EV / Hybrid</span>
+            <span class="text-[10px] uppercase tracking-wider bg-red-50 text-red-700 px-2 py-0.5 rounded-full">24/7</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">~2 hours · Includes high-voltage system inspection report</p>
+          <p class="text-ink text-sm mt-1 font-medium">From $289 estimated</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit</button>
+        </div>
+      </div>
+    </li>
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">Transmission fluid &amp; filter (automatic)</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Transmission</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">~1.5 hours · Synthetic ATF · Includes pan gasket replacement</p>
+          <p class="text-ink text-sm mt-1 font-medium">From $215 estimated</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit</button>
+        </div>
+      </div>
+    </li>
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink">Roadside emergency — towing &amp; jumpstart</h3>
+            <span class="text-[10px] uppercase tracking-wider bg-red-50 text-red-700 px-2 py-0.5 rounded-full">24/7 emergency</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">Dispatch within 30 min · Covers Dells, Lake Delton, Baraboo</p>
+          <p class="text-ink text-sm mt-1 font-medium">Flat $95 + $1.50/mi</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Emergency 24/7, specialties, coverage map, response analytics
+  </div>
+</div>
+
+</body>
+</html>

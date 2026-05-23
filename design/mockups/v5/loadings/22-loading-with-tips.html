@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Loading with Tips</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 22-loading-with-tips.html
+    SPEC:   Spinner compacto naranja en la parte superior + carrusel de
+            "tips" bilingües que rota cada 3.5s con fade suave. Útil para
+            esperas largas donde educar al usuario sobre la plataforma
+            tiene valor real. Tips cubren: VIP, WhatsApp, ratings, waiver,
+            verificación. Badge "Tip" / "Consejo" cambia con el idioma.
+            Paginación de puntos abajo del tip muestra progreso en el ciclo.
+    CUÁNDO: Carga lenta (>4 s): inicialización tras login, carga del panel
+            del proveedor con listings, operaciones de imagen en batch.
+    BLAZOR HOOK: Reemplazar setInterval con Timer de Blazor.
+                 El índice de tip puede venir de @tipIndex.
+                 Array de tips puede mapearse desde un recurso de i18n.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      pointer-events: none;
+      padding: 0 32px;
+    }
+
+    /* Spinner compacto + brand */
+    .spinner-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      animation: fade-up 0.5s ease-out 0.2s forwards;
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner-ring {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #f1f5f9;
+      border-top-color: #fd8c1b;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Card de tip */
+    .tip-card {
+      width: 100%;
+      max-width: 360px;
+      background: #fffbf7;
+      border: 1px solid #fde8c8;
+      border-radius: 16px;
+      padding: 20px;
+      opacity: 0;
+      animation: fade-up 0.5s ease-out 0.35s forwards;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Badge de idioma del tip */
+    .tip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+    .tip-badge.en { background: #e0f2fe; color: #0369a1; }
+    .tip-badge.es { background: #fde8c8; color: #c2540a; }
+
+    /* Ícono del tip (SVG inline) */
+    .tip-icon { flex-shrink: 0; }
+
+    /* Cuerpo del tip */
+    .tip-body-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .tip-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e293b;
+      line-height: 1.5;
+      flex: 1;
+      opacity: 1;
+      transition: opacity 0.35s ease;
+    }
+    .tip-text.fading { opacity: 0; }
+
+    /* Puntos de paginación */
+    .tip-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      opacity: 0;
+      animation: fade-up 0.5s ease-out 0.5s forwards;
+    }
+    .tip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .tip-dot.active {
+      background: #fd8c1b;
+      transform: scale(1.3);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .spinner-row, .tip-card, .tip-dots { animation: none; opacity: 1; }
+      .spinner-ring { animation: none; }
+      .tip-text { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading Bulletin Dells with tips · Cargando Bulletin Dells con consejos"
+  >
+    <!-- Spinner + marca -->
+    <div class="spinner-row">
+      <div class="spinner-ring" aria-hidden="true"></div>
+      <p class="text-xs font-medium text-slate-400 tracking-wide uppercase">Bulletin Dells</p>
+    </div>
+
+    <!-- Card de tip -->
+    <div class="tip-card" aria-live="polite">
+      <div class="tip-badge en" id="tipBadge">
+        <!-- Ícono light bulb inline -->
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 1a4.5 4.5 0 0 1 3.5 7.3V10a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V8.3A4.5 4.5 0 0 1 8 1z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M6 13h4M7 15h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span id="tipLabel">Tip</span>
+      </div>
+      <div class="tip-body-row">
+        <p class="tip-text" id="tipText">
+          <!-- BLAZOR HOOK: actualizar con @tipText desde Blazor Timer -->
+          Contact VIP providers directly via WhatsApp — they respond faster.
+        </p>
+      </div>
+    </div>
+
+    <!-- Puntos de paginación -->
+    <div class="tip-dots" id="tipDots" aria-hidden="true"></div>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: reemplazar con Timer de Blazor + JSRuntime para actualizar tipText */
+    const tips = [
+      { text: 'Contact VIP providers directly via WhatsApp — they respond faster.',              lang: 'en', label: 'Tip' },
+      { text: 'Los proveedores VIP están verificados con ID y teléfono real.',                  lang: 'es', label: 'Consejo' },
+      { text: 'Ratings are only posted by users who actually contacted the provider here.',     lang: 'en', label: 'Tip' },
+      { text: 'El GM revisa cada listing antes de publicarse — solo lo real aparece aquí.',     lang: 'es', label: 'Consejo' },
+      { text: 'Providers with a VIP badge have completed full identity verification.',           lang: 'en', label: 'Tip' },
+      { text: 'Tu contacto a un proveedor siempre le llega al GM también — más transparencia.', lang: 'es', label: 'Consejo' },
+    ];
+
+    const textEl  = document.getElementById('tipText');
+    const badgeEl = document.getElementById('tipBadge');
+    const labelEl = document.getElementById('tipLabel');
+    const dotsEl  = document.getElementById('tipDots');
+
+    // Crear puntos
+    tips.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'tip-dot' + (i === 0 ? ' active' : '');
+      dotsEl.appendChild(d);
+    });
+
+    let current = 0;
+
+    function updateDots(idx) {
+      dotsEl.querySelectorAll('.tip-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === idx);
+      });
+    }
+
+    function showTip(idx) {
+      const tip = tips[idx];
+      // Fade out
+      textEl.classList.add('fading');
+      setTimeout(() => {
+        textEl.textContent = tip.text;
+        // Actualizar badge
+        badgeEl.className = `tip-badge ${tip.lang}`;
+        labelEl.textContent = tip.label;
+        textEl.classList.remove('fading');
+        updateDots(idx);
+      }, 350);
+    }
+
+    // Ciclo automático
+    setInterval(() => {
+      current = (current + 1) % tips.length;
+      showTip(current);
+    }, 3500);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Listings Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' },
+            accent: { DEFAULT:'#F97316', 500:'#f97316' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #050f1a; color: #e2e8f0; }
+    body::before { content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(249,115,22,0.08) 0%, transparent 50%); }
+    #sidebar { transition: width 300ms cubic-bezier(0.32,0.72,0,1); overflow: hidden; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.08); position: relative; z-index: 10; }
+    #sidebar .label { transition: opacity 200ms cubic-bezier(0.32,0.72,0,1); }
+    #sidebar.collapsed .label { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; }
+    #sidebar.collapsed { width: 64px; }
+    #sidebar:not(.collapsed) { width: 256px; }
+    .nav-item { transition: background-color 150ms ease; border-radius: 0.5rem; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); }
+    .nav-item.active { background: rgba(96,165,250,0.18); color: #93c5fd; }
+    .glass-card { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    tbody tr { transition: background-color 150ms ease; cursor: default; }
+    tbody tr:hover td { background: rgba(255,255,255,0.04); }
+    button { transition: all 200ms cubic-bezier(0.32,0.72,0,1); }
+    button:active { transform: scale(0.98); }
+  </style>
+</head>
+<body class="min-h-[100dvh] flex relative">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="flex flex-col min-h-[100dvh] flex-shrink-0">
+    <div class="flex items-center gap-3 px-4 py-5" style="border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0" style="box-shadow:0 0 12px rgba(59,130,246,0.4)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span>
+    </div>
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer w-full text-left text-slate-400" style="border-bottom:1px solid rgba(255,255,255,0.08)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+      <span class="label text-xs font-medium">Collapse</span>
+    </button>
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="label text-sm">Dashboard</span></a>
+      <a href="listings-queue.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 cursor-pointer text-brand-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span class="label text-sm">Listings Queue</span></a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span class="label text-sm">Providers</span></a>
+      <a href="categories.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg><span class="label text-sm">Categories</span></a>
+      <a href="reviews-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 cursor-pointer text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="label text-sm">Reviews Queue</span></a>
+    </nav>
+    <div class="p-3" style="border-top:1px solid rgba(255,255,255,0.08)">
+      <div class="flex items-center gap-3 px-2 py-2">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">GM</div>
+        <div class="label min-w-0"><p class="text-xs font-medium text-white truncate">General Manager</p><p class="text-[11px] text-slate-500 truncate">admin@bulletindells.com</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-auto min-h-[100dvh] relative z-10">
+    <header class="px-6 py-4 flex items-center justify-between sticky top-0 z-20" style="backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(5,15,26,0.8);border-bottom:1px solid rgba(255,255,255,0.07)">
+      <div>
+        <h1 class="text-lg font-semibold text-white">Listings Queue</h1>
+        <p class="text-xs text-slate-500">14 pending approval</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select class="text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-400 font-medium" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
+          <option>All Statuses</option><option selected>Pending</option><option>Approved</option><option>Rejected</option><option>Needs Changes</option>
+        </select>
+        <select class="text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-400 font-medium" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12)">
+          <option>All Categories</option><option>Housing</option><option>Car Rental</option><option>Airport Rides</option><option>Beauty &amp; Nails</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="p-6">
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left" style="background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.07)">
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide w-12">Photo</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Listing Title</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Provider</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tier</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
+              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/shuttle1/64/48" alt="Shuttle" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Airport Shuttle — Premium Round Trip</a><p class="text-xs text-slate-500 mt-0.5">$45 / trip</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Ramirez Transport</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Airport Rides</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">VIP</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 4</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/apt2/64/48" alt="Apt" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">3BR Lakefront Apt — Summer Season</a><p class="text-xs text-slate-500 mt-0.5">$1,200 / mo</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Dells Housing Co.</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Housing</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Verified</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 4</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/nails3/64/48" alt="Nails" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Nail Art Studio — Full Set Gel</a><p class="text-xs text-slate-500 mt-0.5">$55 / session</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Linh's Beauty Bar</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Beauty &amp; Nails</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">VIP</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Needs Changes</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 3</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/car4/64/48" alt="Car" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Toyota Camry 2023 — Weekend Rental</a><p class="text-xs text-slate-500 mt-0.5">$79 / day</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Dells Auto Rentals</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Car Rental</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)">Regular</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Rejected</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 3</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)">Review</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/food5/64/48" alt="Food" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Mexican Catering — Events up to 50</a><p class="text-xs text-slate-500 mt-0.5">$18 / person</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Casa Reyes Catering</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Food &amp; Catering</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Verified</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approved</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 2</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><a href="listing-detail.html" class="px-2.5 py-1 text-[11px] font-medium rounded-lg cursor-pointer" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">View</a></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/mech6/64/48" alt="Mech" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Oil Change &amp; Tire Rotation Express</a><p class="text-xs text-slate-500 mt-0.5">$49 / service</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Hernandez Auto Care</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Mechanics</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.2)">Regular</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 2</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/lawn7/64/48" alt="Lawn" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">Weekly Lawn Mowing — Residential</a><p class="text-xs text-slate-500 mt-0.5">$60 / visit</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Garcia Landscaping</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Home Services</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">Verified</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 1</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3.5"><img src="https://picsum.photos/seed/hvac8/64/48" alt="HVAC" class="w-10 h-8 object-cover rounded-lg"/></td>
+              <td class="px-4 py-3.5"><a href="listing-detail.html" class="font-medium text-slate-200 hover:text-brand-400 transition-colors">AC Repair — Emergency Same-Day</a><p class="text-xs text-slate-500 mt-0.5">$120 / call</p></td>
+              <td class="px-4 py-3.5 text-slate-400">Midwest HVAC Pros</td>
+              <td class="px-4 py-3.5 text-xs text-slate-500">Home Services</td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)">VIP</span></td>
+              <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full" style="background:rgba(250,204,21,0.12);color:#fbbf24;border:1px solid rgba(250,204,21,0.2)">Pending</span></td>
+              <td class="px-4 py-3.5 text-xs text-slate-500 font-mono">May 1</td>
+              <td class="px-4 py-3.5"><div class="flex gap-1.5"><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.2)">Approve</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.2)">Edit</button><button class="px-2.5 py-1 text-[11px] font-medium rounded-lg" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2)">Reject</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="px-5 py-4 flex items-center justify-between" style="border-top:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.02)">
+          <p class="text-xs text-slate-500">Showing 8 of 23 listings</p>
+          <div class="flex items-center gap-1">
+            <button class="px-3 py-1.5 text-xs rounded-lg text-slate-400" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">Previous</button>
+            <button class="px-3 py-1.5 text-xs rounded-lg text-white font-medium bg-brand-600">1</button>
+            <button class="px-3 py-1.5 text-xs rounded-lg text-slate-400" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">2</button>
+            <button class="px-3 py-1.5 text-xs rounded-lg text-slate-400" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

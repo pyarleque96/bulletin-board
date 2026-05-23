@@ -1,0 +1,635 @@
+@page "/manage/{ListingId}/vehicles"
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Bulletin.Board.Web.Client.States
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Buttons
+@using Bulletin.Board.Web.Client.Services.Http
+@using Bulletin.Board.Web.Client.Services.State
+@using Bulletin.Board.Web.Client.Services.Common
+
+@inject NavBarState NavBarState
+@inject FooterState FooterState
+@inject IVehicleService VehicleService
+@inject IListingService ListingService
+@inject ManageStateService StateService
+@implements IDisposable
+
+<PageTitle>Vehicles — @ListingId | Bulletin Dells</PageTitle>
+
+<style>
+    .v-card {
+        transition: transform 0.3s cubic-bezier(0.32,0.72,0,1),
+                    box-shadow 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .v-card:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.12); }
+
+    .spec-chip {
+        background:#f1f5f9; color:#475569; border-radius:8px; padding:3px 8px;
+        font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:4px;
+    }
+
+    [data-tooltip] { position:relative; }
+    [data-tooltip]::after {
+        content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px);
+        left:50%; transform:translateX(-50%); white-space:nowrap;
+        background:#1e293b; color:#fff; font-size:11px; padding:5px 9px;
+        border-radius:8px; pointer-events:none; opacity:0;
+        transition:opacity 0.15s ease; z-index:50;
+    }
+    [data-tooltip]:hover::after { opacity:1; }
+
+    .modal-overlay {
+        position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:50;
+        backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;
+        padding:1rem; opacity:0; pointer-events:none;
+        transition:opacity 0.2s ease;
+    }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-box {
+        background:#fff; border-radius:1.5rem; padding:1.5rem; max-width:540px; width:100%;
+        box-shadow:0 24px 64px -12px rgba(30,41,59,0.18);
+        transform:translateY(12px) scale(0.98);
+        transition:transform 0.25s cubic-bezier(0.32,0.72,0,1);
+    }
+    .modal-overlay.open .modal-box { transform:translateY(0) scale(1); }
+
+    .fade-up { opacity:0; transform:translateY(12px);
+               transition:opacity 0.45s ease, transform 0.45s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    @@media (prefers-reduced-motion:reduce) {
+        *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+        .fade-up { opacity:1; transform:none; }
+    }
+</style>
+
+@* ── Sticky header + tabs ── *@
+<ManageDetailHeader ListingId="@ListingId"
+                    ListingTitle="@(_listingTitle)"
+                    CategorySlug="@(_categorySlug)"
+                    ActiveTab="vehicles"
+                    Status="@(_listingStatus)"
+                    TierBadge="@(_listingTier)"
+                    CategoryLabel="@(_categorySlug)"
+                    Since=""
+                    PublicUrl="@($"/listing/{ListingId}")"
+                    VehicleCount="@(_paged?.TotalItems)"
+                    PendingReservations="0"
+                    PhotoCount="0" />
+
+@* ── PANEL: VEHICLES ── *@
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-vehicles" role="tabpanel" aria-labelledby="tab-vehicles" tabindex="0">
+
+    @* Error banner *@
+    @if (_errorKey is not null)
+    {
+        <ApiErrorBanner MessageKey="@_errorKey" RawDetail="@_errorDetail" />
+    }
+
+    @* Sub-header *@
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6 fade-up">
+        <div>
+            <h2 class="text-base font-semibold text-ink">
+                Your fleet
+                @* ES: Tu flota *@
+            </h2>
+            <p class="text-sm text-muted mt-0.5">
+                Editing any vehicle sends the listing back to GM for re-approval.
+                @* ES: Editar un vehículo regresa el anuncio a revisión del GM. *@
+            </p>
+        </div>
+        <ManageActionButton Variant="Primary"
+                            Size="Compact"
+                            OnClick="OpenAddModal"
+                            aria-label="Add a new vehicle / Agregar un nuevo vehículo">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add vehicle
+            @* ES: Agregar vehículo *@
+        </ManageActionButton>
+    </div>
+
+    @* Loading skeleton *@
+    @if (_loading)
+    {
+        <div class="space-y-4">
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden animate-pulse">
+                    <div class="flex">
+                        <div class="w-36 h-36 bg-slate-100 flex-shrink-0"></div>
+                        <div class="flex-1 p-4 space-y-3">
+                            <div class="h-4 bg-slate-100 rounded w-1/3"></div>
+                            <div class="h-3 bg-slate-100 rounded w-1/4"></div>
+                            <div class="flex gap-2">
+                                <div class="h-5 w-16 bg-slate-100 rounded-lg"></div>
+                                <div class="h-5 w-16 bg-slate-100 rounded-lg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        @if (_paged is not null && _paged.Items.Count == 0)
+        {
+            <div class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+                <svg class="w-10 h-10 text-slate-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+                    <circle cx="7.5" cy="17.5" r="2.5"/>
+                    <circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-ink mb-1">No vehicles yet</h3>
+                <p class="text-xs text-muted">Add your first vehicle to start accepting reservations.</p>
+            </div>
+        }
+        else if (_paged is not null)
+        {
+            @* ── Vehicle list ── *@
+            <ul class="space-y-4" role="list" aria-label="Fleet vehicles / Vehículos de la flota">
+                @foreach (var v in _paged.Items)
+                {
+                    <li class="v-card bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden fade-up"
+                        aria-label="@v.Name">
+                        <div class="flex flex-col sm:flex-row gap-0">
+                            <div class="w-full sm:w-36 h-36 sm:h-auto bg-slate-100 flex-shrink-0 relative overflow-hidden">
+                                @if (v.Photos.FirstOrDefault(p => p.IsPrimary) is { } photo)
+                                {
+                                    <img src="@photo.FilePath" alt="@v.Name" class="w-full h-full object-cover" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-slate-300" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                             stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/>
+                                            <circle cx="7.5" cy="17.5" r="2.5"/>
+                                            <circle cx="17.5" cy="17.5" r="2.5"/>
+                                        </svg>
+                                    </div>
+                                }
+                                <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-lg @(v.IsActive ? "bg-green-500 text-white" : "bg-slate-500 text-white") shadow-sm">
+                                    @(v.IsActive ? "Available" : "Unavailable")
+                                </span>
+                            </div>
+                            <div class="flex-1 p-4 min-w-0">
+                                <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                    <div>
+                                        <h3 class="text-base font-semibold text-ink">@v.Name</h3>
+                                        <p class="text-xs text-muted mt-0.5">@v.Transmission · up to @v.PassengerMax pax</p>
+                                    </div>
+                                    <div class="text-right flex-shrink-0">
+                                        <p class="text-base font-bold text-ink">
+                                            $@((v.DailyRateCents / 100.0m).ToString("F0"))<span class="text-xs font-normal text-muted">/day</span>
+                                        </p>
+                                        @if (v.WeeklyRateCents.HasValue)
+                                        {
+                                            <p class="text-xs text-muted">$@((v.WeeklyRateCents.Value / 100.0m).ToString("F0"))/week</p>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2 mb-3">
+                                    <span class="spec-chip" aria-label="Max @(v.PassengerMax) passengers">
+                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="9" cy="7" r="4"/>
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        </svg>
+                                        Max @v.PassengerMax pax
+                                    </span>
+                                    <span class="spec-chip">@v.Transmission</span>
+                                    @if (v.HasAirConditioning)
+                                    {
+                                        <span class="spec-chip">A/C included</span>
+                                    }
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <ManageActionButton Variant="Default"
+                                                        Size="Small"
+                                                        OnClick="() => ToggleActiveAsync(v)"
+                                                        Disabled="@_busyVehicleIds.Contains(v.Id)"
+                                                        data-tooltip="Editing this vehicle sends the listing back to Pending"
+                                                        aria-label="@(v.IsActive ? "Mark as unavailable / Marcar como no disponible" : "Mark as available / Marcar como disponible")">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                        </svg>
+                                        @(v.IsActive ? "Mark unavailable" : "Mark available")
+                                    </ManageActionButton>
+                                    <ManageActionButton Variant="Danger"
+                                                        Size="Small"
+                                                        OnClick="() => DeleteVehicleAsync(v.Id)"
+                                                        Disabled="@_busyVehicleIds.Contains(v.Id)"
+                                                        aria-label="Delete vehicle / Eliminar vehículo"
+                                                        class="ml-auto">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                            <path d="M10 11v6"/><path d="M14 11v6"/>
+                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                        </svg>
+                                        @(_busyVehicleIds.Contains(v.Id) ? "…" : "Delete")
+                                    </ManageActionButton>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+
+            @* Pager *@
+            <Pager Page="@_page"
+                   TotalPages="@(_paged?.TotalPages ?? 1)"
+                   HasNext="@(_paged?.HasNext ?? false)"
+                   HasPrevious="@(_paged?.HasPrevious ?? false)"
+                   OnPageChanged="LoadPageAsync" />
+        }
+    }
+
+</main>
+
+@* ── MODAL: ADD VEHICLE ── *@
+<div id="add-vehicle-modal"
+     class="modal-overlay @(_showAddModal ? "open" : "")"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-title">
+    <div class="modal-box" role="document">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h2 id="modal-title" class="text-base font-bold text-ink">
+                    Add Vehicle
+                    @* ES: Agregar vehículo *@
+                </h2>
+                <p class="text-xs text-amber-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg mt-1 inline-flex items-center gap-1">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Adding a vehicle sends the listing back to Pending review
+                </p>
+            </div>
+            <IconButton OnClick="CloseAddModal"
+                        AriaLabel="Close / Cerrar"
+                        Variant="default">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </IconButton>
+        </div>
+
+        @if (_saveError is not null)
+        {
+            <ApiErrorBanner MessageKey="@_saveError" />
+        }
+
+        <EditForm Model="_vehicleForm" OnValidSubmit="SaveVehicle" aria-label="Add vehicle form" novalidate="novalidate">
+
+            @* Name (Make + Model + Year combined into display Name) *@
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="flex flex-col gap-1">
+                    <label for="v-make" class="text-xs font-semibold text-ink">Make <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <input id="v-make" type="text" placeholder="Toyota"
+                           @bind="_vehicleForm.Make"
+                           class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink"
+                           required aria-required="true" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="v-model" class="text-xs font-semibold text-ink">Model <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <input id="v-model" type="text" placeholder="Corolla"
+                           @bind="_vehicleForm.Model"
+                           class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink"
+                           required aria-required="true" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="v-year" class="text-xs font-semibold text-ink">Year <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <input id="v-year" type="number" placeholder="2023" min="2000" max="2030"
+                           @bind="_vehicleForm.Year"
+                           class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink"
+                           required aria-required="true" />
+                </div>
+            </div>
+
+            @* Passengers + Transmission *@
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="flex flex-col gap-1">
+                    <label for="v-max-pax" class="text-xs font-semibold text-ink">Max pax <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <input id="v-max-pax" type="number" placeholder="5" min="1" max="15"
+                           @bind="_vehicleForm.PassengerMax"
+                           class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink"
+                           required aria-required="true" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="v-trans" class="text-xs font-semibold text-ink">Transmission <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <div class="relative">
+                        <select id="v-trans" @bind="_vehicleForm.Transmission"
+                                class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink cursor-pointer bg-white"
+                                required aria-required="true">
+                            <option value="">Select</option>
+                            <option>Automatic</option><option>Manual</option>
+                        </select>
+                        <svg class="w-3.5 h-3.5 text-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            @* Prices *@
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="flex flex-col gap-1">
+                    <label for="v-price-day" class="text-xs font-semibold text-ink">Price / day (USD) <span class="text-red-400" aria-hidden="true">*</span></label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm" aria-hidden="true">$</span>
+                        <input id="v-price-day" type="number" placeholder="45" min="0" step="0.01"
+                               @bind="_vehicleForm.PricePerDay"
+                               class="w-full pl-6 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink"
+                               required aria-required="true" />
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="v-price-week" class="text-xs font-semibold text-ink">Price / week (USD)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm" aria-hidden="true">$</span>
+                        <input id="v-price-week" type="number" placeholder="270" min="0" step="0.01"
+                               @bind="_vehicleForm.PricePerWeek"
+                               class="w-full pl-6 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink" />
+                    </div>
+                </div>
+            </div>
+
+            @* A/C toggle *@
+            <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-slate-200 mb-5 bg-white">
+                <label for="v-ac" class="text-sm text-ink cursor-pointer">Air conditioning (A/C)</label>
+                <input id="v-ac" type="checkbox" @bind="_vehicleForm.HasAC"
+                       class="w-4 h-4 rounded cursor-pointer" />
+            </div>
+
+            @* Actions *@
+            <div class="flex items-center justify-end gap-2">
+                <ManageActionButton Variant="Cancel"
+                                    Size="Medium"
+                                    OnClick="CloseAddModal"
+                                    aria-label="Cancel">
+                    Cancel
+                </ManageActionButton>
+                <ManageActionButton Variant="Primary"
+                                    Size="Medium"
+                                    Type="submit"
+                                    Disabled="@_saving"
+                                    Loading="@_saving"
+                                    aria-label="Save vehicle / Guardar vehículo">
+                    @(_saving ? "Saving…" : "Save vehicle")
+                </ManageActionButton>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@* Pending review dialog *@
+<PendingReviewWarningDialog @ref="_pendingDialog" />
+
+<script>
+    (function () {
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'), i * 80);
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.04 });
+        document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+    })();
+</script>
+
+@code {
+    [Parameter] public string ListingId { get; set; } = "";
+
+    // ── Listing meta from StateService ─────────────────────────────────────────
+    private string _listingTitle  = "…";
+    private string _categorySlug  = "";
+    private string _listingStatus = "";
+    private string _listingTier   = "";
+
+    // ── Vehicles paged state ───────────────────────────────────────────────────
+    private PagedResultDto<OwnerVehicleDto>? _paged;
+    private bool    _loading  = true;
+    private int     _page     = 1;
+    private const int PageSize = 20;
+    private string? _errorKey;
+    private string? _errorDetail;
+
+    // ── Mutation state ─────────────────────────────────────────────────────────
+    private readonly HashSet<Guid> _busyVehicleIds = new();
+
+    // ── Modal state ────────────────────────────────────────────────────────────
+    private bool              _showAddModal = false;
+    private bool              _saving       = false;
+    private string?           _saveError;
+    private VehicleFormModel  _vehicleForm  = new();
+    private PendingReviewWarningDialog? _pendingDialog;
+
+    protected override void OnInitialized()
+    {
+        NavBarState.IsDark    = false;
+        FooterState.IsDark    = false;
+        FooterState.IsCompact = true;
+        StateService.OnStateChanged += OnStateChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Guid.TryParse(ListingId, out var id)) return;
+
+        // Load listing meta from state service (shared cache)
+        await StateService.LoadListingAsync(id);
+        if (StateService.CurrentListing is { } l)
+        {
+            _listingTitle  = l.TitleEn;
+            _categorySlug  = l.CategorySlug;
+            _listingStatus = l.Status;
+            _listingTier   = l.Tier;
+        }
+
+        await LoadPageAsync(1);
+    }
+
+    private async Task LoadPageAsync(int page)
+    {
+        if (!Guid.TryParse(ListingId, out var id)) return;
+
+        _page    = page;
+        _loading = true;
+        _errorKey = null;
+        StateHasChanged();
+
+        var result = await VehicleService.GetByListingAsync(id, page: _page, pageSize: PageSize);
+        switch (result)
+        {
+            case ApiResult<PagedResultDto<OwnerVehicleDto>>.Success s:
+                _paged   = s.Data;
+                break;
+            case ApiResult<PagedResultDto<OwnerVehicleDto>>.Error e:
+                _errorKey    = e.MessageKey;
+                _errorDetail = e.RawDetail;
+                break;
+        }
+        _loading = false;
+        StateHasChanged();
+    }
+
+    // ── Toggle active ──────────────────────────────────────────────────────────
+
+    private async Task ToggleActiveAsync(OwnerVehicleDto vehicle)
+    {
+        if (_pendingDialog is null) return;
+        var confirmed = await _pendingDialog.ShowAsync();
+        if (!confirmed) return;
+
+        _busyVehicleIds.Add(vehicle.Id);
+        StateHasChanged();
+
+        var result = await VehicleService.SetActiveAsync(vehicle.Id, !vehicle.IsActive);
+        if (result.IsSuccess)
+        {
+            StateService.Invalidate();
+            await LoadPageAsync(_page);
+        }
+        else if (result is ApiResult<bool>.Error e)
+        {
+            _errorKey    = e.MessageKey;
+            _errorDetail = e.RawDetail;
+        }
+        _busyVehicleIds.Remove(vehicle.Id);
+        StateHasChanged();
+    }
+
+    // ── Delete vehicle ─────────────────────────────────────────────────────────
+
+    private async Task DeleteVehicleAsync(Guid vehicleId)
+    {
+        if (_pendingDialog is null) return;
+        var confirmed = await _pendingDialog.ShowAsync();
+        if (!confirmed) return;
+
+        _busyVehicleIds.Add(vehicleId);
+        StateHasChanged();
+
+        var result = await VehicleService.DeleteAsync(vehicleId);
+        if (result.IsSuccess)
+        {
+            StateService.Invalidate();
+            await LoadPageAsync(_page);
+        }
+        else if (result is ApiResult<bool>.Error e)
+        {
+            _errorKey    = e.MessageKey;
+            _errorDetail = e.RawDetail;
+        }
+        _busyVehicleIds.Remove(vehicleId);
+        StateHasChanged();
+    }
+
+    // ── Add vehicle modal ──────────────────────────────────────────────────────
+
+    private void OpenAddModal()
+    {
+        _vehicleForm = new();
+        _saveError   = null;
+        _showAddModal = true;
+    }
+
+    private void CloseAddModal() => _showAddModal = false;
+
+    private async Task SaveVehicle()
+    {
+        if (!Guid.TryParse(ListingId, out var id)) return;
+
+        // Validate required fields
+        if (string.IsNullOrWhiteSpace(_vehicleForm.Make) ||
+            string.IsNullOrWhiteSpace(_vehicleForm.Model) ||
+            string.IsNullOrWhiteSpace(_vehicleForm.Transmission) ||
+            _vehicleForm.PricePerDay <= 0)
+        {
+            _saveError = "errors.validation";
+            return;
+        }
+
+        // Confirm Regla #5 before mutation
+        if (_pendingDialog is null) return;
+        var confirmed = await _pendingDialog.ShowAsync();
+        if (!confirmed) return;
+
+        _saving    = true;
+        _saveError = null;
+        StateHasChanged();
+
+        var name    = $"{_vehicleForm.Year} {_vehicleForm.Make} {_vehicleForm.Model}".Trim();
+        var request = new CreateVehicleRequest(
+            Name:              name,
+            PassengerMax:      _vehicleForm.PassengerMax,
+            Transmission:      _vehicleForm.Transmission,
+            HasAirConditioning: _vehicleForm.HasAC,
+            DailyRateCents:    (int)(_vehicleForm.PricePerDay  * 100),
+            WeeklyRateCents:   _vehicleForm.PricePerWeek > 0
+                                   ? (int?)((int)(_vehicleForm.PricePerWeek * 100))
+                                   : null,
+            MonthlyRateCents:  null,
+            DisplayOrder:      (_paged?.TotalItems ?? 0) + 1);
+
+        var result = await VehicleService.CreateAsync(id, request);
+
+        _saving = false;
+
+        if (result.IsSuccess)
+        {
+            StateService.Invalidate();
+            CloseAddModal();
+            await LoadPageAsync(_page);
+        }
+        else if (result is ApiResult<Guid>.Error e)
+        {
+            _saveError = e.MessageKey;
+        }
+        StateHasChanged();
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        StateService.OnStateChanged -= OnStateChanged;
+    }
+
+    // ── Form model ─────────────────────────────────────────────────────────────
+
+    private sealed class VehicleFormModel
+    {
+        public string  Make          { get; set; } = "";
+        public string  Model         { get; set; } = "";
+        public int     Year          { get; set; } = DateTime.UtcNow.Year;
+        public int     PassengerMax  { get; set; } = 5;
+        public string  Transmission  { get; set; } = "";
+        public decimal PricePerDay   { get; set; }
+        public decimal PricePerWeek  { get; set; }
+        public bool    HasAC         { get; set; } = true;
+    }
+}

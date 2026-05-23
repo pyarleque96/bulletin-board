@@ -1,0 +1,177 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   JobsManageVip — Container VIP para jobs. Dispatcher tabs vía DynamicComponent.
+
+   Tabs disponibles:
+     - overview     (default — inline v2: funnel analytics + advanced filters + apps list)
+     - applications → Tabs/ApplicationsVip (Pipeline Kanban: New / Contacted / Interview / Hired)
+     - analytics    (TODO Fase E: page placeholder)
+     - settings     (TODO Fase E: page placeholder)
+
+   Reglas embebidas:
+     #5 — PendingReviewTooltip en mutadores.
+     #8 — GmCopyNotice + WhatsAppCtaButton dentro de ApplicationsVip Kanban.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Layouts.Jobs.Tabs
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@Listing.CategorySlug"
+                    ActiveTab="@ResolvedActiveTab"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@(_localizer["Manage_Jobs_CategoryLabel"])"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")" />
+
+@{
+    var (tabType, tabParams) = ResolveTab(ResolvedActiveTab);
+}
+@if (tabType is not null)
+{
+    <DynamicComponent Type="tabType" Parameters="tabParams" />
+}
+else
+{
+    @* Default tab = Overview (v2 VIP content kept inline: funnel + filters + apps list). *@
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full"
+          id="panel-overview"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          tabindex="0">
+
+        @* Funnel analytics — TODO: API GET /api/v1/listings/{id}/applications/funnel *@
+        <section aria-label="@_localizer["Manage_Jobs_Funnel_AriaLabel"]" class="mb-8">
+            <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h2 class="text-sm font-semibold text-ink inline-flex items-center gap-2">
+                        @_localizer["Manage_Jobs_Funnel_Title"]
+                        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+                    </h2>
+                    <button type="button" class="text-xs text-brand-500 hover:text-brand-700 font-medium cursor-pointer inline-flex items-center gap-1">
+                        @_localizer["Manage_Jobs_Funnel_ExportCsv"]
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    @foreach (var step in _funnelSteps)
+                    {
+                        <div>
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="font-medium text-ink">@step.Label</span>
+                                <span class="tabular-nums @(step.IsTerminal ? "text-green-700" : "text-muted")">— · —%</span>
+                            </div>
+                            <div class="h-7 rounded-xl bg-slate-100 overflow-hidden relative">
+                                <div class="h-full @(step.IsTerminal ? "bg-green-500" : "bg-brand-500") rounded-xl" style="width:0%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        @* Advanced filters *@
+        <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <h3 class="text-sm font-semibold text-ink">@_localizer["Manage_Jobs_Filters_Title"]</h3>
+                <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-[11px] font-medium text-ink mb-1">@_localizer["Manage_Jobs_Filter_Posting"]</label>
+                    <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                        <option>@_localizer["Manage_Jobs_Filter_AllPostings"]</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-ink mb-1">@_localizer["Manage_Jobs_Filter_Language"]</label>
+                    <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                        <option>@_localizer["Manage_Common_Any"]</option>
+                        <option>English + Spanish</option>
+                        <option>English only</option>
+                        <option>Spanish only</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-ink mb-1">@_localizer["Manage_Jobs_Filter_J1Status"]</label>
+                    <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                        <option>@_localizer["Manage_Common_Any"]</option>
+                        <option>@_localizer["Manage_Jobs_Filter_J1Only"]</option>
+                        <option>@_localizer["Manage_Jobs_Filter_J1Exclude"]</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-ink mb-1">@_localizer["Manage_Common_Status"]</label>
+                    <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                        <option>@_localizer["Manage_Common_All"]</option>
+                        @foreach (var s in _funnelSteps)
+                        {
+                            <option>@s.Label</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        @* Applications list placeholder — for the full pipeline Kanban view see /applications tab. *@
+        <ul class="space-y-3" role="list" aria-label="@_localizer["Manage_Jobs_Applications"]">
+            <li class="p-8 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+                <p class="text-sm text-muted">@_localizer["Manage_Jobs_Applications_Empty"]</p>
+            </li>
+        </ul>
+
+        <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+            <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+            @_localizer["Manage_Jobs_VipFooter"]
+        </div>
+    </main>
+}
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    /// <summary>Default jobs VIP = "overview" (inline funnel + filters + applications list).</summary>
+    private string ResolvedActiveTab => string.IsNullOrEmpty(ActiveTab) ? "overview" : ActiveTab;
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+
+    private readonly FunnelStep[] _funnelSteps = new[]
+    {
+        new FunnelStep("Applied",   false),
+        new FunnelStep("Reviewed",  false),
+        new FunnelStep("Interview", false),
+        new FunnelStep("Hired",     true),
+    };
+
+    private sealed record FunnelStep(string Label, bool IsTerminal);
+
+    private (Type? Type, IDictionary<string, object>? Params) ResolveTab(string tab)
+    {
+        var p = new Dictionary<string, object> { ["Listing"] = Listing };
+
+        return tab switch
+        {
+            "applications" => (typeof(ApplicationsVip), p),
+            "settings"     => (typeof(SettingsVip),     p),
+            "analytics"    => (typeof(AnalyticsTab),    p),
+
+            // "overview" → null (renders inline VIP default: funnel + filters + apps list).
+            _              => (null, null),
+        };
+    }
+}

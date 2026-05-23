@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Radar Scan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /*
+    =====================================================================
+    SCREEN: 14-radar-scan.html
+    SPEC:   Radar circular con barrido (sweep) naranja girando 360°.
+            El sweep usa un gradiente cónico que fades de naranja a
+            transparente, dando sensación de "cola de barrido".
+            Puntos parpadeantes aparecen aleatoriamente (vía JS) en el
+            área del radar representando "providers detectados".
+            3 anillos concéntricos grises y 2 líneas cruzadas de referencia.
+    CUÁNDO: Búsqueda con filtro de ubicación / inicialización del mapa
+            de proveedores / carga de resultados geo-localizados.
+    BLAZOR HOOK: JS interop para añadir/quitar puntos detectados.
+                 El método window.radarAddPoint(x, y) puede ser llamado
+                 desde Blazor cuando llega cada proveedor del API.
+    =====================================================================
+    */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #fff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #ffffff;
+      min-height: 100dvh;
+      overflow: hidden;
+      opacity: 0;
+      animation: body-fade-in 0.45s ease-out 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      pointer-events: none;
+    }
+
+    /* Radar container */
+    .radar-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      opacity: 0;
+      animation: radar-intro 0.6s ease-out 0.2s forwards;
+    }
+    @keyframes radar-intro {
+      from { opacity: 0; transform: scale(0.75); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Canvas SVG del radar */
+    .radar-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Anillos */
+    .ring { fill: none; stroke: #e2e8f0; stroke-width: 1; }
+
+    /* Líneas cruzadas de referencia */
+    .cross-line { stroke: #e2e8f0; stroke-width: 1; }
+
+    /* Centro del radar */
+    .radar-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      z-index: 3;
+      box-shadow: 0 0 0 3px #fde8c8;
+    }
+
+    /* Barrido giratorio — cono SVG que rota */
+    .sweep-container {
+      position: absolute;
+      inset: 0;
+      animation: sweep-rotate 2.4s linear infinite;
+      transform-origin: center center;
+      z-index: 2;
+    }
+    @keyframes sweep-rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* SVG del barrido — usa gradiente cónico via canvas fallback */
+    .sweep-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    /* Puntos de "providers detectados" */
+    .radar-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: #fd8c1b;
+      z-index: 4;
+      animation: dot-blink 2s ease-in-out infinite;
+    }
+    @keyframes dot-blink {
+      0%, 100% { opacity: 0; transform: scale(0.5); }
+      30%, 70%  { opacity: 1; transform: scale(1); }
+    }
+
+    /* Texto */
+    .label {
+      text-align: center;
+      opacity: 0;
+      animation: label-in 0.5s ease-out 0.6s forwards;
+    }
+    @keyframes label-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .scan-counter {
+      font-size: 11px;
+      color: #fd8c1b;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body { animation: none; opacity: 1; }
+      .radar-wrap, .label { animation: none; opacity: 1; }
+      .sweep-container { animation: none; }
+      .radar-dot { animation: none; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div
+    class="stage"
+    role="status"
+    aria-live="polite"
+    aria-label="Scanning for providers · Escaneando proveedores"
+  >
+    <div class="radar-wrap" id="radarWrap">
+
+      <!-- SVG base: anillos + cruz -->
+      <svg class="radar-svg" viewBox="0 0 180 180" aria-hidden="true">
+        <!-- Anillos concéntricos -->
+        <circle class="ring" cx="90" cy="90" r="25" />
+        <circle class="ring" cx="90" cy="90" r="52" />
+        <circle class="ring" cx="90" cy="90" r="80" />
+        <!-- Clip circle para el borde del radar -->
+        <circle cx="90" cy="90" r="80" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+        <!-- Líneas cruzadas -->
+        <line class="cross-line" x1="90" y1="10" x2="90" y2="170" />
+        <line class="cross-line" x1="10" y1="90" x2="170" y2="90" />
+      </svg>
+
+      <!-- Barrido giratorio (cono naranja) -->
+      <div class="sweep-container" aria-hidden="true">
+        <svg class="sweep-svg" viewBox="0 0 180 180">
+          <defs>
+            <radialGradient id="sweepGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="#fd8c1b" stop-opacity="0.0" />
+              <stop offset="100%" stop-color="#fd8c1b" stop-opacity="0.0" />
+            </radialGradient>
+            <!-- Cono via clipPath + sector -->
+          </defs>
+          <!-- Sector de 70°, desde centro -->
+          <path
+            d="M 90 90 L 90 10 A 80 80 0 0 1 165.7 112.8 Z"
+            fill="url(#sweepCone)"
+            opacity="0.85"
+          />
+          <defs>
+            <linearGradient id="sweepCone" gradientTransform="rotate(90)">
+              <stop offset="0%"   stop-color="#fd8c1b" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#fd8c1b" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Centro -->
+      <div class="radar-center" aria-hidden="true"></div>
+
+      <!-- Puntos JS-generados -->
+      <div id="dotsContainer" aria-hidden="true"></div>
+
+    </div>
+
+    <div class="label">
+      <p class="text-sm font-medium text-slate-700">Scanning providers</p>
+      <p class="scan-counter" id="scanCounter">0 found · 0 encontrados</p>
+      <p class="text-xs text-slate-400 mt-1">Escaneando directorio local…</p>
+    </div>
+  </div>
+
+  <script>
+    /* BLAZOR HOOK: window.radarAddPoint(x, y) — llamar desde Blazor JS interop */
+    const container = document.getElementById('dotsContainer');
+    const counterEl = document.getElementById('scanCounter');
+    const radarRadius = 80; // px desde centro (90,90)
+    let count = 0;
+
+    // Puntos predefinidos para la demo (coordenadas relativas al contenedor 180x180)
+    const presets = [
+      { x: 110, y: 55,  size: 5, delay: 0.8 },
+      { x: 135, y: 105, size: 4, delay: 1.5 },
+      { x:  60, y: 130, size: 6, delay: 2.1 },
+      { x:  45, y:  70, size: 4, delay: 2.8 },
+      { x: 115, y: 140, size: 5, delay: 3.3 },
+      { x:  78, y:  48, size: 4, delay: 4.0 },
+    ];
+
+    window.radarAddPoint = function(x, y) {
+      addDot(x, y, 5, 0);
+    };
+
+    function addDot(x, y, size, extraDelay) {
+      const dot = document.createElement('div');
+      dot.className = 'radar-dot';
+      dot.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        top: ${y - size / 2}px;
+        left: ${x - size / 2}px;
+        animation-delay: ${extraDelay}s;
+      `;
+      container.appendChild(dot);
+      count++;
+      counterEl.textContent = `${count} found · ${count} encontrado${count !== 1 ? 's' : ''}`;
+    }
+
+    // Añadir puntos demo con delay escalonado
+    presets.forEach(p => {
+      setTimeout(() => addDot(p.x, p.y, p.size, 0), p.delay * 1000);
+    });
+  </script>
+
+</body>
+</html>

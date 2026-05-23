@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Dells">
+  <title>Bulletin Dells – Monochrome (Dark bg)</title>
+  <g fill="#FFFFFF" font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-8">
+    <text x="80" y="240" font-size="220">B</text>
+    <text x="232" y="420" font-size="220">D</text>
+    <circle cx="200" cy="92" r="22"/>
+  </g>
+</svg>

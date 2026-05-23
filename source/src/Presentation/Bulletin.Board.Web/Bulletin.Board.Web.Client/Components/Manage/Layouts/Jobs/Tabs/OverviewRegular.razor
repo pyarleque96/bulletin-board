@@ -1,0 +1,66 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   OverviewRegular (Jobs) — Tab Overview para jobs Regular. Stats simples
+   (sin deltas), VIP upsell card, lista de recent applications con WA + GM-copy.
+
+   Reglas:
+     #5 — PendingReviewTooltip en mutadores.
+     #8 — GmCopyNotice + WhatsAppCtaButton en cada aplicación.
+   TODO: API GET /api/v1/manage/listings/{id}/applications  (BACKEND_AUDIT §1.5)
+   TODO: API GET /api/v1/manage/listings/{id}/jobs/summary  (BACKEND_AUDIT §1.5)
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Jobs.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-overview"
+      role="tabpanel"
+      aria-labelledby="tab-overview"
+      tabindex="0">
+
+    @* Quick stats — TODO: API GET /api/v1/manage/listings/{id}/jobs/summary *@
+    <section aria-label="@_localizer["Manage_Jobs_QuickStats_AriaLabel"]" class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Jobs_Stat_OpenPositions"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Jobs_Stat_TotalApplications"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Jobs_Stat_NewThisWeek"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted font-medium">@_localizer["Manage_Jobs_Stat_Hired"]</p>
+            <p class="text-2xl font-bold text-ink mt-1 tabular-nums">—</p>
+        </div>
+    </section>
+
+    @* VIP upsell — pipeline/tags/CSV *@
+    <VipUpsellBanner Tier="@Listing.Tier" Title="@(_localizer["Manage_Jobs_VipUpsell_Title"])">
+        <p class="text-sm text-white/90 mt-1">@_localizer["Manage_Jobs_VipUpsell_Body"]</p>
+    </VipUpsellBanner>
+
+    @* Recent applications — TODO: API GET /api/v1/manage/listings/{id}/applications *@
+    <section class="mt-8 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Jobs_RecentApplications_Title"]</h2>
+        </div>
+
+        <ManageEmptyState Title="@_localizer["Manage_Jobs_Applications_Empty_Title"]"
+                          Description="@_localizer["Manage_Jobs_Applications_Empty_Description"]" />
+
+        @* GM copy notice — Regla #8 *@
+        <div class="mt-4">
+            <GmCopyNotice />
+        </div>
+    </section>
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

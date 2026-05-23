@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Categories</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 50:'#fff7ed', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc',
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.06)',
+            lift: '0 4px 16px rgba(0,0,0,0.10)',
+            float: '0 8px 32px rgba(0,0,0,0.14)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .sidebar-item.active { background: rgba(255,255,255,0.12); border-left: 3px solid #F97316; }
+    .sidebar-item { border-left: 3px solid transparent; }
+    /* Modal backdrop */
+    #category-modal:not(.hidden) { display: flex; }
+  </style>
+</head>
+<body class="bg-surface text-ink flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 min-h-screen bg-brand-900 text-white flex flex-col fixed left-0 top-0 z-30 shadow-float">
+    <div class="px-6 py-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+        </div>
+        <div><p class="text-sm font-700">Bulletin Dells</p><p class="text-xs text-brand-300">Admin Panel</p></div>
+      </div>
+    </div>
+    <nav class="flex-1 py-4 px-3 space-y-1">
+      <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="listings-queue.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Listings Queue
+        <span class="ml-auto bg-yellow-400 text-yellow-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">12</span>
+      </a>
+      <a href="reviews-queue.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        Reviews Queue
+        <span class="ml-auto bg-orange-400 text-orange-900 text-[10px] font-700 px-1.5 py-0.5 rounded-full">5</span>
+      </a>
+      <a href="providers.html" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 text-brand-200 cursor-pointer transition-colors hover:bg-white/10 hover:text-white">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Providers
+      </a>
+      <a href="categories.html" class="sidebar-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-500 cursor-pointer transition-colors hover:bg-white/10">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 9V4a1 1 0 011-1z"/></svg>
+        Categories
+      </a>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-xs font-700">GM</div>
+        <div class="min-w-0"><p class="text-sm font-500 truncate">General Manager</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="ml-64 flex-1 flex flex-col min-h-screen">
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-soft">
+      <div>
+        <h1 class="text-lg font-600 text-ink">Categories</h1>
+        <p class="text-xs text-muted">9 predefined categories — providers cannot create custom categories</p>
+      </div>
+      <button onclick="document.getElementById('category-modal').classList.remove('hidden')" class="flex items-center gap-2 bg-brand-600 text-white text-sm font-600 px-4 py-2.5 rounded-lg cursor-pointer hover:bg-brand-700 transition-colors shadow-soft active:scale-95">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        New Category
+      </button>
+    </header>
+
+    <div class="flex-1 p-8">
+
+      <!-- Info banner -->
+      <div class="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+        <svg class="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <p class="text-sm font-600 text-brand-800">Categories are platform-defined</p>
+          <p class="text-xs text-brand-700 mt-0.5">Providers must select from these categories when submitting a listing. They cannot create or suggest new categories.</p>
+        </div>
+      </div>
+
+      <!-- Category grid -->
+      <div class="grid grid-cols-3 gap-4">
+
+        <!-- Car Rental -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer transition-colors" aria-label="Edit category" onclick="document.getElementById('category-modal').classList.remove('hidden')">
+                <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer transition-colors" aria-label="Delete category">
+                <svg class="w-4 h-4 text-muted hover:text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Car Rental</h3>
+          <p class="text-xs text-muted mt-0.5">Renta de Autos</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">car-rental</span>
+            <span class="text-xs text-muted">8 listings</span>
+          </div>
+        </div>
+
+        <!-- Housing -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer transition-colors" aria-label="Edit category"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer transition-colors" aria-label="Delete category"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Housing</h3>
+          <p class="text-xs text-muted mt-0.5">Vivienda / Cuartos</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">housing</span>
+            <span class="text-xs text-muted">14 listings</span>
+          </div>
+        </div>
+
+        <!-- Beauty -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Beauty</h3>
+          <p class="text-xs text-muted mt-0.5">Belleza / Estética</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">beauty</span>
+            <span class="text-xs text-muted">11 listings</span>
+          </div>
+        </div>
+
+        <!-- Car Repair -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Car Repair</h3>
+          <p class="text-xs text-muted mt-0.5">Mecánicos / Talleres</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">car-repair</span>
+            <span class="text-xs text-muted">6 listings</span>
+          </div>
+        </div>
+
+        <!-- Rides to Airport -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Rides to Airport</h3>
+          <p class="text-xs text-muted mt-0.5">Transporte al Aeropuerto</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">rides-airport</span>
+            <span class="text-xs text-muted">5 listings</span>
+          </div>
+        </div>
+
+        <!-- Jobs -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Jobs</h3>
+          <p class="text-xs text-muted mt-0.5">Empleos / Trabajos</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">jobs</span>
+            <span class="text-xs text-muted">9 listings</span>
+          </div>
+        </div>
+
+        <!-- Food -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">Food</h3>
+          <p class="text-xs text-muted mt-0.5">Comida / Restaurantes</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">food</span>
+            <span class="text-xs text-muted">7 listings</span>
+          </div>
+        </div>
+
+        <!-- General Services -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-soft p-5 group hover:shadow-lift transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-brand-100 cursor-pointer" aria-label="Edit"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-red-100 cursor-pointer" aria-label="Delete"><svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </div>
+          <h3 class="text-sm font-600 text-ink">General Services</h3>
+          <p class="text-xs text-muted mt-0.5">Servicios Generales</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-muted font-mono">general-services</span>
+            <span class="text-xs text-muted">4 listings</span>
+          </div>
+        </div>
+
+        <!-- Add New (placeholder card) -->
+        <button onclick="document.getElementById('category-modal').classList.remove('hidden')" class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-5 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-brand-300 hover:bg-brand-50 transition-colors group min-h-[160px]">
+          <div class="w-12 h-12 bg-white border border-slate-200 group-hover:border-brand-300 rounded-xl flex items-center justify-center transition-colors">
+            <svg class="w-6 h-6 text-muted group-hover:text-brand-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <p class="text-sm font-500 text-muted group-hover:text-brand-600 transition-colors">Add Category</p>
+        </button>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- CREATE / EDIT CATEGORY MODAL -->
+  <div id="category-modal" class="hidden fixed inset-0 bg-ink/50 z-50 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="bg-white rounded-2xl shadow-float p-6 w-full max-w-md mx-4">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modal-title" class="text-base font-600 text-ink">New Category</h3>
+        <button onclick="document.getElementById('category-modal').classList.add('hidden')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 cursor-pointer transition-colors" aria-label="Close modal">
+          <svg class="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-500 text-ink mb-1.5 block" for="cat-name-en">Name (English) *</label>
+            <input id="cat-name-en" type="text" placeholder="e.g. Car Rental" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+          <div>
+            <label class="text-xs font-500 text-ink mb-1.5 block" for="cat-name-es">Name (Spanish) *</label>
+            <input id="cat-name-es" type="text" placeholder="e.g. Renta de Autos" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-500 text-ink mb-1.5 block" for="cat-slug">Slug (auto-generated) *</label>
+          <input id="cat-slug" type="text" placeholder="car-rental" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50" />
+          <p class="text-[11px] text-muted mt-1">Used in URLs. Lowercase, hyphens only. Auto-filled from English name.</p>
+        </div>
+        <div>
+          <label class="text-xs font-500 text-ink mb-1.5 block" for="cat-icon">Icon (Heroicon name)</label>
+          <input id="cat-icon" type="text" placeholder="e.g. truck, home, scissors" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          <p class="text-[11px] text-muted mt-1">Optional. Use heroicons.com name (outline style).</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button onclick="document.getElementById('category-modal').classList.add('hidden')" class="flex-1 border border-slate-200 text-sm font-500 text-muted py-2.5 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+          Cancel
+        </button>
+        <button class="flex-1 bg-brand-600 text-white text-sm font-600 py-2.5 rounded-lg cursor-pointer hover:bg-brand-700 transition-colors">
+          Create Category
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

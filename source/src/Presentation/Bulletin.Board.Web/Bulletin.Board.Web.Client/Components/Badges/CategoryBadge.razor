@@ -1,0 +1,54 @@
+@*
+    CategoryBadge — Badge de categoría del listing.
+    Muestra emoji + label con fondo de color por categoría y un borde de contraste
+    (tono más oscuro de la misma familia cromática). Si el slug no está mapeado,
+    cae a un fondo gris claro con borde gris más oscuro.
+
+    Parámetros:
+      Slug   (string)  — slug de la categoría (ej. "car-rental"). Determina color/emoji.
+      Label  (string?) — etiqueta a mostrar. Si es null o vacío, se humaniza el slug.
+*@
+
+<span class="category-badge @CssClass" role="img" aria-label="@AriaLabel">
+    <span class="category-badge__emoji" aria-hidden="true">@Emoji</span>
+    <span>@DisplayLabel</span>
+</span>
+
+@code {
+    [Parameter] public string  Slug  { get; set; } = "";
+    [Parameter] public string? Label { get; set; }
+
+    private string CssClass => $"category-badge--{(IsKnown(Slug) ? Slug : "other")}";
+
+    private string Emoji => Slug switch
+    {
+        "car-rental" => "🚗",
+        "housing"    => "🏠",
+        "jobs"       => "💼",
+        "beauty"     => "💇",
+        "mechanic"   => "🔧",
+        "transport"  => "🚌",
+        _            => "🏷️"
+    };
+
+    private string DisplayLabel => !string.IsNullOrWhiteSpace(Label)
+        ? Label!
+        : Humanize(Slug);
+
+    private string AriaLabel => $"Category: {DisplayLabel}";
+
+    private static bool IsKnown(string slug) => slug is
+        "car-rental" or "housing" or "jobs" or "beauty" or "mechanic" or "transport";
+
+    private static string Humanize(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return "";
+        var parts = slug.Split('-');
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Length == 0) continue;
+            parts[i] = char.ToUpperInvariant(parts[i][0]) + parts[i][1..];
+        }
+        return string.Join(' ', parts);
+    }
+}

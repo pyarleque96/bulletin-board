@@ -1,0 +1,984 @@
+<!--
+  PROPUESTA 05 v3 — "Dark General"
+  Filosofía: OLED Dark / Liquid Glass, pero balanceado. VIP existe pero no domina.
+  Acento primario azul brand (#F97316) para CTAs y highlights generales.
+  Naranja (#F97316) reservado a la tarjeta VIP y al cierre de la timeline.
+  Categorías, listings mixtos por tier, trust signals con peso igual.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bulletin Dells — The trusted local directory of Wisconsin Dells</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: {
+      brand: { 300:'#fbbf24',400:'#F59E0B',500:'#F97316',600:'#ea580c',700:'#c2410c' },
+      accent: { DEFAULT:'#F97316',400:'#fb923c',600:'#ea580c' },
+      gold: { 400:'#F59E0B',500:'#d97706' },
+      ink: '#1E293B', muted: '#94A3B8',
+      bg: '#050B14', bg2: '#0B1422'
+    },
+    fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'], serif: ['"DM Serif Display"','Georgia','serif'] }
+  } } };
+</script>
+<style>
+  html, body { background:#050B14; }
+  body { font-family:'DM Sans', sans-serif; color:#E2E8F0; -webkit-font-smoothing:antialiased; }
+
+  .page-ambient { position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .page-ambient::before, .page-ambient::after { content:''; position:absolute; border-radius:50%; filter: blur(120px); }
+  .page-ambient::before {
+    width:520px; height:520px; top:-100px; right:-120px;
+    background: radial-gradient(circle, rgba(249,115,22,0.30) 0%, transparent 70%);
+  }
+  .page-ambient::after {
+    width:600px; height:600px; bottom:-200px; left:-160px;
+    background: radial-gradient(circle, rgba(59,130,246,0.28) 0%, transparent 70%);
+  }
+  .grid-lines {
+    position:absolute; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:72px 72px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 30%, transparent 80%);
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .glass-strong {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+
+  .bezel-outer { padding:6px; border-radius:2rem; background:rgba(255,255,255,0.05); box-shadow: 0 0 0 1px rgba(255,255,255,0.08); }
+  .bezel-inner { border-radius:calc(2rem - 6px); background:rgba(11,20,34,0.85); border:1px solid rgba(255,255,255,0.04); }
+
+  .eyebrow { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:9999px; font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; }
+
+  .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:0.5; transform:scale(1.4);} }
+  .fade-up { opacity:0; transform:translateY(16px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .fade-up { opacity:1; transform:none; } .pulse-dot { animation:none; } }
+
+  .hover-lift { transition: transform 300ms cubic-bezier(0.32,0.72,0,1), box-shadow 300ms ease; }
+  .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 24px 56px -16px rgba(249,115,22,0.25); }
+
+  /* Brand gradient — celeste → lavender → orange (animated slow drift in "Dells") */
+  .brand-text {
+    background: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+    background-size: 180% 180%;
+    background-position: 0% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: brandShift 9s ease-in-out infinite;
+  }
+  @keyframes brandShift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .brand-text { animation: none; background-position: 0% 50%; }
+  }
+  /* VIP gold gradient — only used on the VIP tier card and step 5 */
+  .vip-text {
+    background: linear-gradient(135deg, #F59E0B 0%, #F97316 50%, #FB923C 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .vip-ring {
+    box-shadow:
+      0 0 0 1px rgba(249,115,22,0.30),
+      0 0 0 4px rgba(249,115,22,0.06),
+      0 24px 64px -16px rgba(249,115,22,0.25);
+  }
+
+  .wa-btn {
+    background: rgba(74,222,128,0.18);
+    color: #86efac;
+    border: 1px solid rgba(74,222,128,0.40);
+    transition: transform 240ms cubic-bezier(0.32,0.72,0,1), background-color 240ms ease, border-color 240ms ease, box-shadow 280ms ease, color 240ms ease;
+  }
+  .wa-btn svg { transition: transform 240ms cubic-bezier(0.32,0.72,0,1); }
+  .wa-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(74,222,128,0.32);
+    border-color: rgba(74,222,128,0.70);
+    color: #bbf7d0;
+    box-shadow:
+      0 16px 36px -10px rgba(74,222,128,0.55),
+      0 0 32px rgba(74,222,128,0.40),
+      inset 0 0 0 1px rgba(187,247,208,0.20);
+  }
+  .wa-btn:hover svg { transform: scale(1.08); }
+  .wa-btn:active { transform: translateY(0) scale(0.98); }
+
+  /* ─── Reusable button hover effects ─── */
+  .btn-primary, .btn-vip, .btn-ghost {
+    position: relative;
+    overflow: hidden;
+    transition: transform 260ms cubic-bezier(0.32,0.72,0,1), box-shadow 260ms ease, filter 260ms ease;
+    will-change: transform;
+  }
+  .btn-primary::after, .btn-vip::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 700ms cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+  }
+  .btn-primary:hover, .btn-vip:hover { transform: translateY(-2px); filter: brightness(1.08) saturate(1.10); }
+  .btn-primary:hover::after, .btn-vip:hover::after { transform: translateX(120%); }
+  .btn-primary:active, .btn-vip:active { transform: translateY(0) scale(0.98); }
+
+  .btn-primary { background: linear-gradient(135deg, #F59E0B, #F97316); box-shadow: 0 0 0 1px rgba(249,115,22,0.30), 0 10px 28px -8px rgba(249,115,22,0.45); }
+  .btn-primary:hover { box-shadow: 0 0 0 1px rgba(249,115,22,0.55), 0 20px 44px -10px rgba(249,115,22,0.70), 0 0 40px rgba(249,115,22,0.40); }
+
+  .btn-vip { background: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%); color:#fff; box-shadow: 0 0 0 1px rgba(249,115,22,0.40), 0 10px 28px -8px rgba(249,115,22,0.50), 0 0 22px -4px rgba(96,165,250,0.30); }
+  .btn-vip:hover { box-shadow: 0 0 0 1px rgba(249,115,22,0.60), 0 20px 44px -10px rgba(249,115,22,0.75), 0 0 40px rgba(249,115,22,0.45), 0 0 36px -8px rgba(96,165,250,0.45); }
+
+  .btn-ghost { transition: transform 260ms cubic-bezier(0.32,0.72,0,1), background-color 260ms ease, border-color 260ms ease, box-shadow 260ms ease; }
+  .btn-ghost:hover { transform: translateY(-2px); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.20); box-shadow: 0 14px 32px -10px rgba(255,255,255,0.10); }
+  .btn-ghost:active { transform: translateY(0) scale(0.98); }
+
+  /* Arrow nudge inside primary buttons */
+  .btn-primary .btn-arrow, .btn-vip .btn-arrow { transition: transform 260ms cubic-bezier(0.32,0.72,0,1); }
+  .btn-primary:hover .btn-arrow, .btn-vip:hover .btn-arrow { transform: translateX(3px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary, .btn-vip, .btn-ghost, .wa-btn { transition: none; }
+    .btn-primary::after, .btn-vip::after { display: none; }
+    .btn-primary:hover, .btn-vip:hover, .btn-ghost:hover, .wa-btn:hover { transform: none; }
+  }
+
+  .star { color:#F59E0B; }
+
+  .skip-link { position:absolute; top:-40px; left:8px; background:#F97316; color:#fff; padding:8px 12px; z-index:100; border-radius:6px; transition: top 200ms; }
+  .skip-link:focus { top:8px; }
+
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 3rem;
+    animation: scroll 50s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+  /* ─── Top picks carousel ─── */
+  .carousel-viewport { overflow: hidden; padding: 30px 0; mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%); }
+  .carousel-track { display: flex; gap: 0.75rem; width: max-content; animation: carouselScroll 36s linear infinite; }
+  @keyframes carouselScroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+  .carousel-viewport:hover .carousel-track { animation-play-state: paused; }
+  .carousel-card { flex-shrink: 0; width: 220px; }
+  /* VIP card — short orange resplandor that gently palpitates on its own; hover intensifies smoothly */
+  .vip-card {
+    border: 1px solid rgba(249,115,22,0.40);
+    animation: vipCardPulse 3.2s cubic-bezier(0.45,0,0.55,1) infinite;
+    transition:
+      transform 340ms cubic-bezier(0.32,0.72,0,1),
+      box-shadow 480ms cubic-bezier(0.32,0.72,0,1),
+      border-color 340ms ease;
+  }
+  @keyframes vipCardPulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.18),
+        0 6px 16px -8px rgba(249,115,22,0.42),
+        0 0 12px -4px rgba(249,115,22,0.22);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.32),
+        0 8px 22px -8px rgba(249,115,22,0.60),
+        0 0 18px -4px rgba(249,115,22,0.38);
+    }
+  }
+  .vip-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(249,115,22,0.58);
+    animation-play-state: paused;
+    box-shadow:
+      0 0 0 1px rgba(249,115,22,0.38),
+      0 10px 26px -8px rgba(249,115,22,0.72),
+      0 0 22px -4px rgba(249,115,22,0.46);
+  }
+  /* Non-VIP carousel cards — white glow on hover (no orange) */
+  .carousel-card.hover-lift:hover {
+    box-shadow:
+      0 14px 34px -12px rgba(255,255,255,0.22),
+      0 0 22px -4px rgba(255,255,255,0.16);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vip-card { animation: none; }
+    .vip-card, .vip-card:hover { transition: none; transform: none; }
+  }
+  @media (min-width: 640px) { .carousel-card { width: 240px; } .carousel-track { gap: 1rem; } }
+  @media (prefers-reduced-motion: reduce) {
+    .carousel-track { animation: none; }
+    .carousel-viewport { overflow-x: auto; mask-image: none; }
+  }
+
+  /* ─── Animated Timeline (Become a provider) ─── */
+  .timeline { position: relative; max-width: 64rem; margin: 0 auto; }
+  .timeline-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; position: relative; z-index: 2; }
+  .timeline-rail { position: absolute; top: 28px; left: 10%; right: 10%; height: 4px; z-index: 1; pointer-events: none; }
+  .timeline-rail-bg, .timeline-rail-fg {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background-image: radial-gradient(circle, currentColor 1.5px, transparent 2px);
+    background-size: 14px 100%;
+    background-repeat: repeat-x;
+    background-position: left center;
+  }
+  .timeline-rail-bg { color: rgba(255,255,255,0.18); width: 100%; }
+  .timeline-rail-fg { color: #F97316; width: 0; filter: drop-shadow(0 0 6px rgba(249,115,22,0.55)); }
+  [data-timeline].run .timeline-rail-fg { animation: railDraw 4500ms cubic-bezier(0.65,0,0.35,1) forwards; }
+  @keyframes railDraw { from { width: 0; } to { width: 100%; } }
+
+  .timeline-step { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .timeline-node {
+    width: 56px; height: 56px; border-radius: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    color: rgba(255,255,255,0.40);
+    font-weight: 900; font-size: 1.25rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  [data-timeline].run .timeline-step .timeline-node { animation: nodeGlow 700ms cubic-bezier(0.16,1,0.3,1) forwards; animation-delay: var(--delay); }
+  @keyframes nodeGlow {
+    0%   { transform: scale(0.92); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.40); box-shadow: none; border-color: rgba(255,255,255,0.08); }
+    60%  { transform: scale(1.10); }
+    100% { transform: scale(1); background: rgba(249,115,22,0.14); color: #fbbf24; box-shadow: 0 0 0 1px rgba(249,115,22,0.40), 0 0 24px rgba(249,115,22,0.40); border-color: rgba(249,115,22,0.35); }
+  }
+  [data-timeline].run .timeline-step.verified .timeline-node { animation-name: nodeGlowVerified; }
+  @keyframes nodeGlowVerified {
+    0%   { transform: scale(0.92); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.40); box-shadow: none; border-color: rgba(255,255,255,0.08); }
+    60%  { transform: scale(1.10); }
+    100% { transform: scale(1); background: rgba(16,185,129,0.14); color: #6ee7b7; box-shadow: 0 0 0 1px rgba(16,185,129,0.40), 0 0 24px rgba(16,185,129,0.40); border-color: rgba(16,185,129,0.35); }
+  }
+  [data-timeline].run .timeline-step.vip .timeline-node {
+    animation:
+      nodeGlowVip 700ms cubic-bezier(0.16,1,0.3,1) var(--delay) forwards,
+      vipFlow 5s ease-in-out calc(var(--delay) + 900ms) infinite,
+      vipBreath 3.6s cubic-bezier(0.45,0,0.55,1) calc(var(--delay) + 900ms) infinite;
+  }
+  @keyframes nodeGlowVip {
+    0%   { transform: scale(0.92); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.40); box-shadow: none; border-color: rgba(255,255,255,0.08); }
+    60%  { transform: scale(1.18); }
+    100% {
+      transform: scale(1);
+      background-image: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%);
+      background-size: 250% 250%;
+      background-position: 0% 0%;
+      color: #fff;
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.60),
+        0 0 22px rgba(249,115,22,0.65),
+        0 0 44px rgba(255,255,255,0.30),
+        0 0 72px -8px rgba(255,255,255,0.20);
+      border-color: rgba(249,115,22,0.55);
+    }
+  }
+  /* Gradient flows diagonally from top-left corner to bottom-right and back (5s) */
+  @keyframes vipFlow {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 100% 100%; }
+  }
+  /* Halo breathes — hot orange core fading to bright white outer ring (3.6s) */
+  @keyframes vipBreath {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px rgba(249,115,22,0.60),
+        0 0 22px rgba(249,115,22,0.65),
+        0 0 44px rgba(255,255,255,0.30),
+        0 0 72px -8px rgba(255,255,255,0.20);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.85),
+        0 0 38px rgba(249,115,22,0.95),
+        0 0 68px rgba(255,255,255,0.55),
+        0 0 104px -8px rgba(255,255,255,0.38);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-timeline].run .timeline-step.vip .timeline-node { animation: nodeGlowVip 700ms cubic-bezier(0.16,1,0.3,1) var(--delay) forwards; }
+  }
+  .timeline-label h3 { font-size: 0.875rem; font-weight: 700; color: #fff; }
+  .timeline-label p { font-size: 0.75rem; color: rgba(255,255,255,0.45); font-style: italic; margin-top: 2px; }
+
+  @media (max-width: 768px) {
+    .timeline-steps { grid-template-columns: 1fr; gap: 2rem; }
+    .timeline-rail { top: 28px; bottom: 28px; left: 50%; right: auto; width: 4px; height: auto; transform: translateX(-50%); }
+    .timeline-rail-bg, .timeline-rail-fg {
+      background-size: 100% 14px;
+      background-repeat: repeat-y;
+      background-position: center top;
+      width: 100%; height: 100%;
+    }
+    .timeline-rail-bg { height: 100%; }
+    .timeline-rail-fg { width: 100%; height: 0; }
+    [data-timeline].run .timeline-rail-fg { animation: railDrawVert 4500ms cubic-bezier(0.65,0,0.35,1) forwards; }
+    @keyframes railDrawVert { from { height: 0; } to { height: 100%; } }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-timeline].run .timeline-rail-fg { animation: none; width: 100%; }
+    [data-timeline].run .timeline-step .timeline-node { animation: none; background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(249,115,22,0.35); }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content / Saltar al contenido</a>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<header class="fixed top-3 inset-x-3 sm:inset-x-6 z-40">
+  <nav class="max-w-7xl mx-auto rounded-full glass-strong px-4 sm:px-6 py-2.5 flex items-center justify-between">
+    <a href="/" class="flex items-center" aria-label="Bulletin Dells home">
+      <img src="../../../../../assets/images/brand/bulletin-dells-white-logo.png" alt="Bulletin Dells" class="h-8 w-auto" />
+    </a>
+    <ul class="hidden md:flex items-center gap-1 text-sm">
+      <li><a href="/browse" class="px-3 py-2 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors">Browse</a></li>
+      <li><a href="#categories" class="px-3 py-2 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors">Categories</a></li>
+      <li><a href="/how-it-works" class="px-3 py-2 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors">How it works</a></li>
+      <li><a href="#tiers" class="px-3 py-2 rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors">For providers</a></li>
+    </ul>
+    <div class="flex items-center gap-2">
+      <button class="text-xs font-semibold text-white/60 hover:text-white px-2.5 py-1.5 rounded-full">EN · ES</button>
+      <a href="/account/register" class="btn-primary text-xs font-black px-3.5 py-2 rounded-full text-white">Get started</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="min-h-[100dvh] flex flex-col items-center justify-center pt-28 pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-headline">
+  <div class="page-ambient" aria-hidden="true"></div>
+  <div class="grid-lines" aria-hidden="true"></div>
+
+  <div class="relative z-10 max-w-3xl w-full mx-auto flex flex-col items-center text-center space-y-8">
+    <div class="fade-up">
+      <span class="eyebrow glass text-white/85">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 pulse-dot"></span>
+        Wisconsin Dells, WI
+      </span>
+    </div>
+
+    <div class="fade-up space-y-4" style="transition-delay:80ms;">
+      <h1 id="hero-headline" class="text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[1.0] tracking-tighter">
+        <span class="block">Discover what</span>
+        <span class="block"><span class="relative inline-block brand-text">Dells<svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 120 10" preserveAspectRatio="none" style="height:6px;"><path d="M2,6 Q30,1 60,6 Q90,11 118,5" stroke="#F97316" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span> has to offer.</span>
+      </h1>
+      <p class="text-lg md:text-xl text-white/65 leading-relaxed max-w-[58ch] mx-auto">
+        All the services you need — airport rides, jobs, housing, beauty, mechanics, and more. Local providers verified by our team. Contact them directly.
+      </p>
+    </div>
+
+    <div class="fade-up w-full max-w-3xl" style="transition-delay:160ms;" role="search">
+      <div class="bezel-outer">
+        <div class="bezel-inner">
+          <div class="flex items-center">
+            <div class="pl-5 pr-2"><svg class="w-5 h-5 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <label for="hero-search" class="sr-only">Search</label>
+            <input id="hero-search" type="search" placeholder="Search housing, mechanics, rides…" class="flex-1 py-4 px-3 text-white placeholder-white/40 bg-transparent border-none outline-none text-base"/>
+            <button class="btn-primary m-2 inline-flex items-center gap-2.5 text-white text-sm font-bold pl-4 pr-2 py-2.5 rounded-full">
+              Search
+              <span class="btn-arrow w-7 h-7 rounded-full bg-black/15 flex items-center justify-center"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up flex flex-wrap items-center justify-center gap-2" style="transition-delay:240ms;">
+      <span class="text-white/40 text-xs self-center">Quick browse:</span>
+      <a href="/browse?category=housing" class="px-3.5 py-1.5 rounded-full glass text-white/85 text-xs font-medium hover:bg-white/15 transition-colors">Housing</a>
+      <a href="/browse?category=car-rental" class="px-3.5 py-1.5 rounded-full glass text-white/85 text-xs font-medium hover:bg-white/15 transition-colors">Car Rentals</a>
+      <a href="/browse?category=airport-rides" class="px-3.5 py-1.5 rounded-full glass text-white/85 text-xs font-medium hover:bg-white/15 transition-colors">Airport Rides</a>
+      <a href="/browse?category=mechanics" class="px-3.5 py-1.5 rounded-full glass text-white/85 text-xs font-medium hover:bg-white/15 transition-colors">Mechanics</a>
+      <a href="/browse?category=jobs" class="px-3.5 py-1.5 rounded-full glass text-white/85 text-xs font-medium hover:bg-white/15 transition-colors">Jobs</a>
+    </div>
+
+    <div class="fade-up flex flex-wrap items-center justify-center gap-x-6 gap-y-3 pt-2" style="transition-delay:320ms;" aria-label="Trust indicators">
+
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        <span class="text-white/70 text-xs">GM-approved listings</span>
+      </div>
+
+      <span class="hidden sm:block w-px h-3 bg-white/20" aria-hidden="true"></span>
+
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-sky-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span class="text-white/70 text-xs">Verified providers</span>
+      </div>
+
+      <span class="hidden sm:block w-px h-3 bg-white/20" aria-hidden="true"></span>
+
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/>
+        </svg>
+        <span class="text-white/70 text-xs">Instant WhatsApp</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ MARQUEE — neutral brand strip ═══════════════════ -->
+<section class="py-10 px-0 border-y border-white/5" aria-hidden="true">
+  <div class="marquee">
+    <div class="marquee-track text-white/30">
+      <span class="font-serif italic text-2xl">Bilingual EN · ES</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">Trusted local directory</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">Wisconsin Dells</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">EST. 2024</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">Bilingual EN · ES</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">Trusted local directory</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">Wisconsin Dells</span><span class="text-white/15">·</span>
+      <span class="font-serif italic text-2xl">EST. 2024</span><span class="text-white/15">·</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CATEGORIES — dark bento ═══════════════════ -->
+<section id="categories" class="py-24 px-4" aria-labelledby="cat-heading">
+  <div class="max-w-7xl mx-auto">
+    <div class="fade-up flex flex-col sm:flex-row items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="eyebrow glass text-white/85">Browse · Explora</span>
+        <h2 id="cat-heading" class="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-3">Eight categories. All curated.</h2>
+        <p class="text-white/45 text-sm italic mt-2">Ocho categorías, todas curadas.</p>
+      </div>
+      <a href="/browse" class="text-sm font-bold text-white hover:text-brand-400 transition-colors inline-flex items-center gap-1">View all <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 fade-up">
+      <a href="/browse?category=housing" class="hover-lift relative col-span-2 md:row-span-2 rounded-3xl overflow-hidden bg-white/5 min-h-[280px] group">
+        <img src="../../../../../assets/images/categories/housing-hero.jpg" alt="Modern lakeside house" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+        <div class="absolute bottom-5 left-5 right-5">
+          <span class="eyebrow glass text-white/85 mb-3">142 listings</span>
+          <h3 class="text-white text-3xl font-black tracking-tight">Housing</h3>
+          <p class="text-white/65 text-sm mt-1">Vivienda · Lakeside, downtown, J1 lodging</p>
+        </div>
+      </a>
+      <a href="/browse?category=car-rental" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/car-rental-hero.jpg" alt="White SUV rental car" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Car Rentals</h3><p class="text-white/55 text-xs">38</p></div>
+      </a>
+      <a href="/browse?category=airport-rides" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/airport-rides-hero.jpg" alt="Airport ground transportation" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Airport Rides</h3><p class="text-white/55 text-xs">24</p></div>
+      </a>
+      <a href="/browse?category=mechanics" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/mechanics-hero.jpg" alt="Auto mechanic at work" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Mechanics</h3><p class="text-white/55 text-xs">19</p></div>
+      </a>
+      <a href="/browse?category=beauty-wellness" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/beauty-wellness-hero.jpg" alt="Hair salon styling" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Beauty &amp; Wellness</h3><p class="text-white/55 text-xs">31</p></div>
+      </a>
+      <a href="/browse?category=entertainment" class="hover-lift relative col-span-2 rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/entertainment-hero.jpg" alt="Live concert performance" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-xl font-bold">Entertainment</h3><p class="text-white/55 text-xs">27 listings</p></div>
+      </a>
+      <a href="/browse?category=jobs" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/jobs-hero.jpg" alt="Job interview handshake" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Jobs</h3><p class="text-white/55 text-xs">53</p></div>
+      </a>
+      <a href="/browse?category=restaurants" class="hover-lift relative rounded-3xl overflow-hidden bg-white/5 min-h-[135px] group">
+        <img src="../../../../../assets/images/categories/restaurants-hero.jpg" alt="Restaurant interior" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
+        <div class="absolute bottom-3 left-3"><h3 class="text-white text-lg font-bold">Restaurants</h3><p class="text-white/55 text-xs">17</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FEATURED LISTINGS — compact row ═══════════════════ -->
+<section id="top" class="py-16 relative" aria-labelledby="feat-heading">
+  <div class="max-w-7xl mx-auto px-4 relative z-10">
+    <div class="fade-up flex items-end justify-between gap-4 mb-6">
+      <div>
+        <span class="eyebrow glass text-white/85">Top picks · Destacados</span>
+        <h2 id="feat-heading" class="text-2xl sm:text-3xl font-black text-white tracking-tight mt-2">Real providers. Real reviews.</h2>
+      </div>
+      <a href="/browse" class="text-xs sm:text-sm font-bold text-white/70 hover:text-white transition-colors inline-flex items-center gap-1 pb-1">View all <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+    </div>
+  </div>
+
+  <!-- Auto-rotating carousel — full screen width so fade hits viewport edges -->
+  <div class="carousel-viewport fade-up" aria-label="Featured providers carousel">
+    <div class="carousel-track">
+
+      <!-- Card template repeats — 1st pass + duplicate for seamless loop -->
+
+      <!-- ─── 1 · VIP (Housing - Marisol R.) ─── -->
+      <a href="#" class="vip-card carousel-card group glass rounded-2xl overflow-hidden block relative">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/housing/housing-listing-01.jpg" alt="Lakeside cabin" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-white text-[10px] font-black uppercase tracking-wider" style="background: linear-gradient(135deg,#F59E0B,#F97316); box-shadow: 0 4px 14px rgba(249,115,22,0.55);">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            VIP
+          </span>
+          <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm" title="Verified" aria-label="Verified provider"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm" title="GM Approved" aria-label="GM Approved"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          </div>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=5" alt="Marisol R." class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Housing · Marisol R.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Lakeside cabin</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.9</span><span class="text-white/55">(127)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 2 · Verified (Mechanics - Tony) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/mechanics/mechanics-listing-01.jpg" alt="Tony's Garage" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm" title="Verified" aria-label="Verified provider"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=12" alt="Tony" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Mechanics · Tony A.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Tony's Garage</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.8</span><span class="text-white/55">(86)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 3 · GM Approved (Car Rentals - Alex) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/car-rental/car-rental-listing-01.jpg" alt="Northwoods Rentals" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm" title="GM Approved" aria-label="GM Approved"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=33" alt="Alex" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Car Rentals · Alex K.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Northwoods Rentals</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.9</span><span class="text-white/55">(212)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 4 · Verified (Airport Rides - Carlos) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/airport-rides/airport-rides-listing-01.jpg" alt="Dells Express" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm" title="Verified" aria-label="Verified provider"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=53" alt="Carlos" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Airport · Carlos M.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Dells Express</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.95</span><span class="text-white/55">(341)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 5 · GM Approved (Beauty - Bella) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/beauty-wellness/beauty-wellness-listing-01.jpg" alt="Bella Studio" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm" title="GM Approved" aria-label="GM Approved"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=47" alt="Bella" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Beauty · Bella R.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Bella Studio</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.7</span><span class="text-white/55">(58)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ═══ DUPLICATE SET (for seamless infinite scroll) — aria-hidden so screen readers don't repeat ═══ -->
+
+      <!-- ─── 1 · VIP (dup) ─── -->
+      <a href="#" class="vip-card carousel-card group glass rounded-2xl overflow-hidden block relative" aria-hidden="true" tabindex="-1">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/housing/housing-listing-01.jpg" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-white text-[10px] font-black uppercase tracking-wider" style="background: linear-gradient(135deg,#F59E0B,#F97316); box-shadow: 0 4px 14px rgba(249,115,22,0.55);">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            VIP
+          </span>
+          <div class="absolute top-2 right-2 flex flex-col gap-1 items-end">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          </div>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=5" alt="" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Housing · Marisol R.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Lakeside cabin</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.9</span><span class="text-white/55">(127)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 2 · Verified (dup) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative" aria-hidden="true" tabindex="-1">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/mechanics/mechanics-listing-01.jpg" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=12" alt="" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Mechanics · Tony A.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Tony's Garage</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.8</span><span class="text-white/55">(86)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 3 · GM Approved (dup) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative" aria-hidden="true" tabindex="-1">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/car-rental/car-rental-listing-01.jpg" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=33" alt="" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Car Rentals · Alex K.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Northwoods Rentals</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.9</span><span class="text-white/55">(212)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 4 · Verified (dup) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative" aria-hidden="true" tabindex="-1">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/airport-rides/airport-rides-listing-01.jpg" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-emerald-200 bg-emerald-500/40 border border-emerald-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=53" alt="" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Airport · Carlos M.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Dells Express</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.95</span><span class="text-white/55">(341)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- ─── 5 · GM Approved (dup) ─── -->
+      <a href="#" class="carousel-card hover-lift group glass rounded-2xl overflow-hidden block relative" aria-hidden="true" tabindex="-1">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="../../../../../assets/images/listings/beauty-wellness/beauty-wellness-listing-01.jpg" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+          <span class="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-full text-sky-200 bg-sky-500/40 border border-sky-400/60 backdrop-blur-sm"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+          <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end gap-2.5">
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-white/40 flex-shrink-0 shadow-xl ring-2 ring-bg/60"><img src="https://i.pravatar.cc/80?img=47" alt="" class="w-full h-full object-cover" loading="lazy"/></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-bold uppercase tracking-wider text-white/55">Beauty · Bella R.</p>
+              <h3 class="font-black text-white text-sm leading-tight truncate">Bella Studio</h3>
+              <div class="flex items-center gap-1 text-[10px] mt-0.5"><span class="star text-xs">★</span><span class="font-bold text-white">4.7</span><span class="text-white/55">(58)</span></div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TRUST PROMISE — glass cards ═══════════════════ -->
+<section class="py-24 px-4 relative" aria-labelledby="trust-heading">
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow glass text-white/85">Why Bulletin Dells · Por qué</span>
+      <h2 id="trust-heading" class="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-4">Trust isn't a feature. It's the product.</h2>
+      <p class="text-white/55 italic text-base mt-2">La confianza no es una característica. Es el producto.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 fade-up">
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.25);"><svg class="w-5 h-5 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <h3 class="font-bold text-white text-sm mb-1.5">GM manually approves every listing</h3>
+        <p class="text-white/55 text-xs leading-relaxed">Cada anuncio revisado por el GM antes de ser público.</p>
+      </div>
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.25);"><svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3 class="font-bold text-white text-sm mb-1.5">Verification — phone + ID + social</h3>
+        <p class="text-white/55 text-xs leading-relaxed">Proveedores verificados con teléfono, ID y redes sociales.</p>
+      </div>
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.25);"><svg class="w-5 h-5 text-gold-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <h3 class="font-bold text-white text-sm mb-1.5">Real ratings, real contacts</h3>
+        <p class="text-white/55 text-xs leading-relaxed">Solo califica quien contactó. Cada reseña revisada.</p>
+      </div>
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.25);">
+          <svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+        <h3 class="font-bold text-white text-sm mb-1.5">WhatsApp contact + email audit</h3>
+        <p class="text-white/55 text-xs leading-relaxed">Tú hablas por WhatsApp; el GM recibe email de cada interacción.</p>
+      </div>
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.25);"><svg class="w-5 h-5 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6"/></svg></div>
+        <h3 class="font-bold text-white text-sm mb-1.5">GM curates every photo</h3>
+        <p class="text-white/55 text-xs leading-relaxed">El proveedor sube, el GM elige. Galerías sin sorpresas.</p>
+      </div>
+      <div class="glass rounded-2xl p-6 hover-lift">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.25);"><svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3 class="font-bold text-white text-sm mb-1.5">Legal waiver on first contact</h3>
+        <p class="text-white/55 text-xs leading-relaxed">Bulletin Dells conecta — no presta el servicio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TIERS COMPARISON — balanced ═══════════════════ -->
+<section id="tiers" class="py-24 px-4 relative" aria-labelledby="tiers-heading">
+  <div class="page-ambient opacity-40" aria-hidden="true"></div>
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow glass text-white/85">For providers · Para proveedores</span>
+      <h2 id="tiers-heading" class="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-4">Three ways to be listed.</h2>
+      <p class="text-white/55 text-base mt-3 max-w-[54ch] mx-auto italic">Tres formas de estar en el directorio.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up items-stretch">
+      <!-- Regular -->
+      <div class="glass rounded-[2rem] p-7 hover-lift flex flex-col h-full">
+        <span class="eyebrow bg-white/8 text-white/65 border border-white/10 self-start">Regular</span>
+        <h3 class="font-black text-white text-2xl tracking-tight mt-4">Get listed</h3>
+        <p class="text-white/45 text-sm mt-1 mb-6">Free · Gratis</p>
+        <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> Listing in your category</li>
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> 3 GM-approved photos</li>
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> WhatsApp contact</li>
+          <li class="flex gap-2 text-white/25"><span>✗</span> Verified badge</li>
+          <li class="flex gap-2 text-white/25"><span>✗</span> Priority placement</li>
+        </ul>
+        <a href="/account/register" class="btn-ghost block text-center w-full text-sm font-bold py-3 rounded-full bg-white/10 text-white mt-auto border border-white/10">Start free</a>
+      </div>
+
+      <!-- Verified -->
+      <div class="glass rounded-[2rem] p-7 hover-lift flex flex-col h-full" style="border:1px solid rgba(16,185,129,0.25);">
+        <span class="eyebrow bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 self-start">✓ Verified</span>
+        <h3 class="font-black text-white text-2xl tracking-tight mt-4">Build trust</h3>
+        <p class="text-white/45 text-sm mt-1 mb-6">Free after verification</p>
+        <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> Everything in Regular</li>
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> Phone + ID + social verified</li>
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> Verified badge</li>
+          <li class="flex gap-2"><span class="text-emerald-400 font-bold">✓</span> Up to 8 photos</li>
+          <li class="flex gap-2 text-white/25"><span>✗</span> VIP top placement</li>
+        </ul>
+        <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors border border-emerald-500/30 mt-auto">Get verified</a>
+      </div>
+
+      <!-- VIP -->
+      <div class="glass rounded-[2rem] p-7 hover-lift flex flex-col h-full" style="border:1px solid rgba(249,115,22,0.25);">
+        <span class="eyebrow text-accent bg-orange-500/15 border border-orange-500/25 self-start">★ VIP</span>
+        <h3 class="font-black text-white text-2xl tracking-tight mt-4">Be at the top</h3>
+        <p class="text-white/45 text-sm mt-1 mb-6">Custom pricing · Precio a medida</p>
+        <ul class="space-y-3 text-sm text-white/65 mb-6 flex-grow">
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Everything in Verified</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> VIP badge + top placement</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Unlimited photos (GM-curated)</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Analytics dashboard</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Eligible for GM Featured</li>
+        </ul>
+        <a href="/account/register" class="btn-vip block text-center w-full text-sm font-black py-3 rounded-full mt-auto">Apply for VIP</a>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-white/40 mt-8 max-w-[60ch] mx-auto italic">VIP requires Verified status first. Hierarchy and GM Featured are at the GM's sole discretion — never for sale.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ BECOME A PROVIDER — animated timeline ═══════════════════ -->
+<section class="py-24 px-4 relative" aria-labelledby="prov-heading">
+  <div class="page-ambient opacity-30" aria-hidden="true"></div>
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow glass text-white/85">Onboarding · Cómo unirse</span>
+      <h2 id="prov-heading" class="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-4">Five steps. One real review.</h2>
+      <p class="text-white/55 italic text-base mt-2">Cinco pasos. Una revisión real.</p>
+    </div>
+
+    <div class="timeline fade-up" data-timeline aria-label="Provider onboarding path">
+      <div class="timeline-rail" aria-hidden="true">
+        <div class="timeline-rail-bg"></div>
+        <div class="timeline-rail-fg"></div>
+      </div>
+      <div class="timeline-steps">
+        <div class="timeline-step" style="--delay:0ms">
+          <div class="timeline-node"><span>1</span></div>
+          <div class="timeline-label"><h3>Sign up</h3><p>Crea cuenta gratis</p></div>
+        </div>
+        <div class="timeline-step" style="--delay:900ms">
+          <div class="timeline-node"><span>2</span></div>
+          <div class="timeline-label"><h3>Upload photos</h3><p>GM elige las públicas</p></div>
+        </div>
+        <div class="timeline-step verified" style="--delay:1800ms">
+          <div class="timeline-node"><span>3</span></div>
+          <div class="timeline-label"><h3>Verify identity</h3><p>Phone + ID + social</p></div>
+        </div>
+        <div class="timeline-step" style="--delay:2700ms">
+          <div class="timeline-node"><span>4</span></div>
+          <div class="timeline-label"><h3>GM review</h3><p>Aprueba o pide cambios</p></div>
+        </div>
+        <div class="timeline-step vip" style="--delay:3600ms">
+          <div class="timeline-node"><span>5</span></div>
+          <div class="timeline-label"><h3>Apply for VIP</h3><p>Top placement (optional)</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 fade-up">
+      <a href="/account/register" class="btn-primary inline-flex items-center gap-3 text-white font-bold px-7 py-3.5 rounded-full text-sm">
+        Start as a provider
+        <span class="btn-arrow w-8 h-8 rounded-full bg-black/[0.18] flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+      </a>
+      <a href="/how-it-works" class="inline-flex items-center gap-2 text-white/55 hover:text-white text-sm font-medium transition-colors">Read the guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FINAL CTA + FOOTER ═══════════════════ -->
+<section class="py-20 px-4 text-center fade-up">
+  <h2 class="text-4xl sm:text-5xl font-black text-white tracking-tighter">Local services. Local trust.</h2>
+  <p class="text-white/55 text-base mt-3 max-w-[44ch] mx-auto italic">Servicios locales. Confianza local.</p>
+  <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+    <a href="/browse" class="btn-primary inline-flex items-center gap-3 text-white font-bold px-7 py-3.5 rounded-full text-sm">
+      Browse all providers
+      <span class="btn-arrow w-8 h-8 rounded-full bg-black/[0.18] flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+    </a>
+    <a href="/account/register" class="btn-ghost inline-flex items-center gap-2 text-white text-sm font-bold px-6 py-3.5 rounded-full glass">List your business</a>
+  </div>
+</section>
+
+<footer class="py-16 px-4 border-t border-white/5" role="contentinfo">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <div class="mb-4">
+        <img src="../../../../../assets/images/brand/bulletin-dells-white-logo.png" alt="Bulletin Dells" class="h-9 w-auto" />
+      </div>
+      <p class="text-white/45 text-xs leading-relaxed max-w-[36ch]">The trusted local directory of Wisconsin Dells. The platform connects — we do not provide the services.</p>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Browse</h4>
+      <ul class="space-y-2 text-xs text-white/45">
+        <li><a href="/browse" class="hover:text-white">All providers</a></li>
+        <li><a href="/browse?tier=Verified" class="hover:text-white">✓ Verified</a></li>
+        <li><a href="/browse?tier=VIP" class="hover:text-white">★ VIP</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Providers</h4>
+      <ul class="space-y-2 text-xs text-white/45">
+        <li><a href="/account/register" class="hover:text-white">List your business</a></li>
+        <li><a href="#tiers" class="hover:text-white">Compare tiers</a></li>
+        <li><a href="/how-it-works" class="hover:text-white">How it works</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Legal</h4>
+      <ul class="space-y-2 text-xs text-white/45">
+        <li><a href="#" class="hover:text-white">Terms · Términos</a></li>
+        <li><a href="#" class="hover:text-white">Privacy</a></li>
+        <li><a href="#" class="hover:text-white">Waiver</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto pt-8 mt-12 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-[11px] text-white/30">© 2026 Bulletin Dells · Wisconsin Dells, WI · A platform — not a service provider.</p>
+    <div class="flex items-center gap-2 text-[11px]">
+      <button class="px-2.5 py-1 rounded-full bg-white/10 text-white font-bold">EN</button>
+      <button class="px-2.5 py-1 rounded-full text-white/55 hover:text-white">ES</button>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+      document.querySelectorAll('[data-timeline]').forEach(el => el.classList.add('run'));
+      return;
+    }
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+
+    const tlIo = new IntersectionObserver(function (entries) {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('run'); tlIo.unobserve(entry.target); } });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('[data-timeline]').forEach(el => tlIo.observe(el));
+  })();
+</script>
+</body>
+</html>

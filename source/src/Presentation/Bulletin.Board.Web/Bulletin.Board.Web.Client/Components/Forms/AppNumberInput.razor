@@ -1,0 +1,95 @@
+@namespace Bulletin.Board.Web.Client.Components.Forms
+
+@*
+    AppNumberInput — input numérico reutilizable.
+    Soporta: min, max, step, two-way binding, icono leading, estado de error.
+    Estilo base: auth-input.
+*@
+
+<div class="@WrapperClass">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@InputId" class="@LabelClass">
+            @Label
+        </label>
+    }
+
+    <div class="relative">
+
+        @if (LeadingIcon is not null)
+        {
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none"
+                  aria-hidden="true">
+                @LeadingIcon
+            </span>
+        }
+
+        <input id="@InputId"
+               type="number"
+               value="@Value"
+               @oninput="OnInput"
+               min="@Min"
+               max="@Max"
+               step="@Step"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               required="@Required"
+               class="@InputClass"
+               aria-describedby="@(HasError ? $"{InputId}-error" : null)"
+               aria-invalid="@HasError" />
+
+    </div>
+
+    @if (HasError && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <p id="@($"{InputId}-error")"
+           class="text-red-400 text-xs mt-1"
+           role="alert">
+            @ErrorMessage
+        </p>
+    }
+
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InputId { get; set; } = "";
+
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+
+    [Parameter] public decimal? Value { get; set; }
+    [Parameter] public EventCallback<decimal?> ValueChanged { get; set; }
+
+    [Parameter] public decimal? Min { get; set; }
+    [Parameter] public decimal? Max { get; set; }
+    [Parameter] public decimal Step { get; set; } = 1;
+
+    [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public string ErrorMessage { get; set; } = "";
+
+    [Parameter] public RenderFragment? LeadingIcon { get; set; }
+
+    [Parameter] public string WrapperClass { get; set; } = "";
+    [Parameter] public string CssClass { get; set; } = "";
+
+    [Parameter] public string LabelClass { get; set; } =
+        "block text-white/60 text-xs font-medium mb-1.5 uppercase tracking-wider";
+
+    private string PaddingLeft => LeadingIcon is not null ? "pl-10" : "pl-4";
+
+    private string InputClass =>
+        $"auth-input {PaddingLeft} pr-4{(HasError ? " error" : "")} {CssClass}".Trim();
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (decimal.TryParse(raw, System.Globalization.NumberStyles.Any,
+                             System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+            await ValueChanged.InvokeAsync(parsed);
+        else
+            await ValueChanged.InvokeAsync(null);
+    }
+}

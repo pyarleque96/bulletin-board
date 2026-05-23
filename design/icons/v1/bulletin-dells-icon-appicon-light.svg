@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Dells">
+  <title>Bulletin Dells – App Icon (Light)</title>
+  <rect width="512" height="512" rx="0" ry="0" fill="#FFFFFF"/>
+  <!-- Safe area: 52px (~10%) -->
+  <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-8">
+    <text x="80" y="240" font-size="220" fill="#101A3D">B</text>
+    <text x="232" y="420" font-size="220" fill="#F39323">D</text>
+  </g>
+  <!-- Pin / dot accent (bulletin board metaphor) -->
+  <circle cx="200" cy="92" r="22" fill="#F39323"/>
+</svg>

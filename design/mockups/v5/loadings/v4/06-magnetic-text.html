@@ -1,0 +1,229 @@
+<!--
+  SCREEN: 06 — Magnetic Text (Kerning Breathe)
+  SPEC: Fullscreen, light theme, white bg
+  CUANDO: Transición entre páginas / estado indeterminate largo
+  CONCEPTO: Las letras de "LOADING" con kerning muy amplio que se contraen/separan
+            suavemente como si fueran atraídas por un imán central — translateX
+            desincronizado por letra. Efecto de respiración lenta y pesada.
+            No es bounce, es atracción gravitacional suave.
+  HIGH-END: Kinetic Typography — cada letra es un elemento independiente
+            con cubic-bezier personalizado. Sin neon, sin color extraño,
+            solo peso visual de tipografía y movimiento.
+  BLAZOR HOOK: Mostrar durante operaciones largas (búsqueda, filtrado pesado).
+               Desmontar con clase exit tras NavigationManager.LocationChanged.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulletin Dells — Loading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── ANTI-FOUC ── */
+    html { background: #ffffff; }
+    body {
+      opacity: 0;
+      animation: body-fade-in 0.45s cubic-bezier(0.32,0.72,0,1) 0.08s forwards;
+    }
+    @keyframes body-fade-in { to { opacity: 1; } }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Main content intro ── */
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem;
+      opacity: 0;
+      animation: content-in 0.7s cubic-bezier(0.32,0.72,0,1) 0.25s forwards;
+    }
+    @keyframes content-in { to { opacity: 1; } }
+
+    /* ── Letter row ── */
+    .letter-row {
+      display: flex;
+      align-items: baseline;
+      /* Wide initial kerning */
+      gap: 0.18em;
+    }
+
+    /* Each letter span */
+    .mag-letter {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1;
+      display: inline-block;
+      will-change: transform, opacity;
+      color: #1e293b;
+    }
+    /* Orange accent letters */
+    .mag-letter.accent {
+      color: #fd8c1b;
+    }
+
+    /* Magnetic breathe animation — each letter has unique offset */
+    /* Using CSS custom properties for stagger */
+    .mag-letter { --mag-sign: 1; }
+
+    .letter-L1 { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate; --mag-dist: -14px; }
+    .letter-O  { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.18s infinite alternate; --mag-dist: -8px; }
+    .letter-A  { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.32s infinite alternate; --mag-dist: -5px; }
+    .letter-D  { animation: mag-breathe-scale 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.48s infinite alternate; }
+    .letter-I  { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.64s infinite alternate; --mag-dist: 5px; }
+    .letter-N  { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.80s infinite alternate; --mag-dist: 8px; }
+    .letter-G  { animation: mag-breathe 3.2s cubic-bezier(0.45,0.05,0.55,0.95) 0.96s infinite alternate; --mag-dist: 14px; }
+
+    @keyframes mag-breathe {
+      from { transform: translateX(0); opacity: 0.85; }
+      to   { transform: translateX(var(--mag-dist)); opacity: 1; }
+    }
+    @keyframes mag-breathe-scale {
+      from { transform: scale(1); opacity: 0.9; }
+      to   { transform: scale(1.06); opacity: 1; }
+    }
+
+    /* ── Sub row — bilingual subtle ── */
+    .sub-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: sub-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.7s forwards;
+    }
+    @keyframes sub-in { to { opacity: 1; } }
+
+    .sub-text {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .sub-sep {
+      width: 1px;
+      height: 0.875rem;
+      background: #e2e8f0;
+    }
+
+    /* Blinking cursor dot — orange */
+    .blink-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #fd8c1b;
+      animation: blink 1.1s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.2; }
+    }
+
+    /* ── BD wordmark — bottom ── */
+    .wordmark-bottom {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: sub-in 0.5s cubic-bezier(0.32,0.72,0,1) 1s forwards;
+    }
+    .wm-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      background: #fd8c1b;
+    }
+    .wm-name {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    /* ── Hairline decoration above text ── */
+    .hair-line {
+      width: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e2e8f0 50%, transparent);
+      animation: hair-expand 0.8s cubic-bezier(0.32,0.72,0,1) 0.5s forwards;
+    }
+    @keyframes hair-expand {
+      to { width: 120px; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" role="status" aria-live="polite" aria-label="Loading · Cargando Bulletin Dells">
+
+    <div class="content">
+
+      <!-- Hairline -->
+      <div class="hair-line" aria-hidden="true"></div>
+
+      <!-- Magnetic letter row -->
+      <div class="letter-row" aria-label="Loading">
+        <span class="mag-letter letter-L1" aria-hidden="true">L</span>
+        <span class="mag-letter letter-O accent" aria-hidden="true">O</span>
+        <span class="mag-letter letter-A" aria-hidden="true">A</span>
+        <span class="mag-letter letter-D accent" aria-hidden="true">D</span>
+        <span class="mag-letter letter-I" aria-hidden="true">I</span>
+        <span class="mag-letter letter-N" aria-hidden="true">N</span>
+        <span class="mag-letter letter-G accent" aria-hidden="true">G</span>
+      </div>
+
+      <!-- Hairline -->
+      <div class="hair-line" aria-hidden="true"></div>
+
+      <!-- Sub row -->
+      <div class="sub-row">
+        <span class="sub-text">Bulletin Dells</span>
+        <div class="sub-sep" aria-hidden="true"></div>
+        <span class="sub-text">Wisconsin</span>
+        <div class="sub-sep" aria-hidden="true"></div>
+        <div class="blink-dot" aria-hidden="true"></div>
+      </div>
+
+    </div>
+
+    <!-- Bottom wordmark -->
+    <div class="wordmark-bottom" aria-hidden="true">
+      <div class="wm-dot"></div>
+      <span class="wm-name">Bulletin Dells · Local Marketplace</span>
+      <div class="wm-dot"></div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – Stencil Favicon (Light ink, dark surface)</title>
+  <rect width="32" height="32" rx="3" ry="3" fill="#0F172A"/>
+  <rect x="0" y="8" width="2" height="14" fill="#F39323"/>
+  <text x="9" y="22" text-anchor="middle"
+        font-family="'DM Sans',system-ui,sans-serif"
+        font-size="16" font-weight="900" fill="#FFFFFF" letter-spacing="-2">B</text>
+  <text x="19" y="22" text-anchor="middle"
+        font-family="'DM Sans',system-ui,sans-serif"
+        font-size="16" font-weight="900" fill="#F39323" letter-spacing="-2">B</text>
+  <rect x="4" y="27" width="24" height="1" fill="#FFFFFF" opacity="0.25"/>
+</svg>

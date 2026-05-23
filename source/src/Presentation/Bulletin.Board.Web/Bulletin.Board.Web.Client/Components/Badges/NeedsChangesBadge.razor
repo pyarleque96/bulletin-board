@@ -1,0 +1,43 @@
+@*
+    NeedsChangesBadge — Badge de estado "Needs Changes".
+    Naranja — manage/index.html .status-needschange:
+      background:#ffedd5; color:#c2410c.
+    SVG: triángulo de alerta — path "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+      stroke-width="2.5"
+
+    Parámetros:
+      IconOnly (bool, default false) — muestra solo el icono sin texto, padding circular.
+*@
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<span class="@WrapperClass" aria-label="@_localizer["Badge_NeedsChanges"]" role="img">
+    @* Triangle-alert SVG — canónico manage/index.html listing 4 .status-needschange *@
+    <svg class="@IconClass"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2.5"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    </svg>
+    @if (!IconOnly)
+    {
+        <span>@_localizer["Badge_NeedsChanges"]</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// Cuando es true, muestra solo el icono (padding circular, sin texto).
+    /// </summary>
+    [Parameter] public bool IconOnly { get; set; } = false;
+
+    private string WrapperClass => IconOnly
+        ? "needschanges-badge needschanges-badge--icon-only inline-flex items-center justify-center"
+        : "needschanges-badge inline-flex items-center gap-1";
+
+    private string IconClass => IconOnly ? "w-3.5 h-3.5" : "w-2.5 h-2.5";
+}

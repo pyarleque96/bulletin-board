@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Transportation (VIP tier)
+  =====================================================
+  Mockup: transportation-manage-vip.html
+  Tier: VIP — multiple routes, dynamic pricing, occupancy metric
+  Active tab: Routes & Pricing
+  =====================================================
+  BINDING:
+    - RouteDto[] (unlimited)
+    - DynamicPricingDto: TimeBands[{ StartHour, EndHour, Multiplier }]
+    - OccupancyDto: Last30dPct, AvgRevenuePerRide
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Transportation VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'}, ink:'#0f172a', muted:'#64748b' },
+      fontFamily: { sans:['"DM Sans"','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 4px 24px -4px rgba(30,41,59,0.08)' },
+    } } };
+  </script>
+  <style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab[aria-selected="true"]::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:#f97316; border-radius:2px 2px 0 0; }
+    .manage-tab { position:relative; transition:color 0.15s ease; }
+    .card-hover { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s; }
+    .card-hover:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.14); }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div>
+    </div>
+  </div>
+</nav>
+
+<div class="bg-white border-b border-slate-100 px-4 py-5 pt-24">
+  <div class="max-w-6xl mx-auto">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="/account/listings" class="hover:text-ink transition-colors duration-150 cursor-pointer">My Listings</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Northwoods Shuttle Co.</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-ink tracking-tight">Manage</h1>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+          <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold inline-flex items-center gap-1">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            VIP
+          </span>
+          <span class="text-[10px] uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Verified Driver+</span>
+        </div>
+        <p class="text-sm text-muted mt-1">Northwoods Shuttle Co. · Transportation / Airport Rides</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-0 mt-5 border-b border-slate-100 -mb-px overflow-x-auto" role="tablist" aria-label="Manage sections">
+      <button type="button" role="tab" aria-selected="true" class="manage-tab px-4 py-2.5 text-sm text-ink cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm10 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/><path d="M3 17V6a2 2 0 0 1 2-2h11l5 5v8"/></svg>
+          Routes &amp; Pricing <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">4</span>
+        </span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Bookings <span class="ml-1 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">9</span></span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Inquiries <span class="ml-1 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">14</span></span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="manage-tab px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-0 outline-none rounded-t-lg whitespace-nowrap">
+        <span class="flex items-center gap-1.5">Schedule</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <!-- VIP metric cards -->
+  <section aria-label="Performance metrics" class="mb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+      <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Occupancy · 30d</p>
+      <p class="text-2xl font-bold text-ink mt-1 tabular-nums">71.4%</p>
+      <p class="text-[11px] text-green-700 mt-1 inline-flex items-center gap-1">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        +6.2% vs prev
+      </p>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+      <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Avg revenue / ride</p>
+      <p class="text-2xl font-bold text-ink mt-1 tabular-nums">$218.40</p>
+      <p class="text-[11px] text-muted mt-1">incl. surge</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+      <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Active routes</p>
+      <p class="text-2xl font-bold text-ink mt-1 tabular-nums">4</p>
+      <p class="text-[11px] text-muted mt-1">ORD, MKE, MSN, Dane Co.</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4">
+      <p class="text-[11px] uppercase tracking-wider text-muted font-medium">Rides · 30d</p>
+      <p class="text-2xl font-bold text-ink mt-1 tabular-nums">127</p>
+      <p class="text-[11px] text-muted mt-1">2 cancelled</p>
+    </div>
+  </section>
+
+  <!-- Sub-header with Add CTA -->
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Routes &amp; pricing<!-- ES: Rutas y precios --></h2>
+      <p class="text-sm text-muted mt-0.5">Unlimited active routes · Dynamic pricing engine enabled.</p>
+    </div>
+    <button type="button" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add route<!-- ES: Agregar ruta -->
+    </button>
+  </div>
+
+  <!-- Dynamic pricing widget (VIP) -->
+  <div class="mb-6 bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+    <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <h3 class="text-sm font-semibold text-ink inline-flex items-center gap-2">
+          Dynamic pricing<!-- ES: Precios dinámicos -->
+          <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+        </h3>
+        <p class="text-xs text-muted mt-0.5">Multipliers applied to base fare during specific time bands.</p>
+      </div>
+      <label class="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" checked class="sr-only peer" aria-label="Enable dynamic pricing" />
+        <span class="w-10 h-6 bg-slate-200 peer-checked:bg-brand-500 rounded-full relative transition-colors duration-200">
+          <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-4"></span>
+        </span>
+        <span class="text-xs font-medium text-ink">Enabled</span>
+      </label>
+    </div>
+    <!-- Time bands -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="rounded-2xl border border-slate-100 px-4 py-3">
+        <p class="text-[11px] uppercase tracking-wider text-muted">Early (4–7am)</p>
+        <p class="text-lg font-bold text-ink mt-0.5 tabular-nums">×1.25</p>
+      </div>
+      <div class="rounded-2xl border border-slate-100 px-4 py-3">
+        <p class="text-[11px] uppercase tracking-wider text-muted">Day (7am–6pm)</p>
+        <p class="text-lg font-bold text-ink mt-0.5 tabular-nums">×1.00</p>
+      </div>
+      <div class="rounded-2xl border border-slate-100 px-4 py-3">
+        <p class="text-[11px] uppercase tracking-wider text-muted">Evening (6–10pm)</p>
+        <p class="text-lg font-bold text-ink mt-0.5 tabular-nums">×1.15</p>
+      </div>
+      <div class="rounded-2xl border border-slate-100 px-4 py-3">
+        <p class="text-[11px] uppercase tracking-wider text-muted">Night (10pm–4am)</p>
+        <p class="text-lg font-bold text-ink mt-0.5 tabular-nums">×1.40</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Routes list -->
+  <ul class="space-y-4" role="list" aria-label="Routes">
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink inline-flex items-center gap-2">
+              <span>ORD Chicago O'Hare</span>
+              <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <span>Wisconsin Dells</span>
+            </h3>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+            <span class="text-[10px] uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Top route</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">15-passenger van · 3h 10min · 62 rides last 30d</p>
+          <p class="text-ink text-sm mt-1 font-medium">Base $185 <span class="text-muted text-xs">· Surge tonight ×1.40</span></p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Edit</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium transition-colors duration-150 cursor-pointer">Deactivate</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink inline-flex items-center gap-2">
+              <span>MKE Milwaukee Mitchell</span>
+              <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <span>Wisconsin Dells</span>
+            </h3>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">8-passenger SUV · 2h 5min · 34 rides last 30d</p>
+          <p class="text-ink text-sm mt-1 font-medium">Base $125</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Deactivate</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink inline-flex items-center gap-2">
+              <span>MSN Dane County Regional</span>
+              <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <span>Wisconsin Dells</span>
+            </h3>
+            <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">active</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">Sedan · 1h 5min · 21 rides last 30d</p>
+          <p class="text-ink text-sm mt-1 font-medium">Base $78</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Edit</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-ink text-xs font-medium cursor-pointer">Deactivate</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 card-hover opacity-90">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-semibold text-ink inline-flex items-center gap-2">
+              <span>Kalahari Resort</span>
+              <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <span>Downtown Dells</span>
+            </h3>
+            <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">paused</span>
+          </div>
+          <p class="text-muted text-xs mt-0.5">Sedan · 10min shuttle · Seasonal</p>
+          <p class="text-ink text-sm mt-1 font-medium">Base $22</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-medium cursor-pointer">Reactivate</button>
+          <button type="button" class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium cursor-pointer">Delete</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Unlimited routes, dynamic pricing, occupancy analytics
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Vehicles (Regular)
+  =====================================================
+  Vehicles tab: lista de vehículos del proveedor. Regular: máx 5.
+  BINDING:
+    - VehicleDto[]: { Id, Make, Model, Year, Plate, DailyRateCents, Status: 'Available'|'Booked'|'Maintenance', PhotoCount, PrimaryPhotoUrl }
+  Regla #5: editar un vehículo regresa el LISTING (no solo el vehículo) a Pending.
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Car Rental · Vehicles — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>
+    .manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}
+    .manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}
+    .manage-tab{position:relative}
+    [data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Dells Auto Rentals</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Auto Rentals · Compact Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm cursor-pointer">Vehicles <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">5</span></span>
+      <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink">Fleet<!-- ES: Flota --></h2>
+      <p class="text-sm text-muted mt-0.5">5 of 5 vehicle slots used · Upgrade to VIP for unlimited.</p>
+    </div>
+    <button data-tooltip="Editing your fleet returns this listing to Pending review" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add vehicle
+    </button>
+  </div>
+
+  <!-- Vehicle list -->
+  <ul class="grid grid-cols-1 md:grid-cols-2 gap-4" role="list">
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden flex flex-col sm:flex-row">
+      <div class="w-full sm:w-48 h-40 sm:h-auto bg-slate-200 flex-shrink-0"><img src="https://picsum.photos/seed/honda-crv/600/450" alt="2023 Honda CR-V EX" class="w-full h-full object-cover"/></div>
+      <div class="p-4 flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap mb-1">
+          <h3 class="font-semibold text-ink truncate">2023 Honda CR-V EX</h3>
+          <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Available</span>
+        </div>
+        <p class="text-[11px] text-muted">Plate · ABC-9472 · 4 doors · 5 seats · Automatic</p>
+        <p class="text-lg font-bold text-ink mt-2 tabular-nums">$78<span class="text-sm text-muted font-medium">/day</span></p>
+        <div class="flex items-center gap-2 mt-3 flex-wrap">
+          <a href="/manage/{id}/vehicles/{vid}/photos" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink no-underline">8 photos</a>
+          <button data-tooltip="Editing returns this listing to Pending" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink">Edit</button>
+          <button class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink">Mark in maintenance</button>
+          <button class="text-[11px] text-red-600 hover:underline ml-auto" data-tooltip="Returns this listing to Pending">Remove</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden flex flex-col sm:flex-row">
+      <div class="w-full sm:w-48 h-40 sm:h-auto bg-slate-200"><img src="https://picsum.photos/seed/toyota-corolla/600/450" alt="2022 Toyota Corolla" class="w-full h-full object-cover"/></div>
+      <div class="p-4 flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap mb-1">
+          <h3 class="font-semibold text-ink truncate">2022 Toyota Corolla LE</h3>
+          <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Booked · until Jun 4</span>
+        </div>
+        <p class="text-[11px] text-muted">Plate · WI-2098 · 4 doors · 5 seats · Automatic</p>
+        <p class="text-lg font-bold text-ink mt-2 tabular-nums">$59<span class="text-sm text-muted font-medium">/day</span></p>
+        <div class="flex items-center gap-2 mt-3 flex-wrap">
+          <a href="#" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink no-underline">6 photos</a>
+          <button data-tooltip="Editing returns this listing to Pending" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink">Edit</button>
+          <button class="text-[11px] text-red-600 hover:underline ml-auto">Remove</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-3xl border border-slate-100 shadow-soft overflow-hidden flex flex-col sm:flex-row">
+      <div class="w-full sm:w-48 h-40 sm:h-auto bg-slate-200"><img src="https://picsum.photos/seed/ford-escape/600/450" alt="2024 Ford Escape" class="w-full h-full object-cover"/></div>
+      <div class="p-4 flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap mb-1">
+          <h3 class="font-semibold text-ink truncate">2024 Ford Escape Hybrid</h3>
+          <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">In maintenance</span>
+        </div>
+        <p class="text-[11px] text-muted">Plate · WI-7841 · 4 doors · 5 seats · Hybrid</p>
+        <p class="text-lg font-bold text-ink mt-2 tabular-nums">$92<span class="text-sm text-muted font-medium">/day</span></p>
+        <div class="flex items-center gap-2 mt-3 flex-wrap">
+          <button class="text-[11px] px-2.5 py-1 rounded-lg bg-green-100 hover:bg-green-200 text-green-800">Mark available</button>
+          <button data-tooltip="Editing returns this listing to Pending" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink">Edit</button>
+        </div>
+      </div>
+    </li>
+
+    <!-- Empty slots -->
+    <li class="rounded-3xl border-2 border-dashed border-slate-200 p-8 flex flex-col items-center justify-center text-center min-h-[180px]">
+      <svg class="w-8 h-8 text-slate-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <p class="text-sm text-muted">Add another vehicle</p>
+      <p class="text-[11px] text-muted mt-0.5">2 slots remaining</p>
+    </li>
+  </ul>
+
+  <!-- VIP upsell -->
+  <div class="mt-8 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-4 flex items-center gap-3 flex-wrap">
+    <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full text-white font-semibold" style="background:linear-gradient(135deg,#fb923c,#f97316);">VIP</span>
+    <p class="text-sm text-ink flex-1 min-w-[200px]">Unlimited vehicles, real-time availability sync and bulk pricing tools.</p>
+    <a href="/account/upgrade" class="px-3 py-1.5 rounded-xl bg-ink text-white text-xs font-semibold no-underline">Upgrade to VIP</a>
+  </div>
+</main>
+</body>
+</html>

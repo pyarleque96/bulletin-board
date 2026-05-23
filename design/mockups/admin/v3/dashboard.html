@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells Admin — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8f' },
+            accent: { DEFAULT:'#F97316', 500:'#f97316', 600:'#ea580c' },
+            surface: '#f8fafc',
+            ink: '#0f172a',
+            muted: '#64748b',
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.06)',
+            lift: '0 4px 16px rgba(0,0,0,0.10)',
+          },
+          transitionTimingFunction: {
+            'expo': 'cubic-bezier(0.32,0.72,0,1)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .sidebar-expanded { width: 256px; }
+    .sidebar-collapsed { width: 64px; }
+    #sidebar { transition: width 300ms cubic-bezier(0.32,0.72,0,1); overflow: hidden; }
+    #sidebar .label { transition: opacity 200ms cubic-bezier(0.32,0.72,0,1), width 200ms; }
+    #sidebar.collapsed .label { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; }
+    #sidebar.collapsed { width: 64px; }
+    #sidebar:not(.collapsed) { width: 256px; }
+    .nav-item { transition: background-color 150ms ease, color 150ms ease; }
+    .nav-item:hover { background: rgba(255,255,255,0.08); }
+    .nav-item.active { background: rgba(59,130,246,0.25); color: #93c5fd; }
+    tr { transition: background-color 150ms ease; }
+    tr:hover td { background-color: rgba(248,250,252,0.8); }
+    .kpi-card { transition: box-shadow 300ms cubic-bezier(0.32,0.72,0,1), transform 300ms cubic-bezier(0.32,0.72,0,1); }
+    .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); transform: translateY(-1px); }
+    button:active { transform: scale(0.98); }
+  </style>
+</head>
+<body class="bg-surface text-ink min-h-[100dvh] flex">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar-expanded flex flex-col min-h-[100dvh] bg-ink text-slate-300 flex-shrink-0">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+      <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center flex-shrink-0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="label font-semibold text-white text-sm tracking-tight">Bulletin Dells</span>
+    </div>
+
+    <!-- Toggle -->
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')" class="flex items-center gap-3 px-4 py-3 nav-item cursor-pointer border-b border-white/10 w-full text-left">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>
+      </svg>
+      <span class="label text-xs font-medium">Collapse</span>
+    </button>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-4 space-y-0.5 px-2">
+      <a href="dashboard.html" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="label text-sm">Dashboard</span>
+      </a>
+      <a href="listings-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span class="label text-sm">Listings Queue</span>
+      </a>
+      <a href="providers.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="label text-sm">Providers</span>
+      </a>
+      <a href="categories.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
+        <span class="label text-sm">Categories</span>
+      </a>
+      <a href="reviews-queue.html" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="label text-sm">Reviews Queue</span>
+      </a>
+    </nav>
+
+    <!-- User -->
+    <div class="p-3 border-t border-white/10">
+      <div class="flex items-center gap-3 px-2 py-2">
+        <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">GM</div>
+        <div class="label min-w-0">
+          <p class="text-xs font-medium text-white truncate">General Manager</p>
+          <p class="text-[11px] text-slate-400 truncate">admin@bulletindells.com</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-auto min-h-[100dvh]">
+    <!-- Top bar -->
+    <header class="bg-white border-b border-slate-200/60 px-6 py-4 flex items-center justify-between sticky top-0 z-10" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+      <div>
+        <h1 class="text-lg font-semibold text-ink">Dashboard</h1>
+        <p class="text-xs text-muted">Sunday, May 4, 2026</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          System Operational
+        </span>
+      </div>
+    </header>
+
+    <div class="p-6 space-y-6">
+
+      <!-- KPI Grid — Double-Bezel style -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 1 -->
+        <div class="kpi-card ring-1 ring-black/5 p-1.5 rounded-2xl bg-amber-50/60 cursor-default">
+          <div class="rounded-[calc(1rem-0.375rem)] bg-white p-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.06)">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><circle cx="12" cy="14" r="3"/></svg>
+              </div>
+              <span class="text-[10px] font-medium text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full">Urgent</span>
+            </div>
+            <p class="text-3xl font-mono font-semibold text-ink tracking-tight">14</p>
+            <p class="text-xs text-muted mt-1">Listings Pending</p>
+            <p class="text-[11px] text-yellow-600 mt-2 font-medium">+3 since yesterday</p>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="kpi-card ring-1 ring-black/5 p-1.5 rounded-2xl bg-blue-50/60 cursor-default">
+          <div class="rounded-[calc(1rem-0.375rem)] bg-white p-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.06)">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <span class="text-[10px] font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">This week</span>
+            </div>
+            <p class="text-3xl font-mono font-semibold text-ink tracking-tight">7</p>
+            <p class="text-xs text-muted mt-1">New Providers</p>
+            <p class="text-[11px] text-blue-600 mt-2 font-medium">2 awaiting verification</p>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="kpi-card ring-1 ring-black/5 p-1.5 rounded-2xl bg-green-50/60 cursor-default">
+          <div class="rounded-[calc(1rem-0.375rem)] bg-white p-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.06)">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.63 19.79 19.79 0 012.12 1 2 2 0 014.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              </div>
+              <span class="text-[10px] font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Today</span>
+            </div>
+            <p class="text-3xl font-mono font-semibold text-ink tracking-tight">31</p>
+            <p class="text-xs text-muted mt-1">Contact Events</p>
+            <p class="text-[11px] text-green-600 mt-2 font-medium">via WhatsApp</p>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="kpi-card ring-1 ring-black/5 p-1.5 rounded-2xl bg-purple-50/60 cursor-default">
+          <div class="rounded-[calc(1rem-0.375rem)] bg-white p-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(0,0,0,0.06)">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6d28d9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="text-[10px] font-medium text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">Pending</span>
+            </div>
+            <p class="text-3xl font-mono font-semibold text-ink tracking-tight">9</p>
+            <p class="text-xs text-muted mt-1">Reviews to Approve</p>
+            <p class="text-[11px] text-purple-600 mt-2 font-medium">Oldest: 3 days ago</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-xl border border-slate-200/60 p-4" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+        <h2 class="text-sm font-semibold text-ink mb-3">Quick Actions</h2>
+        <div class="flex flex-wrap gap-2">
+          <a href="listings-queue.html" class="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-brand-700 active:scale-[0.98]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Review 14 Pending
+          </a>
+          <a href="reviews-queue.html" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 text-ink text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-slate-50 active:scale-[0.98]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Approve Reviews
+          </a>
+          <a href="providers.html" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 text-ink text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-slate-50 active:scale-[0.98]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Manage Providers
+          </a>
+          <a href="categories.html" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 text-ink text-sm font-medium rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-slate-50 active:scale-[0.98]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
+            Categories
+          </a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Recent Activity Table -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200/60 overflow-hidden" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-ink">Recent Activity</h2>
+            <a href="listings-queue.html" class="text-xs text-brand-600 font-medium hover:underline">View all</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-left">
+                <th class="px-5 py-3 text-xs font-semibold text-muted uppercase tracking-wide">Listing</th>
+                <th class="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wide">Provider</th>
+                <th class="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wide">Action</th>
+                <th class="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wide">Time</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">Airport Shuttle — Premium</td>
+                <td class="px-4 py-3.5 text-muted">Ramirez Transport</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Approved</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">2m ago</td>
+              </tr>
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">3BR Apartment — Summer</td>
+                <td class="px-4 py-3.5 text-muted">Dells Housing Co.</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Pending</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">18m ago</td>
+              </tr>
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">Nail Art Studio — Full Set</td>
+                <td class="px-4 py-3.5 text-muted">Linh's Beauty Bar</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Needs Changes</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">1h ago</td>
+              </tr>
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">Toyota Camry — Weekend</td>
+                <td class="px-4 py-3.5 text-muted">Dells Auto Rentals</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">Rejected</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">2h ago</td>
+              </tr>
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">Lawn Mowing — Weekly</td>
+                <td class="px-4 py-3.5 text-muted">Garcia Landscaping</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Approved</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">3h ago</td>
+              </tr>
+              <tr class="cursor-default">
+                <td class="px-5 py-3.5 font-medium text-ink">AC Repair — Emergency</td>
+                <td class="px-4 py-3.5 text-muted">Midwest HVAC Pros</td>
+                <td class="px-4 py-3.5"><span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Pending</span></td>
+                <td class="px-4 py-3.5 text-muted text-xs font-mono">4h ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sidebar Stats -->
+        <div class="space-y-4">
+          <!-- Tier Distribution -->
+          <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+            <h3 class="text-sm font-semibold text-ink mb-4">Provider Tiers</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-amber-700">VIP</span>
+                  <span class="font-mono text-ink">8</span>
+                </div>
+                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-amber-400 rounded-full" style="width: 18%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-blue-700">Verified</span>
+                  <span class="font-mono text-ink">23</span>
+                </div>
+                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-400 rounded-full" style="width: 51%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-600">Regular</span>
+                  <span class="font-mono text-ink">14</span>
+                </div>
+                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-slate-300 rounded-full" style="width: 31%"></div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-muted mt-4">45 total providers</p>
+          </div>
+
+          <!-- Categories Quick View -->
+          <div class="bg-white rounded-xl border border-slate-200/60 p-5" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06)">
+            <h3 class="text-sm font-semibold text-ink mb-3">Top Categories</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-muted">Housing</span>
+                <span class="font-mono font-medium text-ink">17 listings</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-muted">Car Rental</span>
+                <span class="font-mono font-medium text-ink">11 listings</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-muted">Airport Rides</span>
+                <span class="font-mono font-medium text-ink">9 listings</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-muted">Beauty & Nails</span>
+                <span class="font-mono font-medium text-ink">7 listings</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-muted">Mechanics</span>
+                <span class="font-mono font-medium text-ink">6 listings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

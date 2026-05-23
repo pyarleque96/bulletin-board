@@ -1,0 +1,73 @@
+@implements IDisposable
+
+<div class="relative">
+    <div class="@(IsLoading ? "opacity-50 pointer-events-none" : "") transition-opacity duration-200">
+        @ChildContent
+    </div>
+    @if (IsLoading && _showSpinner)
+    {
+        <div class="absolute inset-0 flex items-start justify-center pt-12 pointer-events-none">
+            <div class="admin-section-spinner" aria-label="Loading"></div>
+        </div>
+    }
+</div>
+
+<style>
+    .admin-section-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #fde8c8;
+        border-top-color: #fd8c1b;
+        border-radius: 50%;
+        animation: admin-section-spin .85s linear infinite;
+    }
+    @@keyframes admin-section-spin {
+        to { transform: rotate(360deg); }
+    }
+    @@media (prefers-reduced-motion: reduce) {
+        .admin-section-spinner { animation: none; }
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool _showSpinner;
+    private bool _previousIsLoading;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsLoading == _previousIsLoading) return;
+        _previousIsLoading = IsLoading;
+
+        if (IsLoading)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+            try
+            {
+                await Task.Delay(200, token);
+                if (!token.IsCancellationRequested && IsLoading)
+                {
+                    _showSpinner = true;
+                    StateHasChanged();
+                }
+            }
+            catch (TaskCanceledException) { /* loading rápido, no mostrar */ }
+        }
+        else
+        {
+            _cts?.Cancel();
+            _showSpinner = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

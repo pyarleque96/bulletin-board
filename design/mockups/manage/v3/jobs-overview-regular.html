@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- BULLETIN DELLS — Manage / Jobs · Overview (Regular)
+     Standalone overview for jobs Regular. Sin pipeline. Tabla simple. -->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Jobs · Overview — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">P</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Pizzeria di Marco</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Pizzeria di Marco · Now Hiring</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Jobs</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Overview</span>
+      <a href="/manage/{id}/applications" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Applications <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">6</span></a>
+      <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Open positions</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">2</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Total applications</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">14</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">New this week</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">6</p></div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-soft p-4"><p class="text-[11px] uppercase tracking-wider text-muted">Hired</p><p class="text-2xl font-bold text-ink mt-1 tabular-nums">1</p></div>
+  </section>
+
+  <!-- VIP upsell -->
+  <section class="mb-8 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-5 flex items-start gap-4 flex-wrap">
+    <div class="flex-1 min-w-[240px]">
+      <p class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full text-white font-semibold inline-block" style="background:linear-gradient(135deg,#fb923c,#f97316);">VIP</p>
+      <h3 class="text-base font-semibold text-ink mt-2">Unlock the candidate pipeline</h3>
+      <p class="text-sm text-muted mt-1">Kanban board, tags, candidate notes, and CSV export for bulk hiring.</p>
+    </div>
+    <a href="/account/upgrade" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink text-white text-xs font-semibold no-underline">Upgrade to VIP</a>
+  </section>
+
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5">
+    <h2 class="text-base font-semibold text-ink mb-4">Recent applications</h2>
+    <ul class="divide-y divide-slate-100" role="list">
+      <li class="py-3 flex items-center gap-3"><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Esperanza Núñez</p><p class="text-[11px] text-muted">Applied today, 09:14 · Kitchen prep · J1 visa</p></div><a href="https://wa.me/16085557204" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></li>
+      <li class="py-3 flex items-center gap-3"><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Tarell Quincey</p><p class="text-[11px] text-muted">Applied today, 08:02 · Delivery driver · Local</p></div><a href="https://wa.me/16085550911" class="text-xs text-[#25D366] hover:underline">WhatsApp</a></li>
+      <li class="py-3 flex items-center gap-3"><div class="flex-1 min-w-0"><p class="font-semibold text-ink truncate">Aaliyah Tessmer</p><p class="text-[11px] text-muted">Applied May 13 · Kitchen prep · J1 visa</p></div></li>
+    </ul>
+    <p class="text-[11px] text-muted mt-4">GM is copied on every WhatsApp conversation with candidates.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+@* Mechanics · Photos — delega en SingleListingPhotosTab (Regular + VIP). *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Mechanics.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+<SingleListingPhotosTab Listing="Listing" />
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

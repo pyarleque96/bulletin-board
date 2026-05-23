@@ -1,0 +1,16 @@
+@namespace Bulletin.Board.Web.Client.Shared
+
+@*
+    AuthDivider — separador visual con texto centrado para formularios de auth.
+    La clase .auth-divider (con ::before/::after) está definida en AuthLayout.razor.
+*@
+
+<div class="auth-divider @CssClass">@Text</div>
+
+@code {
+    /// <summary>Texto que aparece centrado en el divider.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Clases CSS extra opcionales.</summary>
+    [Parameter] public string CssClass { get; set; } = "";
+}

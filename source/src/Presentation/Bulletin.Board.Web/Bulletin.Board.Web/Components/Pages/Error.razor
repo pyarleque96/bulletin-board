@@ -1,0 +1,176 @@
+@* Error.razor — 500 Server Error page.
+   Self-contained: own nav + footer. NO @layout.
+   Referenced by app.UseExceptionHandler("/Error") in Program.cs. *@
+@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>500 — Server Error | Bulletin Board</PageTitle>
+
+<div class="bg-surface err-dot-grid min-h-dvh flex flex-col font-sans">
+
+    <div class="err-grain" aria-hidden="true"></div>
+
+    @* ── Mini nav pill ────────────────────────────────────────────────────── *@
+    <header class="w-full pt-5 px-4 flex justify-center relative z-10">
+        <nav class="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full px-5 py-3
+                    flex items-center gap-5
+                    shadow-[0_2px_16px_-4px_rgba(30,41,59,0.08)]"
+             aria-label="Site navigation" role="navigation">
+            <a href="/" aria-label="Bulletin Dells home" class="flex items-center gap-2">
+                <span class="font-semibold tracking-tight text-sm text-ink">Bulletin <span class="text-[#fd8c1b]">Board</span></span>
+            </a>
+            <div class="w-px h-4 bg-slate-200" aria-hidden="true"></div>
+            <div class="flex items-center gap-1.5" role="status" aria-live="polite">
+                <span class="err-status-dot bg-red-500 err-blink" aria-hidden="true"></span>
+                <span class="text-xs text-slate-500">Service disruption</span>
+            </div>
+        </nav>
+    </header>
+
+    @* ── Main content ─────────────────────────────────────────────────────── *@
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-15 text-center relative z-10">
+
+        @* Animated server-on-vacation illustration (mockup error-500-c) *@
+        <div class="err-opacity-init err-fade-up flex justify-center mb-8"
+             role="img" aria-label="Illustration of servers at Wisconsin Dells water park">
+            <div class="err-sway">
+                <svg width="160" height="160" viewBox="0 0 160 160" fill="none"
+                     xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <circle cx="80" cy="80" r="76" fill="#FEF2F2" stroke="#FEE2E2" stroke-width="1.5"/>
+                    <path d="M20 120 Q35 112 50 120 Q65 128 80 120 Q95 112 110 120 Q125 128 140 120 L140 145 L20 145 Z" fill="#BFDBFE" opacity="0.4"/>
+                    <path d="M20 128 Q38 120 56 128 Q74 136 92 128 Q110 120 128 128" stroke="#93C5FD" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <rect x="52" y="52" width="56" height="52" rx="8" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+                    <rect x="60" y="60" width="40" height="12" rx="2.5" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                    <circle cx="66" cy="66" r="2.5" fill="#16a34a"/>
+                    <rect x="72" y="63" width="20" height="2" rx="1" fill="#CBD5E1"/>
+                    <rect x="72" y="67" width="14" height="2" rx="1" fill="#CBD5E1"/>
+                    <rect x="60" y="76" width="40" height="12" rx="2.5" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1"/>
+                    <circle cx="66" cy="82" r="2.5" fill="#ef4444"/>
+                    <rect x="72" y="79" width="20" height="2" rx="1" fill="#FCA5A5"/>
+                    <rect x="72" y="83" width="12" height="2" rx="1" fill="#FCA5A5"/>
+                    <rect x="60" y="92" width="40" height="8" rx="2.5" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1"/>
+                    <circle cx="66" cy="96" r="2" fill="#ef4444"/>
+                    <rect x="72" y="94" width="20" height="2" rx="1" fill="#FCA5A5"/>
+                    <rect x="53" y="47" width="13" height="7" rx="3" fill="#1E293B" stroke="#0f172a" stroke-width="0.5"/>
+                    <rect x="68" y="47" width="13" height="7" rx="3" fill="#1E293B" stroke="#0f172a" stroke-width="0.5"/>
+                    <line x1="66" y1="50" x2="68" y2="50" stroke="#475569" stroke-width="1.5"/>
+                    <line x1="52" y1="50" x2="50" y2="48" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="81" y1="50" x2="83" y2="48" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                    <ellipse cx="80" cy="42" rx="22" ry="5" fill="#F59E0B" stroke="#D97706" stroke-width="1"/>
+                    <rect x="68" y="28" width="24" height="14" rx="4" fill="#FBBF24" stroke="#D97706" stroke-width="1"/>
+                    <rect x="68" y="38" width="24" height="3" rx="1.5" fill="#D97706"/>
+                    <rect x="95" y="28" width="40" height="22" rx="7" fill="white" stroke="#FCA5A5" stroke-width="1.5"/>
+                    <text x="115" y="38" font-family="DM Sans,sans-serif" font-size="8" font-weight="800" fill="#DC2626" text-anchor="middle">ERROR</text>
+                    <text x="115" y="47" font-family="DM Sans,sans-serif" font-size="8" font-weight="700" fill="#94A3B8" text-anchor="middle">500</text>
+                    <path d="M95 45 L88 55 L100 50 Z" fill="white" stroke="#FCA5A5" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        @* Error stamp (mockup error-500-c) *@
+        <div class="err-opacity-init err-fade-up err-delay-1 flex justify-center mb-4">
+            <span class="err-stamp" aria-label="Error 500">Error 500</span>
+        </div>
+        <h1 class="err-opacity-init err-fade-up err-delay-2
+                   text-4xl font-black tracking-tighter text-ink leading-none mb-3">
+            Something broke on our end.
+        </h1>
+        <p class="err-opacity-init err-fade-up err-delay-2
+                  text-xl font-medium text-slate-400 mb-5">
+            Algo fallo de nuestro lado.
+        </p>
+        <p class="err-opacity-init err-fade-up err-delay-3
+                  text-base text-slate-500 leading-relaxed max-w-xs mb-2">
+            Our servers hit an unexpected snag. We&rsquo;re on it &mdash; please try again in a moment.
+        </p>
+        <p class="err-opacity-init err-fade-up err-delay-3
+                  text-sm text-slate-400 italic mb-8">
+            Nuestros servidores tuvieron un problema. Intentalo de nuevo en un momento.
+        </p>
+
+        @* Request ID (only visible in production for debugging, hidden from casual users) *@
+        @if (ShowRequestId)
+        {
+            <p class="text-xs text-slate-300 mb-4 font-mono" aria-label="Request identifier">
+                Request ID: <code class="text-slate-400">@RequestId</code>
+            </p>
+        }
+
+        @* CTA buttons *@
+        <div class="err-opacity-init err-fade-up err-delay-4
+                    flex flex-col sm:flex-row gap-3 mb-8">
+
+            @* Retry button — uses plain JS reload because Error.razor runs as
+               a static SSR endpoint (ExceptionHandler); Blazor interactivity
+               is not available at this point in the pipeline. *@
+            <button onclick="window.location.reload()"
+                    class="group inline-flex items-center gap-2 bg-[#02184f] hover:bg-[#010f30] text-white
+                           font-semibold text-sm px-5 py-3 rounded-full
+                           transition-all duration-200 cursor-pointer active:scale-[0.98]
+                           shadow-[0_4px_14px_-3px_rgba(2,24,79,0.4)]"
+                    type="button">
+                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none"
+                     stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 10a6 6 0 1 0 1.2-3.6M4 6V10h4"/>
+                </svg>
+                Try again / Reintentar
+            </button>
+
+            @* Back to Home *@
+            <a href="/"
+               class="group inline-flex items-center gap-2 bg-white hover:bg-slate-50
+                      border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full
+                      transition-all duration-200 cursor-pointer active:scale-[0.98]">
+                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none"
+                     stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 4L4 10l6 6M4 10h12"/>
+                </svg>
+                Back to Home
+            </a>
+
+            @* Report to GM via WhatsApp *@
+            <a href="https://wa.me/15551234567" target="_blank" rel="noopener noreferrer"
+               class="group inline-flex items-center gap-2 bg-white hover:bg-green-50
+                      border border-slate-200 text-ink font-medium text-sm px-5 py-3 rounded-full
+                      transition-all duration-200 cursor-pointer active:scale-[0.98]">
+                <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Report to GM
+            </a>
+        </div>
+
+        @* Status disruption badge *@
+        <div class="err-opacity-init err-fade-up err-delay-4
+                    inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-4 py-2"
+             role="status">
+            <span class="err-status-dot bg-red-500 err-blink" aria-hidden="true"></span>
+            <span class="text-xs text-red-700 font-medium">
+                Service disruption detected &mdash; our team is aware
+            </span>
+        </div>
+    </main>
+
+    @* ── Footer ───────────────────────────────────────────────────────────── *@
+    <footer class="py-6 text-center relative z-10">
+        <p class="text-xs text-slate-400">
+            &copy; 2026 Bulletin Dells &mdash; Wisconsin Dells, WI
+            <span class="mx-2 text-slate-300" aria-hidden="true">|</span>
+            Error 500 &mdash; Error interno del servidor
+        </p>
+    </footer>
+
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Photos (VIP)
+  =====================================================
+  Diferencia con Regular:
+    - Fotos ilimitadas (sin upsell)
+    - Drag-to-reorder visible (grip handle)
+    - Bulk select (checkbox por foto + barra "X selected")
+    - Filtros adicionales: Featured, By vehicle
+    - Métricas por foto (views, click rate)
+  REGLA #4 igual: el GM decide qué es público. El "Featured" sólo aplica a fotos públicas.
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Car Rental · Photos VIP — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'}, ink:'#0f172a', muted:'#64748b' }, fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']}, boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'} } } };
+  </script>
+  <style>
+    .badge-vip{background:linear-gradient(135deg,#fb923c,#f97316)}
+    .manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}
+    .manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}
+    .manage-tab{position:relative}
+    [data-tooltip]{position:relative}
+    [data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3" aria-label="Main navigation">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);">
+    <a href="/" class="font-bold text-base tracking-tight text-ink no-underline">Bulletin Dells</a>
+    <div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div>
+  </div>
+</nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3" aria-label="Breadcrumb">
+      <a href="/manage" class="hover:text-ink">My Listings</a>
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium" aria-current="page">Dells Premium Auto</span>
+    </nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Premium Auto · Full Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist">
+      <div class="flex items-center gap-0">
+        <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+        <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Vehicles</a>
+        <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+        <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm cursor-pointer">Photos <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">48</span></span>
+        <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+        <a href="/manage/{id}/analytics" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Analytics <span class="ml-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span></a>
+        <a href="/manage/{id}/settings" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Settings</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full">
+
+  <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+    <div>
+      <h2 class="text-base font-semibold text-ink inline-flex items-center gap-2">
+        Photo gallery
+        <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">Unlimited</span>
+      </h2>
+      <p class="text-sm text-muted mt-0.5">
+        Drag to reorder · The GM still approves each upload before it appears publicly.
+        <!-- ES: Arrastra para reordenar · El GM aún aprueba cada subida antes de publicarse. -->
+      </p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="inline-flex items-center gap-1.5 text-[11px] text-muted px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> 42 public ·
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 5 pending ·
+        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 1 hidden
+      </span>
+      <label for="upload-input" data-tooltip="Uploading new photos triggers a fresh GM review" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold cursor-pointer">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload photos
+      </label>
+      <input id="upload-input" type="file" accept="image/*" multiple class="sr-only" />
+    </div>
+  </div>
+
+  <!-- Bulk action bar (visible when selection > 0) -->
+  <div class="mb-5 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-ink text-white">
+    <p class="text-xs"><strong class="font-semibold">3 photos selected</strong> · Bulk actions affect public photos only</p>
+    <div class="flex items-center gap-2">
+      <button type="button" class="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer">Feature</button>
+      <button type="button" class="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer">Assign to vehicle</button>
+      <button type="button" class="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 cursor-pointer" data-tooltip="Deleting will send listing to Pending">Delete</button>
+      <button type="button" class="text-xs text-white/70 hover:text-white cursor-pointer">Clear</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex items-center gap-1.5 flex-wrap mb-5" role="group" aria-label="Filter photos">
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">All <span class="ml-1 bg-white/20 px-1.5 py-0 rounded-full">48</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">Public <span class="ml-1 bg-green-100 text-green-800 px-1.5 py-0 rounded-full">42</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">Pending GM review <span class="ml-1 bg-amber-100 text-amber-800 px-1.5 py-0 rounded-full">5</span></button>
+    <button class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">Featured <span class="ml-1 bg-orange-100 text-orange-700 px-1.5 py-0 rounded-full">6</span></button>
+    <span class="text-slate-300 mx-1">|</span>
+    <select class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer border-0" aria-label="Filter by vehicle">
+      <option>All vehicles</option><option>Tesla Model 3</option><option>Honda CR-V</option><option>Toyota Corolla</option>
+    </select>
+  </div>
+
+  <!-- Photo grid (with drag handles + checkboxes + metrics) -->
+  <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" role="list" aria-label="Photo gallery">
+    <li class="bg-white rounded-2xl border-2 border-brand-400 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/tesla-1/600/450" alt="Tesla Model 3 hero" class="w-full h-full object-cover"/>
+        <label class="absolute top-2 left-2 inline-flex items-center cursor-pointer">
+          <input type="checkbox" checked class="w-4 h-4 rounded text-brand-500 border-white focus:ring-brand-500"/>
+        </label>
+        <button class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 flex items-center justify-center cursor-grab" aria-label="Drag to reorder">
+          <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>
+        </button>
+        <div class="absolute bottom-2 left-2 flex items-center gap-1">
+          <span class="text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span>
+          <span class="text-[10px] uppercase tracking-wider bg-brand-500 text-white px-2 py-0.5 rounded-full font-semibold">Cover</span>
+        </div>
+      </div>
+      <div class="p-3">
+        <p class="text-[11px] text-muted">Tesla Model 3 · approved May 8</p>
+        <div class="flex items-center justify-between mt-1">
+          <span class="text-[11px] text-ink tabular-nums">1,847 views · 12.3% CTR</span>
+          <button class="text-[11px] text-red-600 hover:text-red-700 cursor-pointer" data-tooltip="Returns listing to Pending">Delete</button>
+        </div>
+      </div>
+    </li>
+
+    <li class="bg-white rounded-2xl border-2 border-brand-400 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/tesla-2/600/450" alt="Tesla Model 3 interior" class="w-full h-full object-cover"/>
+        <label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded text-brand-500 border-white"/></label>
+        <span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span>
+      </div>
+      <div class="p-3"><p class="text-[11px] text-muted">Tesla Model 3 · interior</p><p class="text-[11px] text-ink tabular-nums mt-1">1,204 views · 8.7% CTR</p></div>
+    </li>
+
+    <li class="bg-white rounded-2xl border-2 border-brand-400 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/crv-1/600/450" alt="Honda CR-V" class="w-full h-full object-cover"/>
+        <label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded text-brand-500 border-white"/></label>
+        <span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span>
+      </div>
+      <div class="p-3"><p class="text-[11px] text-muted">Honda CR-V · front</p><p class="text-[11px] text-ink tabular-nums mt-1">982 views · 9.1% CTR</p></div>
+    </li>
+
+    <li class="bg-white rounded-2xl border border-amber-200 shadow-soft overflow-hidden">
+      <div class="relative aspect-[4/3] bg-slate-200">
+        <img src="https://picsum.photos/seed/jeep-pending/600/450" alt="Jeep Wrangler new upload" class="w-full h-full object-cover opacity-90"/>
+        <label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-white"/></label>
+        <span class="absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider bg-white/95 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending GM review
+        </span>
+      </div>
+      <div class="p-3"><p class="text-[11px] text-amber-700">Uploaded today, 09:21</p></div>
+    </li>
+
+    <!-- More -->
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/c5/600/450" alt="" class="w-full h-full object-cover"/><label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-white"/></label><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/c6/600/450" alt="" class="w-full h-full object-cover"/><label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-white"/></label><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/c7/600/450" alt="" class="w-full h-full object-cover"/><label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-white"/></label><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+    <li class="bg-white rounded-2xl border border-slate-100 shadow-soft overflow-hidden"><div class="relative aspect-[4/3] bg-slate-200"><img src="https://picsum.photos/seed/c8/600/450" alt="" class="w-full h-full object-cover"/><label class="absolute top-2 left-2 inline-flex items-center cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-white"/></label><span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider bg-white/95 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-semibold">Public</span></div></li>
+  </ul>
+
+  <div class="mt-10 flex items-center justify-center gap-2 text-[11px] text-muted">
+    <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full badge-vip text-white font-semibold">VIP</span>
+    Powered by VIP · Unlimited photos, bulk actions, per-photo analytics
+  </div>
+</main>
+</body>
+</html>

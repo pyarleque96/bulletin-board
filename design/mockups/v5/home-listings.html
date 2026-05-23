@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Listings — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#F8FAFC',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            'soft': '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift': '0 12px 40px -8px rgba(30,41,59,0.14)',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    .nav-pill {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+    .badge-sdvip { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .badge-vip { background: linear-gradient(135deg, #fb923c, #f97316); }
+    .vip-glow { box-shadow: 0 0 0 1px rgba(249,115,22,0.2), 0 4px 24px -4px rgba(249,115,22,0.15); }
+    .sdvip-glow { box-shadow: 0 0 0 1px rgba(234,179,8,0.3), 0 4px 24px -4px rgba(234,179,8,0.2); }
+    .card-hover { transition: transform 0.3s cubic-bezier(0.32,0.72,0,1), box-shadow 0.3s cubic-bezier(0.32,0.72,0,1); }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 20px 48px -8px rgba(30,41,59,0.16); }
+    .filter-pill { transition: all 0.2s cubic-bezier(0.32,0.72,0,1); }
+    .filter-pill:hover { transform: translateY(-1px); }
+    .filter-pill.active { background: #1E293B; color: white; }
+    .sidebar-item { transition: background 0.15s ease, color 0.15s ease; }
+    .sidebar-item:hover { background: #f1f5f9; }
+    .sidebar-item.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .rating-star { color: #f59e0b; }
+    .btn-wa { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease; }
+    .btn-wa:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -4px rgba(34,197,94,0.35); }
+    .btn-wa:active { transform: scale(0.98); }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <!-- NAVBAR -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center justify-between" aria-label="Main navigation">
+      <a href="landing.html" class="flex items-center gap-2.5 cursor-pointer" aria-label="Bulletin Dells home">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="font-semibold text-ink tracking-tight text-sm hidden sm:block">Bulletin Dells</span>
+      </a>
+
+      <!-- Inline search (compact) -->
+      <div class="hidden md:flex flex-1 max-w-md mx-6 items-center bg-slate-100 rounded-full px-4 py-2 gap-2" role="search">
+        <svg class="w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <label for="nav-search" class="sr-only">Search services</label>
+        <input id="nav-search" type="search" placeholder="Search services..." class="flex-1 bg-transparent text-sm text-ink placeholder-muted/60 outline-none border-none" />
+        <!-- ES: placeholder="Buscar servicios..." -->
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+        <a href="#" class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full cursor-pointer hover:bg-orange-600 transition-colors duration-200">
+          List yours
+          <!-- ES: Publica el tuyo -->
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="pt-24 min-h-screen">
+
+    <!-- Search header band -->
+    <div class="bg-white border-b border-slate-100 px-4 py-5">
+      <div class="max-w-6xl mx-auto">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-1.5 text-xs text-muted mb-4" aria-label="Breadcrumb">
+          <a href="landing.html" class="hover:text-ink transition-colors duration-150 cursor-pointer">Home</a>
+          <!-- ES: Inicio -->
+          <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="text-ink font-medium" aria-current="page">Car Rentals</span>
+          <!-- ES: Renta de Autos -->
+        </nav>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-ink tracking-tight">Car Rentals in Wisconsin Dells</h1>
+            <!-- ES: Renta de Autos en Wisconsin Dells -->
+            <p class="text-sm text-muted mt-1">
+              <strong class="text-ink">24</strong> verified listings
+              <!-- ES: <strong>24</strong> listings verificados -->
+            </p>
+          </div>
+          <!-- Sort control -->
+          <div class="flex items-center gap-2">
+            <label for="sort-select" class="text-sm text-muted flex-shrink-0">Sort by:</label>
+            <!-- ES: Ordenar por: -->
+            <select id="sort-select" class="text-sm text-ink bg-slate-100 border-none rounded-xl px-3 py-2 outline-none cursor-pointer focus:ring-2 focus:ring-brand-500">
+              <option>Recommended</option>
+              <!-- ES: <option>Recomendados</option> -->
+              <option>Highest rated</option>
+              <option>Newest</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Category pills row -->
+        <div class="flex flex-wrap gap-2 mt-5" role="tablist" aria-label="Browse categories">
+          <button role="tab" aria-selected="true" class="filter-pill active flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer border border-transparent">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Car Rental
+          </button>
+          <!-- ES: Renta de Autos -->
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            Housing
+          </button>
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            Airport Rides
+          </button>
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            Mechanics
+          </button>
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            Beauty
+          </button>
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            Jobs
+          </button>
+          <button role="tab" aria-selected="false" class="filter-pill flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium cursor-pointer bg-white border border-slate-200 text-muted hover:text-ink">
+            All categories
+            <!-- ES: Todas las categorias -->
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main layout: sidebar + listings -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <div class="flex flex-col lg:flex-row gap-8">
+
+        <!-- ========================================================
+             SIDEBAR: filters
+             ======================================================== -->
+        <aside class="w-full lg:w-64 flex-shrink-0" aria-label="Filters">
+          <div class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 sticky top-24">
+            <h2 class="text-sm font-semibold text-ink mb-5 flex items-center justify-between">
+              Filters
+              <!-- ES: Filtros -->
+              <button class="text-xs text-brand-500 hover:text-brand-700 font-normal cursor-pointer">Reset all</button>
+              <!-- ES: Limpiar -->
+            </h2>
+
+            <!-- Rating filter -->
+            <fieldset class="mb-6">
+              <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Rating</legend>
+              <!-- ES: Calificacion -->
+              <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="radio" name="rating" class="accent-brand-500" checked />
+                  <span class="text-sm text-ink group-hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
+                    Any rating
+                    <!-- ES: Cualquier calificacion -->
+                  </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="radio" name="rating" class="accent-brand-500" />
+                  <span class="text-sm text-ink flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.5+
+                  </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer group">
+                  <input type="radio" name="rating" class="accent-brand-500" />
+                  <span class="text-sm text-ink flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    4.0+
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Language filter -->
+            <fieldset class="mb-6">
+              <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Language</legend>
+              <!-- ES: Idioma -->
+              <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" class="accent-brand-500 rounded" checked />
+                  <span class="text-sm text-ink">English</span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" class="accent-brand-500 rounded" checked />
+                  <span class="text-sm text-ink">Spanish / Espanol</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Tier filter -->
+            <fieldset class="mb-6">
+              <legend class="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Provider tier</legend>
+              <!-- ES: Nivel de proveedor -->
+              <div class="space-y-2">
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" class="accent-brand-500 rounded" />
+                  <span class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide badge-sdvip text-white px-2 py-0.5 rounded-full">
+                    Super Duper VIP
+                  </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" class="accent-brand-500 rounded" />
+                  <span class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide badge-vip text-white px-2 py-0.5 rounded-full">
+                    VIP
+                  </span>
+                </label>
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" class="accent-brand-500 rounded" />
+                  <span class="text-sm text-ink">Verified</span>
+                  <!-- ES: Verificado -->
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Verified only -->
+            <div class="border-t border-slate-100 pt-5">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <div class="relative w-9 h-5 flex-shrink-0">
+                  <input type="checkbox" id="verified-only" class="sr-only" checked />
+                  <div class="w-9 h-5 rounded-full bg-brand-500 cursor-pointer"></div>
+                  <div class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow-soft transition-transform duration-200 translate-x-4"></div>
+                </div>
+                <span class="text-sm text-ink">Verified only</span>
+                <!-- ES: Solo verificados -->
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ========================================================
+             LISTINGS MAIN AREA
+             ======================================================== -->
+        <main class="flex-1 min-w-0" aria-label="Search results" aria-live="polite">
+
+          <!-- ---- SUPER DUPER VIP block (always first) ---- -->
+          <div class="mb-3 flex items-center gap-2">
+            <span class="badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">Super Duper VIP</span>
+            <span class="text-xs text-muted">Featured first by platform</span>
+            <!-- ES: Destacado primero por la plataforma -->
+          </div>
+
+          <!-- SDVIP Card — Horizontal hero -->
+          <article class="mb-6 rounded-3xl overflow-hidden border-2 border-amber-300 sdvip-glow bg-white card-hover cursor-pointer" aria-label="Super Duper VIP: Dells Premier Car Rentals">
+            <div class="grid grid-cols-1 sm:grid-cols-5">
+              <div class="sm:col-span-2 h-44 sm:h-auto relative">
+                <img src="https://picsum.photos/seed/sdvip-car/800/440" alt="Dells Premier Car Rentals fleet exterior" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-3 left-3">
+                  <span class="inline-flex items-center gap-1 badge-sdvip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-soft">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Super Duper VIP
+                  </span>
+                </div>
+              </div>
+              <div class="sm:col-span-3 p-6 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-start justify-between gap-3 flex-wrap">
+                    <h2 class="text-lg font-bold text-ink">Dells Premier Car Rentals</h2>
+                    <div class="flex items-center gap-1.5 flex-shrink-0" aria-label="Rating 4.9 of 5, 127 reviews">
+                      <svg class="w-4 h-4 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span class="font-semibold text-sm text-ink">4.9</span>
+                      <span class="text-muted text-xs">(127)</span>
+                    </div>
+                  </div>
+                  <p class="text-muted text-xs mt-1 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Wisconsin Dells, WI
+                  </p>
+                  <p class="mt-3 text-sm text-muted leading-relaxed line-clamp-2">Daily, weekly, and seasonal vehicle rentals. Pick-up anywhere. Bilingual staff. Verified with ID and passport. 5+ years in the community.</p>
+                  <!-- ES: Renta diaria, semanal y de temporada. Recogida en cualquier lugar. Personal bilingue. -->
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">From $39/day</span>
+                    <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs flex items-center gap-1">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      ID Verified
+                    </span>
+                    <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">EN / ES</span>
+                  </div>
+                </div>
+                <div class="mt-5 flex items-center gap-2.5 flex-wrap">
+                  <a href="detail-car-rental.html" class="flex items-center gap-2 bg-green-500 text-white text-sm font-medium px-5 py-2.5 rounded-full btn-wa cursor-pointer">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a href="detail-car-rental.html" class="text-sm text-brand-500 hover:text-brand-700 font-medium cursor-pointer transition-colors duration-200">
+                    View full profile
+                    <!-- ES: Ver perfil completo -->
+                    <svg class="inline w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ---- VIP divider ---- -->
+          <div class="mb-4 flex items-center gap-3">
+            <div class="flex-1 h-px bg-slate-100"></div>
+            <span class="badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">VIP Providers</span>
+            <!-- ES: Proveedores VIP -->
+            <div class="flex-1 h-px bg-slate-100"></div>
+          </div>
+
+          <!-- VIP cards grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <!-- VIP Card 1 -->
+            <article class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer" aria-label="VIP: Riverside Auto Rentals">
+              <div class="h-40 relative">
+                <img src="https://picsum.photos/seed/vip-auto1/600/320" alt="Riverside Auto Rentals vehicle fleet" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-2 left-2">
+                  <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    VIP
+                  </span>
+                </div>
+                <div class="absolute top-2 right-2 bg-white/90 text-green-700 text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Verified
+                </div>
+              </div>
+              <div class="p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 class="font-bold text-ink text-sm">Riverside Auto Rentals</h3>
+                    <p class="text-muted text-xs mt-0.5">Downtown Dells · Car Rental</p>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0" aria-label="Rating 4.7">
+                    <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span class="text-xs font-semibold">4.7</span>
+                    <span class="text-muted text-[10px]">(49)</span>
+                  </div>
+                </div>
+                <p class="text-xs text-muted mt-2 line-clamp-2 leading-relaxed">Economy to SUV. Rates from $34/day. Free pick-up in Wisconsin Dells area. Spanish-speaking staff available.</p>
+                <!-- ES: Economico a SUV. Desde $34/dia. Recogida gratuita. Personal hispanohablante. -->
+                <div class="flex gap-2 mt-3">
+                  <a href="#" class="flex-1 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl btn-wa cursor-pointer transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a href="detail-car-rental.html" class="flex-1 flex items-center justify-center text-xs font-medium text-brand-600 hover:text-brand-800 border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">Details</a>
+                  <!-- ES: Detalles -->
+                </div>
+              </div>
+            </article>
+
+            <!-- VIP Card 2 -->
+            <article class="rounded-2xl overflow-hidden border border-orange-200 vip-glow bg-white card-hover cursor-pointer" aria-label="VIP: Lakeview Wheels">
+              <div class="h-40 relative">
+                <img src="https://picsum.photos/seed/vip-auto2/600/320" alt="Lakeview Wheels rental cars on lot" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-2 left-2">
+                  <span class="inline-flex items-center gap-1 badge-vip text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    VIP
+                  </span>
+                </div>
+              </div>
+              <div class="p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 class="font-bold text-ink text-sm">Lakeview Wheels</h3>
+                    <p class="text-muted text-xs mt-0.5">Lake Delton · Car Rental</p>
+                  </div>
+                  <div class="flex items-center gap-1 flex-shrink-0" aria-label="Rating 4.6">
+                    <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span class="text-xs font-semibold">4.6</span>
+                    <span class="text-muted text-[10px]">(31)</span>
+                  </div>
+                </div>
+                <p class="text-xs text-muted mt-2 line-clamp-2 leading-relaxed">Compact cars ideal for J1 students. Affordable weekly rates. No credit card required — cash accepted.</p>
+                <!-- ES: Autos compactos ideales para estudiantes J1. Tarifas semanales economicas. Efectivo aceptado. -->
+                <div class="flex gap-2 mt-3">
+                  <a href="#" class="flex-1 flex items-center justify-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl btn-wa cursor-pointer transition-colors duration-200">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                  <a href="detail-car-rental.html" class="flex-1 flex items-center justify-center text-xs font-medium text-brand-600 hover:text-brand-800 border border-brand-200 hover:border-brand-400 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-200">Details</a>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- ---- Regular verified divider ---- -->
+          <div class="mb-4 flex items-center gap-3">
+            <div class="flex-1 h-px bg-slate-100"></div>
+            <span class="bg-slate-100 text-slate-600 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full">Verified Providers</span>
+            <!-- ES: Proveedores Verificados -->
+            <div class="flex-1 h-px bg-slate-100"></div>
+          </div>
+
+          <!-- Regular verified cards: compact list view -->
+          <div class="space-y-3">
+            <!-- Regular Card 1 -->
+            <article class="rounded-2xl border border-slate-100 bg-white card-hover cursor-pointer" aria-label="Verified: Sunset Motors">
+              <div class="flex items-center gap-4 p-4">
+                <div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/reg-car1/160/128" alt="Sunset Motors" class="w-full h-full object-cover" loading="lazy" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-semibold text-ink text-sm">Sunset Motors</h3>
+                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                          Verified
+                        </span>
+                      </div>
+                      <p class="text-muted text-xs mt-0.5">Wisconsin Dells · Car Rental</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0" aria-label="Rating 4.3">
+                      <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span class="text-xs font-semibold">4.3</span>
+                      <span class="text-muted text-[10px]">(18)</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-muted mt-1 line-clamp-1">Affordable daily rates, seasonal specials, local family-owned business.</p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <a href="#" class="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl btn-wa cursor-pointer transition-colors duration-200 hidden sm:flex">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact
+                  </a>
+                  <a href="detail-car-rental.html" class="p-2 rounded-xl border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-muted cursor-pointer transition-colors duration-200">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="View details"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Regular Card 2 -->
+            <article class="rounded-2xl border border-slate-100 bg-white card-hover cursor-pointer" aria-label="Verified: Budget Wheels Dells">
+              <div class="flex items-center gap-4 p-4">
+                <div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                  <img src="https://picsum.photos/seed/reg-car2/160/128" alt="Budget Wheels Dells" class="w-full h-full object-cover" loading="lazy" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-semibold text-ink text-sm">Budget Wheels Dells</h3>
+                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                          Verified
+                        </span>
+                      </div>
+                      <p class="text-muted text-xs mt-0.5">Lake Delton · Car Rental</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0" aria-label="Rating 4.1">
+                      <svg class="w-3.5 h-3.5 rating-star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span class="text-xs font-semibold">4.1</span>
+                      <span class="text-muted text-[10px]">(11)</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-muted mt-1 line-clamp-1">Basic rentals at the lowest prices. Passport accepted as deposit.</p>
+                  <!-- ES: Rentas basicas al precio mas bajo. Pasaporte aceptado como deposito. -->
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <a href="#" class="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-xl btn-wa cursor-pointer transition-colors duration-200 hidden sm:flex">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact
+                  </a>
+                  <a href="detail-car-rental.html" class="p-2 rounded-xl border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-muted cursor-pointer transition-colors duration-200">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="View details"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <!-- Empty state (hidden by default, shown when no results) -->
+            <div class="hidden rounded-2xl border border-slate-100 bg-white p-12 text-center" role="alert" aria-label="No results found">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <h3 class="font-semibold text-ink mb-1">No listings found</h3>
+              <!-- ES: No se encontraron listings -->
+              <p class="text-muted text-sm">Try adjusting your filters or search terms.</p>
+              <!-- ES: Intenta ajustar tus filtros o terminos de busqueda. -->
+              <button class="mt-4 text-sm text-brand-500 hover:text-brand-700 font-medium cursor-pointer">Reset filters</button>
+              <!-- ES: Limpiar filtros -->
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-10 flex items-center justify-center gap-1" role="navigation" aria-label="Pagination">
+            <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-muted hover:text-ink hover:border-slate-300 transition-colors duration-200 cursor-pointer" aria-label="Previous page" disabled>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="w-9 h-9 rounded-xl bg-ink text-white flex items-center justify-center text-sm font-medium cursor-pointer" aria-label="Page 1" aria-current="page">1</button>
+            <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-sm text-muted hover:text-ink hover:border-slate-300 transition-colors duration-200 cursor-pointer" aria-label="Page 2">2</button>
+            <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-sm text-muted hover:text-ink hover:border-slate-300 transition-colors duration-200 cursor-pointer" aria-label="Page 3">3</button>
+            <span class="w-9 h-9 flex items-center justify-center text-muted text-sm">...</span>
+            <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-sm text-muted hover:text-ink hover:border-slate-300 transition-colors duration-200 cursor-pointer" aria-label="Page 8">8</button>
+            <button class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center text-muted hover:text-ink hover:border-slate-300 transition-colors duration-200 cursor-pointer" aria-label="Next page">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER (compact) -->
+  <footer class="bg-ink text-white/50 py-10 px-4 mt-16" role="contentinfo">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded-lg bg-brand-500 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="text-white/70 font-medium">Bulletin Dells</span>
+      </div>
+      <p class="text-center sm:text-left">Platform connects clients with providers. Does not provide services directly.</p>
+      <!-- ES: La plataforma conecta clientes con proveedores. No presta servicios directamente. -->
+      <div class="flex items-center gap-3">
+        <button class="hover:text-white/80 transition-colors duration-200 cursor-pointer">EN</button>
+        <span class="text-white/20">|</span>
+        <button class="hover:text-white/80 transition-colors duration-200 cursor-pointer">ES</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- NOTE FOR BLAZOR:
+    - Replace all <a href="..."> with <NavLink href="..."> or Blazor router links
+    - Replace sort <select> with Blazor @bind parameter
+    - Replace filter checkboxes/radios with @bind or EventCallback to filter observable
+    - Replace article list with @foreach over IEnumerable<ListingDto> filtered by tier (SDVIP > VIP > Regular)
+    - Pagination: use Blazor component with PageIndex parameter
+    - aria-live="polite" on main results region for dynamic updates
+  -->
+</body>
+</html>

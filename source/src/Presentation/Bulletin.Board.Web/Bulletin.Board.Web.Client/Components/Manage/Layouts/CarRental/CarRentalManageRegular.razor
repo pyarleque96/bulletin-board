@@ -1,0 +1,75 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   CarRentalManageRegular — Container Regular/Verified para car-rental.
+   Patrón establecido en Fases B/C: dispatcher tabs vía DynamicComponent.
+   Default tab inline = "overview" (delega a OverviewTab con IsVip=false).
+
+   Tabs disponibles:
+     - overview     → Tabs/OverviewTab  (IsVip=false)
+     - vehicles     → Tabs/VehiclesTab  (IsVip=false)
+     - reservations → Tabs/ReservationsTab (IsVip=false)
+     - photos       → Tabs/PhotosTab    (IsVip=false)
+     - reviews      → Tabs/ReviewsTab   (IsVip=false)
+     - settings     → Tabs/SettingsRegular
+
+   Reglas embebidas (las cumple cada tab):
+     #4 (Photos) — banner GM-decides + PhotoStatusBadge en PhotosTab.
+     #5 — PendingReviewTooltip en mutadores en cada tab.
+     #7 — ReviewStatusBadge + RatingSummaryCard en ReviewsTab.
+     #8 — GmCopyNotice + WhatsAppCtaButton en ReservationsTab.
+   ───────────────────────────────────────────────────────────────────────────── *@
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Shared
+@using Bulletin.Board.Web.Client.Components.Manage.Layouts.CarRental.Tabs
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<style>
+    .badge-vip { background: linear-gradient(135deg,#fb923c,#f97316); }
+    @@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; } }
+</style>
+
+<ManageDetailHeader ListingId="@Listing.Id.ToString()"
+                    ListingTitle="@Listing.TitleEn"
+                    CategorySlug="@Listing.CategorySlug"
+                    ActiveTab="@ResolvedActiveTab"
+                    Status="@Listing.Status"
+                    TierBadge="@Listing.Tier"
+                    CategoryLabel="@(_localizer["Manage_CarRental_CategoryLabel"])"
+                    Since="@SinceLabel"
+                    PublicUrl="@($"/listing/{Listing.Id}")"
+                    PhotoCount="@Listing.Photos.Length" />
+
+@{
+    var (tabType, tabParams) = ResolveTab(ResolvedActiveTab);
+}
+<DynamicComponent Type="tabType" Parameters="tabParams" />
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+    [Parameter] public string? ActiveTab { get; set; }
+
+    /// <summary>Default car-rental Regular = "overview".</summary>
+    private string ResolvedActiveTab => string.IsNullOrEmpty(ActiveTab) ? "overview" : ActiveTab;
+
+    private string SinceLabel => Listing.ApprovedAt is DateTimeOffset dt ? $"Since {dt:MMM yyyy}" : "";
+
+    private (Type Type, IDictionary<string, object> Params) ResolveTab(string tab)
+    {
+        var p = new Dictionary<string, object>
+        {
+            ["Listing"] = Listing,
+            ["IsVip"]   = false,
+        };
+
+        return tab switch
+        {
+            "vehicles"     => (typeof(VehiclesTab),       p),
+            "reservations" => (typeof(ReservationsTab),   p),
+            "photos"       => (typeof(PhotosTab),         p),
+            "reviews"      => (typeof(ReviewsTab),        p),
+            "settings"     => (typeof(SettingsRegular),
+                                new Dictionary<string, object> { ["Listing"] = Listing }),
+            _              => (typeof(OverviewTab),       p),
+        };
+    }
+}

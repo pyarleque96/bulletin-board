@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board badge">
+  <title>Bulletin Board – Badge (Dark)</title>
+  <circle cx="256" cy="256" r="248" fill="#0F172A" stroke="#FFFFFF" stroke-width="14"/>
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#F39323" stroke-width="4" stroke-dasharray="6 10"/>
+  <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-4">
+    <text x="138" y="266" font-size="170" fill="#FFFFFF">B</text>
+    <text x="258" y="406" font-size="170" fill="#F39323">B</text>
+  </g>
+  <circle cx="232" cy="150" r="14" fill="#F39323"/>
+</svg>

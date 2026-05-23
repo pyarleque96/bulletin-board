@@ -1,0 +1,62 @@
+@* ─────────────────────────────────────────────────────────────────────────────
+   InquiriesRegular (Beauty) — Tab Inquiries para beauty Regular/Verified.
+   Pre-booking inquiries (preguntas antes de agendar). Regla #8: WhatsApp +
+   GM copy, ContactLog en cada acción.
+
+   Datos: placeholder hasta endpoints. Ver BACKEND_AUDIT §1.4 (idéntico DTO a
+   housing inquiries).
+   ───────────────────────────────────────────────────────────────────────────── *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Beauty.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+@inject IStringLocalizer<SharedResource> _localizer
+
+<main class="max-w-6xl mx-auto px-4 py-8 w-full"
+      id="panel-inquiries"
+      role="tabpanel"
+      aria-labelledby="tab-inquiries"
+      tabindex="0">
+
+    <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+            <h2 class="text-base font-semibold text-ink">@_localizer["Manage_Beauty_Inquiries_Title"]</h2>
+            <p class="text-sm text-muted mt-0.5">@_localizer["Manage_Beauty_Inquiries_Subtitle"]</p>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap" role="group" aria-label="@_localizer["Manage_Inquiries_Filter_AriaLabel"]">
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-ink text-white cursor-pointer" aria-pressed="true">
+                @_localizer["Manage_Common_All"]
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+                @_localizer["Manage_Beauty_Inquiries_Filter_New"]
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+                @_localizer["Manage_Beauty_Inquiries_Filter_Replied"]
+            </button>
+            <button type="button" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 text-ink cursor-pointer">
+                @_localizer["Manage_Beauty_Inquiries_Filter_Closed"]
+            </button>
+        </div>
+    </div>
+
+    @* GM-copy banner (Regla #8) — referencia al canal email del GM y al ContactLog. *@
+    <div class="mb-5">
+        <GmCopyNotice Message="@_localizer["Manage_Beauty_Inquiries_GmCopy"]" />
+    </div>
+
+    @* Lista — TODO: API GET /api/v1/manage/listings/{id}/inquiries (BACKEND_AUDIT §1.4 InquiryDto). *@
+    @* La columna "Channel" del log + WhatsAppCtaButton vivirá aquí; ahora vacío. *@
+    <ManageEmptyState Title="@_localizer["Manage_Beauty_Inquiries_Empty_Title"]"
+                      Description="@_localizer["Manage_Beauty_Inquiries_Empty_Description"]" />
+
+    @* Skeleton de cómo se verá una inquiry — comentado, solo de referencia para QA visual:
+       Cada inquiry mostraría:
+       - <WhatsAppCtaButton Phone="@inquiry.ClientWhatsAppPhone" />
+       - Channel column: "WhatsApp" (canal único en este sprint; #8)
+       - POST /inquiries/{id}/mark-contacted al pulsar el botón (ContactLog + email GM).
+    *@
+</main>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

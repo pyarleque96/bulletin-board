@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — Manage / Car Rental · Settings (Regular)
+  =====================================================
+  Settings es transversal a todas las categorías; este mockup es la plantilla.
+  Secciones (todas con Regla #5 — guardar regresa a Pending):
+    1. Listing details (title, description EN/ES, category — readonly)
+    2. Pickup location (address, map preview)
+    3. Operating hours (weekly schedule)
+    4. Notification preferences (email/WhatsApp, GM-copy is always on, no toggle)
+    5. Listing state (Pause / Resume / Delete)
+    6. Danger zone — Delete listing (confirm dialog)
+  Tier: Regular — sin secciones VIP (analytics, auto-reply, calendar).
+-->
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage · Settings — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',400:'#fb923c',500:'#f97316',600:'#ea580c'},ink:'#0f172a',muted:'#64748b'},fontFamily:{sans:['"DM Sans"','system-ui','sans-serif']},boxShadow:{soft:'0 4px 24px -4px rgba(30,41,59,0.08)'}}}};</script>
+  <style>.manage-tab[aria-selected="true"]{color:#0f172a;font-weight:600}.manage-tab[aria-selected="true"]::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#f97316;border-radius:2px 2px 0 0}.manage-tab{position:relative}[data-tooltip]{position:relative}[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1e293b;color:#fff;font-size:11px;padding:5px 9px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50}[data-tooltip]:hover::after{opacity:1}</style>
+</head>
+<body class="bg-slate-50 font-sans antialiased text-ink">
+
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"><div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-[0_4px_24px_-4px_rgba(30,41,59,0.10)]" style="backdrop-filter:blur(20px);"><a href="/" class="font-bold text-base text-ink no-underline">Bulletin Dells</a><div class="flex items-center gap-2"><span class="text-xs text-muted px-2 py-1 rounded-lg bg-slate-100">EN / ES</span><div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">D</div></div></div></nav>
+
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3"><a href="/manage" class="hover:text-ink">My Listings</a><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span class="text-ink font-medium">Dells Auto Rentals</span></nav>
+    <div class="flex items-center gap-2 mb-4 flex-wrap">
+      <h1 class="text-lg font-bold text-ink">Dells Auto Rentals · Compact Fleet</h1>
+      <span class="text-[10px] uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">Car rental</span>
+      <span class="text-[10px] uppercase tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Approved</span>
+      <span class="text-[10px] uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Regular</span>
+    </div>
+    <div class="border-b border-slate-100 -mb-px overflow-x-auto" role="tablist"><div class="flex items-center gap-0">
+      <a href="/manage/{id}" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Overview</a>
+      <a href="/manage/{id}/vehicles" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Vehicles</a>
+      <a href="/manage/{id}/reservations" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reservations</a>
+      <a href="/manage/{id}/photos" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Photos</a>
+      <a href="/manage/{id}/reviews" role="tab" aria-selected="false" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm text-muted no-underline">Reviews</a>
+      <span role="tab" aria-selected="true" class="manage-tab flex-shrink-0 px-4 py-2.5 text-sm">Settings</span>
+    </div></div>
+  </div>
+</div>
+
+<main class="max-w-3xl mx-auto px-4 py-8 w-full">
+
+  <!-- Pending warning banner -->
+  <div class="mb-6 flex items-start gap-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200" role="alert">
+    <svg class="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <p class="text-xs text-ink leading-relaxed">
+      <strong>Any change in this page returns the listing to Pending GM review.</strong> Your listing stays online with the previous content until the GM approves the new version.
+      <!-- ES: Cualquier cambio aquí regresa el anuncio a revisión por el GM. -->
+    </p>
+  </div>
+
+  <!-- Section 1: Listing details -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <h2 class="text-base font-semibold text-ink mb-1">Listing details<!-- ES: Detalles del anuncio --></h2>
+    <p class="text-xs text-muted mb-5">Editable fields. Category and slug are managed by the GM.</p>
+
+    <div class="space-y-4">
+      <div>
+        <label for="title-en" class="block text-xs font-semibold text-ink mb-1.5">Title (English)</label>
+        <input id="title-en" type="text" value="Dells Auto Rentals · Compact Fleet" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"/>
+      </div>
+      <div>
+        <label for="title-es" class="block text-xs font-semibold text-ink mb-1.5">Title (Spanish)</label>
+        <input id="title-es" type="text" value="Rentas de Auto Dells · Flota Compacta" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"/>
+        <p class="text-[11px] text-muted mt-1">Both languages are required. Customers see the one matching their interface language.</p>
+      </div>
+      <div>
+        <label for="desc-en" class="block text-xs font-semibold text-ink mb-1.5">Description (English)</label>
+        <textarea id="desc-en" rows="4" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">Family-owned rental fleet serving Wisconsin Dells since 2018. Same-day pickup, free child seats, and English/Spanish support.</textarea>
+      </div>
+      <div>
+        <label for="desc-es" class="block text-xs font-semibold text-ink mb-1.5">Description (Spanish)</label>
+        <textarea id="desc-es" rows="4" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">Flota familiar al servicio de Wisconsin Dells desde 2018. Entrega el mismo día, asientos para niños gratis y atención bilingüe.</textarea>
+      </div>
+      <div>
+        <label for="category" class="block text-xs font-semibold text-ink mb-1.5">Category</label>
+        <input id="category" type="text" value="Car rental" disabled class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-slate-50 text-muted"/>
+        <p class="text-[11px] text-muted mt-1">Contact the GM to change category.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Pickup location -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <h2 class="text-base font-semibold text-ink mb-1">Pickup location<!-- ES: Punto de recogida --></h2>
+    <p class="text-xs text-muted mb-5">Public address visible to customers.</p>
+    <div class="space-y-3">
+      <input type="text" value="312 Broadway, Wisconsin Dells, WI 53965" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"/>
+      <div class="aspect-[16/7] rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-muted">Map preview · 43.6275, -89.7706</div>
+    </div>
+  </section>
+
+  <!-- Section 3: Hours -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <h2 class="text-base font-semibold text-ink mb-1">Operating hours<!-- ES: Horario --></h2>
+    <p class="text-xs text-muted mb-5">Used to show availability and to set auto-reply hours.</p>
+    <div class="space-y-2">
+      <div class="grid grid-cols-3 gap-2 items-center"><span class="text-sm text-ink">Mon – Fri</span><input type="time" value="08:00" class="rounded-lg border border-slate-200 px-2 py-1 text-sm"/><input type="time" value="20:00" class="rounded-lg border border-slate-200 px-2 py-1 text-sm"/></div>
+      <div class="grid grid-cols-3 gap-2 items-center"><span class="text-sm text-ink">Saturday</span><input type="time" value="09:00" class="rounded-lg border border-slate-200 px-2 py-1 text-sm"/><input type="time" value="18:00" class="rounded-lg border border-slate-200 px-2 py-1 text-sm"/></div>
+      <div class="grid grid-cols-3 gap-2 items-center"><span class="text-sm text-ink">Sunday</span><span class="text-sm text-muted col-span-2"><label class="inline-flex items-center gap-2"><input type="checkbox" class="rounded text-brand-500"/> Closed</label></span></div>
+    </div>
+  </section>
+
+  <!-- Section 4: Notifications -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <h2 class="text-base font-semibold text-ink mb-1">Notifications<!-- ES: Notificaciones --></h2>
+    <p class="text-xs text-muted mb-5">How you want Bulletin Dells to contact you about new activity.</p>
+    <div class="space-y-3">
+      <label class="flex items-start gap-3"><input type="checkbox" checked class="mt-0.5 rounded text-brand-500"/><span><span class="text-sm text-ink font-medium">Email me about new inquiries</span><p class="text-[11px] text-muted">manuel.salgado@bulletindells.com</p></span></label>
+      <label class="flex items-start gap-3"><input type="checkbox" checked class="mt-0.5 rounded text-brand-500"/><span><span class="text-sm text-ink font-medium">WhatsApp me when GM approves/rejects content</span></span></label>
+      <div class="flex items-start gap-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200">
+        <svg class="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p class="text-[11px] text-ink">The GM is always copied on every customer conversation — this cannot be turned off.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: State -->
+  <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-5 mb-6">
+    <h2 class="text-base font-semibold text-ink mb-1">Listing state<!-- ES: Estado del anuncio --></h2>
+    <p class="text-xs text-muted mb-5">Pausing hides this listing from public search but keeps your data.</p>
+    <div class="flex items-center gap-3 flex-wrap">
+      <button class="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 text-ink text-xs font-semibold">Pause listing</button>
+      <span class="text-[11px] text-muted">Currently <strong class="text-green-700">Active</strong></span>
+    </div>
+  </section>
+
+  <!-- Save button + tooltip -->
+  <div class="sticky bottom-4 z-10 bg-white rounded-3xl border border-slate-200 shadow-soft p-4 flex items-center justify-between gap-3 flex-wrap">
+    <p class="text-[11px] text-muted leading-relaxed flex-1 min-w-[200px]">
+      <strong class="text-ink">Saving returns the listing to Pending review.</strong>
+      The previous version stays online until the GM approves the changes.
+    </p>
+    <div class="flex items-center gap-2">
+      <button class="text-xs px-3 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-ink">Cancel</button>
+      <button data-tooltip="Editing returns this listing to Pending review" class="text-xs px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold">Save changes</button>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <section class="bg-white rounded-3xl border border-red-200 shadow-soft p-5 mt-8">
+    <h2 class="text-base font-semibold text-red-800 mb-1">Danger zone<!-- ES: Zona de peligro --></h2>
+    <p class="text-xs text-muted mb-4">Deleting is permanent. All photos, reservations and reviews will be removed.</p>
+    <button class="px-3 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold">Delete listing</button>
+  </section>
+</main>
+</body>
+</html>

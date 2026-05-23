@@ -1,0 +1,57 @@
+@* Fallback layout: any category/tier without a dedicated component lands here.
+   Minimal-but-functional — about + first photo + reviews. PRs that add category-specific
+   layouts (CarRentalVip, CarRentalBasic, ...) take over via the resolver and never touch
+   this file. *@
+@using Bulletin.Board.Web.Client.Models
+
+<article class="max-w-6xl mx-auto px-4 pt-24 pb-16">
+
+    <header class="mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-ink tracking-tight">@Listing.TitleEn</h1>
+        @if (!string.IsNullOrWhiteSpace(Listing.Location))
+        {
+            <p class="text-muted text-sm mt-1">@Listing.Location</p>
+        }
+        <div class="flex items-center gap-3 mt-3 text-sm">
+            <span class="font-semibold text-ink">★ @Listing.Rating.ToString("0.0")</span>
+            <span class="text-muted">@Listing.ReviewCount reviews</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">@Listing.Tier</span>
+        </div>
+    </header>
+
+    @if (Listing.Photos.Length > 0)
+    {
+        <div class="rounded-3xl overflow-hidden h-72 md:h-96 mb-6 bg-slate-100">
+            <img src="@Listing.Photos[0].Url" alt="@Listing.Photos[0].AltText" class="w-full h-full object-cover" />
+        </div>
+    }
+
+    <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6 mb-6">
+        <h2 class="text-base font-semibold text-ink mb-3">About</h2>
+        <p class="text-muted leading-relaxed text-sm whitespace-pre-line">@Listing.DescriptionEn</p>
+    </section>
+
+    @if (Listing.Reviews.Length > 0)
+    {
+        <section class="bg-white rounded-3xl border border-slate-100 shadow-soft p-6">
+            <h2 class="text-base font-semibold text-ink mb-4">Reviews (@Listing.ReviewCount)</h2>
+            <ul class="space-y-4">
+                @foreach (var r in Listing.Reviews)
+                {
+                    <li class="border border-slate-100 rounded-2xl p-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-semibold text-ink">@r.ReviewerName</span>
+                            <span class="text-amber-500">★ @r.Rating.ToString("0.0")</span>
+                        </div>
+                        <p class="text-muted text-sm mt-2 leading-relaxed">@r.Text</p>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
+</article>
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

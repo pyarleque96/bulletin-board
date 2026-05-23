@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bulletin Board">
+  <title>Bulletin Board – App Icon (Light)</title>
+  <rect width="512" height="512" rx="0" ry="0" fill="#FFFFFF"/>
+  <!-- Safe area: 52px (~10%) -->
+  <!-- Two B's mirror the wordmark: Bulletin (navy) + Board (orange). Stacked diagonally, generous kerning so they never read as a single ligature. -->
+  <g font-family="'Nunito','Poppins','Mulish',system-ui,sans-serif" font-weight="900" letter-spacing="-6">
+    <text x="76" y="244" font-size="220" fill="#101A3D">B</text>
+    <text x="244" y="424" font-size="220" fill="#F39323">B</text>
+  </g>
+  <!-- Pin / dot accent (bulletin board metaphor, reuses dot from the "i" in Bulletin) -->
+  <circle cx="200" cy="92" r="22" fill="#F39323"/>
+</svg>

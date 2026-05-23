@@ -1,0 +1,450 @@
+// ============================================================
+// BULLETIN DELLS — Database Schema (DBML)
+// Stack: PostgreSQL 16 + EF Core (.NET 10)
+// Fuente de verdad: código fuente en source/src/
+// Herramienta de visualización: https://dbdiagram.io
+//
+// Generado desde:
+//   - Domain/Entities/*.cs
+//   - Infrastructure/Persistence/Configurations/*.cs
+//   - ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+// ============================================================
+
+Project BulletinDells {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Marketplace bilingüe (EN/ES) para Wisconsin Dells.
+    Moderado por GM. Clean Architecture (.NET 10 / Blazor / EF Core).
+    Roles del sistema: User | Provider | Admin (gestionados via ASP.NET Identity).
+  '''
+}
+
+// ============================================================
+// ASP.NET IDENTITY TABLES
+// ApplicationUser : IdentityUser<Guid> con campos: locale, is_active, created_at, updated_at
+// ApplicationRole : IdentityRole<Guid>
+// ============================================================
+
+// ----------------------------------------------------------
+// USERS (ApplicationUser)
+// Los roles se asignan via user_roles — no hay columna role directa.
+// phone_number viene de IdentityUser (puede cifrarse en aplicación).
+// ----------------------------------------------------------
+Table users {
+  id                     uuid         [pk, default: `gen_random_uuid()`]
+  user_name              varchar(256)
+  normalized_user_name   varchar(256) [unique]
+  email                  varchar(256)
+  normalized_email       varchar(256) [unique]
+  email_confirmed        boolean      [not null, default: false]
+  password_hash          text
+  security_stamp         text
+  concurrency_stamp      text
+  phone_number           varchar(256) [note: 'Cifrado AES-256 en aplicación si contiene PII']
+  phone_number_confirmed boolean      [not null, default: false]
+  two_factor_enabled     boolean      [not null, default: false]
+  lockout_end            timestamptz
+  lockout_enabled        boolean      [not null, default: false]
+  access_failed_count    int          [not null, default: 0]
+  // Campos adicionales ApplicationUser
+  locale                 varchar(5)   [not null, default: 'en', note: "IN ('en','es')"]
+  is_active              boolean      [not null, default: true]
+  created_at             timestamptz  [not null, default: `now()`]
+  updated_at             timestamptz  [not null, default: `now()`]
+
+  indexes {
+    normalized_email       [unique]
+    normalized_user_name   [unique]
+  }
+
+  note: 'Raíz de identidad (ASP.NET Identity). Rol asignado via user_roles. Provider adicionalmente registrado en tabla providers.'
+}
+
+// ----------------------------------------------------------
+// ROLES (ApplicationRole)
+// Roles del sistema: User, Provider, Admin
+// ----------------------------------------------------------
+Table roles {
+  id                uuid         [pk, default: `gen_random_uuid()`]
+  name              varchar(256)
+  normalized_name   varchar(256) [unique]
+  concurrency_stamp text
+
+  indexes {
+    normalized_name [unique]
+  }
+}
+
+// ----------------------------------------------------------
+// USER_ROLES — join table N:M
+// ----------------------------------------------------------
+Table user_roles {
+  user_id uuid [not null, ref: > users.id]
+  role_id uuid [not null, ref: > roles.id]
+
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+// ----------------------------------------------------------
+// USER_CLAIMS — claims adicionales por usuario
+// ----------------------------------------------------------
+Table user_claims {
+  id          int  [pk, increment]
+  user_id     uuid [not null, ref: > users.id]
+  claim_type  text
+  claim_value text
+
+  indexes {
+    user_id
+  }
+}
+
+// ----------------------------------------------------------
+// USER_LOGINS — proveedores OAuth externos
+// ----------------------------------------------------------
+Table user_logins {
+  login_provider        varchar(128) [not null]
+  provider_key          varchar(128) [not null]
+  provider_display_name text
+  user_id               uuid         [not null, ref: > users.id]
+
+  indexes {
+    (login_provider, provider_key) [pk]
+    user_id
+  }
+}
+
+// ----------------------------------------------------------
+// USER_TOKENS — tokens de Identity (email confirmation, 2FA, etc.)
+// ----------------------------------------------------------
+Table user_tokens {
+  user_id        uuid         [not null, ref: > users.id]
+  login_provider varchar(128) [not null]
+  name           varchar(128) [not null]
+  value          text
+
+  indexes {
+    (user_id, login_provider, name) [pk]
+  }
+}
+
+// ----------------------------------------------------------
+// ROLE_CLAIMS — claims adicionales por rol
+// ----------------------------------------------------------
+Table role_claims {
+  id          int  [pk, increment]
+  role_id     uuid [not null, ref: > roles.id]
+  claim_type  text
+  claim_value text
+
+  indexes {
+    role_id
+  }
+}
+
+// ============================================================
+// DOMINIO DE NEGOCIO — Bulletin Dells
+// ============================================================
+
+// ----------------------------------------------------------
+// PROVIDERS — extiende users 1:1
+// Invariante: VIP/SuperDuperVIP requiere verification_status = 'Approved'
+// ON DELETE CASCADE desde users (si user se elimina, provider se elimina)
+// ----------------------------------------------------------
+Table providers {
+  id                  uuid        [pk, default: `gen_random_uuid()`]
+  user_id             uuid        [unique, not null, ref: > users.id]
+  tier                varchar(20) [not null, default: 'Regular',
+                                  note: "IN ('Regular','Verified','VIP','SuperDuperVIP')"]
+  verification_status varchar(20) [not null, default: 'Pending',
+                                  note: "IN ('Pending','Approved','Rejected')"]
+  verified_at         timestamptz
+  bio                 text
+  whatsapp_number     varchar(30) [not null]
+  created_at          timestamptz [not null, default: `now()`]
+
+  indexes {
+    user_id [unique]
+    (tier, verification_status)
+  }
+
+  note: '''
+    CHECK chk_vip_requires_verified:
+      tier IN (Regular, Verified)
+      OR (tier IN (VIP, SuperDuperVIP) AND verification_status = Approved)
+    Segunda línea de defensa en BD. La primera está en Provider.ApproveTier() del dominio.
+  '''
+}
+
+// ----------------------------------------------------------
+// CATEGORIES — predefinidas por la plataforma
+// Solo Admin puede crear/editar. Nunca texto libre del proveedor.
+// ----------------------------------------------------------
+Table categories {
+  id            uuid         [pk, default: `gen_random_uuid()`]
+  name_en       varchar(120) [not null]
+  name_es       varchar(120) [not null]
+  slug          varchar(120) [unique, not null]
+  display_order int          [not null, default: 0]
+  is_active     boolean      [not null, default: true]
+  icon_url      text
+
+  indexes {
+    slug [unique]
+  }
+
+  note: 'Categorías predefinidas por la plataforma. Nunca texto libre del proveedor (Regla 9).'
+}
+
+// ----------------------------------------------------------
+// LISTINGS — corazón del marketplace
+// Toda edición de proveedor resetea status a Pending (trigger + dominio).
+// provider_tier desnormalizado para performance de ranking sin JOIN.
+// avg_rating desnormalizado, actualizado via trigger al aprobar ratings.
+// ----------------------------------------------------------
+Table listings {
+  id               uuid          [pk, default: `gen_random_uuid()`]
+  provider_id      uuid          [not null, ref: > providers.id]
+  category_id      uuid          [not null, ref: > categories.id]
+  title_en         varchar(255)  [not null]
+  title_es         varchar(255)  [not null]
+  description_en   text
+  description_es   text
+  price            numeric(10,2) [note: 'CHECK: price IS NULL OR price > 0']
+  price_label_en   varchar(80)
+  price_label_es   varchar(80)
+  location         varchar(255)
+  whatsapp_number  varchar(30)
+  status           varchar(20)   [not null, default: 'Pending',
+                                  note: "IN ('Pending','Approved','Rejected','NeedsChanges')"]
+  rejection_reason text          [note: 'También usado como feedback en NeedsChanges']
+  provider_tier    varchar(20)   [not null,
+                                  note: "IN ('Regular','Verified','VIP','SuperDuperVIP'). Desnormalizado para ranking. Mantenido por trigger trg_sync_listing_provider_tier."]
+  avg_rating       numeric(3,2)  [note: 'Desnormalizado. Actualizado por trigger trg_update_avg_rating al aprobar/rechazar ratings.']
+  published_at     timestamptz   [note: 'NULL si status != Approved. CHECK: published_at IS NULL OR status = Approved']
+  is_deleted       boolean       [not null, default: false, note: 'Soft delete']
+  created_at       timestamptz   [not null, default: `now()`]
+  updated_at       timestamptz   [not null, default: `now()`]
+
+  indexes {
+    (category_id, status, price)            [name: 'idx_listings_search']
+    (provider_tier, avg_rating, created_at) [name: 'idx_listings_tier_rating']
+    is_deleted
+    provider_id
+  }
+
+  note: '''
+    Regla 1: Ningún listing se publica sin aprobación del GM.
+    Regla 5: Toda edición vuelve status a Pending (trigger trg_listing_edit_pending).
+    Regla 6: Los listings no expiran automáticamente.
+    Ranking: SuperDuperVIP -> VIP -> Verified -> Regular, luego avg_rating DESC, created_at DESC.
+  '''
+}
+
+// ----------------------------------------------------------
+// LISTING_IMAGES — el GM decide cuáles son públicas
+// ON DELETE CASCADE desde listings.
+// UNIQUE (listing_id, display_order) para orden sin colisiones.
+// ----------------------------------------------------------
+Table listing_images {
+  id            uuid        [pk, default: `gen_random_uuid()`]
+  listing_id    uuid        [not null, ref: > listings.id]
+  file_path     text        [not null]
+  is_public     boolean     [not null, default: false, note: 'El GM activa las fotos que se muestran (Regla 4)']
+  display_order int         [not null, default: 0]
+  uploaded_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (listing_id, display_order) [unique, name: 'uq_listing_image_order']
+    (listing_id, is_public)
+  }
+
+  note: 'is_public=false por defecto. Regla 4: el GM decide cuáles son públicas.'
+}
+
+// ----------------------------------------------------------
+// CONTACTS — única base válida para poder calificar
+// Se crea cuando un usuario inicia contacto vía WhatsApp.
+// Sin contact previo, no puede existir un rating.
+// ----------------------------------------------------------
+Table contacts {
+  id                uuid        [pk, default: `gen_random_uuid()`]
+  listing_id        uuid        [not null, ref: > listings.id]
+  initiator_user_id uuid        [not null, ref: > users.id]
+  provider_id       uuid        [not null, ref: > providers.id]
+  channel           varchar(20) [not null, default: 'WhatsApp', note: "Regla 8: contacto siempre via WhatsApp"]
+  created_at        timestamptz [not null, default: `now()`]
+
+  indexes {
+    (listing_id, initiator_user_id)
+    (provider_id, created_at) [name: 'idx_contacts_provider']
+  }
+
+  note: '''
+    Regla 7: ratings solo de usuarios que contactaron al proveedor vía la plataforma.
+    Regla 8: contacto cliente<->proveedor por WhatsApp; GM recibe email.
+    Este registro es el gate para poder emitir un rating.
+  '''
+}
+
+// ----------------------------------------------------------
+// RATINGS — requiere contact previo + aprobación del GM antes de publicarse
+// contact_id UNIQUE: exactamente 1 rating por interacción real.
+// approved_by NOT NULL cuando status = 'Approved'.
+// ----------------------------------------------------------
+Table ratings {
+  id             uuid        [pk, default: `gen_random_uuid()`]
+  contact_id     uuid        [unique, not null, ref: - contacts.id,
+                              note: 'UNIQUE: 1 rating por contacto. Previene ratings fantasma.']
+  listing_id     uuid        [not null, ref: > listings.id]
+  provider_id    uuid        [not null, ref: > providers.id]
+  author_user_id uuid        [not null, ref: > users.id]
+  stars          smallint    [not null, note: 'CHECK: stars BETWEEN 1 AND 5']
+  comment        text
+  status         varchar(20) [not null, default: 'Pending',
+                              note: "IN ('Pending','Approved','Rejected')"]
+  approved_at    timestamptz
+  approved_by    uuid        [ref: > users.id, note: 'NOT NULL cuando status=Approved']
+  created_at     timestamptz [not null, default: `now()`]
+
+  indexes {
+    contact_id           [unique]
+    (listing_id, status) [name: 'idx_ratings_listing']
+    (provider_id, status)
+  }
+
+  note: '''
+    Regla 7: ratings revisados por el GM antes de publicarse.
+    CHECK chk_rating_approved_has_approver: status != Approved OR approved_by IS NOT NULL.
+    contact_id UNIQUE es la segunda línea de defensa tras Rating.Create() en el dominio.
+  '''
+}
+
+// ----------------------------------------------------------
+// VERIFICATIONS — flujo multi-step de verificación de identidad
+// overall_status se recalcula en aplicación (Verification.RecalculateOverallStatus()).
+// identity_document_encrypted: cifrado AES-256 en aplicación (EF Core Value Converter).
+// social_profiles_json: JSON serializado como text.
+// ----------------------------------------------------------
+Table verifications {
+  id                          uuid        [pk, default: `gen_random_uuid()`]
+  provider_id                 uuid        [unique, not null, ref: - providers.id]
+  phone_number                varchar(30) [note: 'Cifrado AES-256 en aplicación']
+  phone_verified_at           timestamptz
+  phone_verification_token    text        [note: 'Token temporal para verificación OTP']
+  identity_document_encrypted text        [note: 'Cifrado AES-256. NUNCA plain-text. Acceso auditado.']
+  identity_status             varchar(20) [not null, default: 'Pending',
+                                          note: "IN ('Pending','Approved','Rejected')"]
+  social_profiles_json        text        [note: 'JSON: {"instagram":"url","facebook":"url",...}']
+  overall_status              varchar(20) [not null, default: 'Pending',
+                                          note: "IN ('Pending','Approved','Rejected'). Recalculado en app: phone_verified AND identity=Approved -> Approved."]
+  created_at                  timestamptz [not null, default: `now()`]
+  updated_at                  timestamptz [not null, default: `now()`]
+
+  indexes {
+    provider_id [unique]
+  }
+
+  note: '''
+    Regla 3: nadie es VIP sin verificación (teléfono + ID/pasaporte + redes sociales).
+    overall_status Approved requiere: phone_verified_at IS NOT NULL AND identity_status = Approved.
+    Solo entonces Provider.ApproveTier(VIP) puede proceder.
+  '''
+}
+
+// ----------------------------------------------------------
+// REPORTS — denuncia de provider o listing
+// Debe referenciar al menos un provider o un listing.
+// ----------------------------------------------------------
+Table reports {
+  id              uuid        [pk, default: `gen_random_uuid()`]
+  provider_id     uuid        [ref: > providers.id]
+  listing_id      uuid        [ref: > listings.id]
+  reported_by_id  uuid        [not null, ref: > users.id]
+  reason          text        [not null]
+  status          varchar(20) [not null, default: 'Pending',
+                               note: "IN ('Pending','Reviewed','Dismissed')"]
+  reviewed_by_id  uuid        [ref: > users.id]
+  created_at      timestamptz [not null, default: `now()`]
+
+  indexes {
+    status      [name: 'idx_reports_status']
+    listing_id
+    provider_id
+  }
+
+  note: 'CHECK chk_report_has_target: provider_id IS NOT NULL OR listing_id IS NOT NULL.'
+}
+
+// ----------------------------------------------------------
+// AUDIT_LOGS — append-only, retención mínima 1 año
+// actor_user_id SET NULL si usuario se elimina (preservar historial de acciones).
+// changes_json: TEXT con JSON {"before":{...},"after":{...}}.
+// ip_address: VARCHAR(45) para IPv4 e IPv6.
+// NUNCA UPDATE ni DELETE sobre esta tabla.
+// ----------------------------------------------------------
+Table audit_logs {
+  id            uuid        [pk, default: `gen_random_uuid()`]
+  actor_user_id uuid        [ref: > users.id, note: 'SET NULL si usuario eliminado']
+  action        varchar(80) [not null, note: "Ej: 'listing.approved', 'provider.vip_assigned', 'verification.accessed'"]
+  resource_type varchar(50) [not null, note: "Ej: 'Listing', 'Provider', 'Rating'"]
+  resource_id   uuid
+  changes_json  text        [note: 'JSON: {"before":{...},"after":{...}}']
+  ip_address    varchar(45) [note: 'IPv4 o IPv6']
+  created_at    timestamptz [not null, default: `now()`]
+
+  indexes {
+    (resource_type, resource_id, created_at) [name: 'idx_audit_resource']
+    (actor_user_id, created_at)              [name: 'idx_audit_actor']
+    created_at
+  }
+
+  note: '''
+    Append-only. Nunca UPDATE ni DELETE.
+    Qué auditar: aprobaciones de listings/ratings, VIP assignments,
+    bloqueos de usuarios, accesos a identity_document_encrypted.
+    Retención: mínimo 1 año.
+  '''
+}
+
+// ----------------------------------------------------------
+// WAIVER_ACCEPTANCES — disclaimer legal en primera interacción
+// UNIQUE en user_id: un solo waiver por usuario.
+// La plataforma verifica existencia antes de permitir el primer contacto.
+// ----------------------------------------------------------
+Table waiver_acceptances {
+  id          uuid        [pk, default: `gen_random_uuid()`]
+  user_id     uuid        [unique, not null, ref: - users.id]
+  accepted_at timestamptz [not null, default: `now()`]
+  ip_address  varchar(45) [note: 'IPv4 o IPv6']
+  user_agent  text
+
+  indexes {
+    user_id [unique]
+  }
+
+  note: 'Regla 2: primera interacción significativa dispara waiver legal. 1 waiver por usuario (UNIQUE).'
+}
+
+// ----------------------------------------------------------
+// REFRESH_TOKENS — JWT rotativo (Access ~15min / Refresh ~7d)
+// Solo se almacena el hash del token, nunca el valor en plain-text.
+// ON DELETE CASCADE desde users.
+// ----------------------------------------------------------
+Table refresh_tokens {
+  id         uuid         [pk, default: `gen_random_uuid()`]
+  user_id    uuid         [not null, ref: > users.id]
+  token_hash varchar(255) [unique, not null, note: 'Solo hash. Nunca plain-text.']
+  expires_at timestamptz  [not null, note: 'CHECK chk_refresh_token_expires: expires_at > created_at']
+  revoked_at timestamptz  [note: 'NULL = activo. SET para invalidación explícita.']
+  created_at timestamptz  [not null, default: `now()`]
+
+  indexes {
+    token_hash            [unique]
+    (user_id, revoked_at) [name: 'idx_refresh_tokens_user_revoked']
+  }
+
+  note: 'Rotación en cada uso. revoked_at para invalidación explícita (logout, cambio de password).'
+}

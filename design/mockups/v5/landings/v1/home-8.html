@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulletin Dells — Discover Wisconsin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,300&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#FDFBF7',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            'soft':  '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift':  '0 12px 40px -8px rgba(30,41,59,0.14)',
+            'float': '0 24px 64px -12px rgba(30,41,59,0.18)',
+            'diffuse': '0 32px 80px -16px rgba(30,41,59,0.10)',
+          },
+          transitionTimingFunction: { 'spring': 'cubic-bezier(0.32,0.72,0,1)' }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* Grain overlay — fixed, pointer-events-none, never on scroll container */
+    .grain-overlay {
+      position: fixed; inset: 0; z-index: 50; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.3;
+    }
+
+    /* NAV PILL — LIGHT version (hero is light) */
+    .nav-pill {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), 0 1px 0 rgba(255,255,255,0.9) inset;
+    }
+
+    /* BADGE variants */
+    .badge-sdvip { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .badge-vip   { background: linear-gradient(135deg, #fb923c, #f97316); }
+    .badge-new   { background: linear-gradient(135deg, #34d399, #10b981); }
+
+    /* VIP glow — light-mode toned down */
+    .vip-glow   { box-shadow: 0 0 0 1px rgba(249,115,22,0.18), 0 8px 32px -4px rgba(249,115,22,0.12); }
+    .sdvip-glow { box-shadow: 0 0 0 1px rgba(234,179,8,0.25),  0 8px 32px -4px rgba(234,179,8,0.16); }
+
+    /* CARD hover spring */
+    .card-hover { transition: transform 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s cubic-bezier(0.32,0.72,0,1); cursor: pointer; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 28px 72px -16px rgba(30,41,59,0.16); }
+
+    /* BUTTON spring */
+    .btn-primary { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s cubic-bezier(0.32,0.72,0,1); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(249,115,22,0.35); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-wa { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease; }
+    .btn-wa:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -4px rgba(34,197,94,0.32); }
+
+    /* SEARCH ring focus */
+    .search-ring:focus-within { box-shadow: 0 0 0 3px rgba(59,130,246,0.35), 0 24px 64px -12px rgba(30,41,59,0.14); }
+
+    /* FADE-UP scroll reveal */
+    .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.32,0.72,0,1), transform 0.7s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up[style*="--i:2"] { transition-delay: 80ms; }
+    .fade-up[style*="--i:3"] { transition-delay: 160ms; }
+    .fade-up[style*="--i:4"] { transition-delay: 240ms; }
+    .fade-up[style*="--i:5"] { transition-delay: 320ms; }
+
+    /* STAGGER children */
+    .stagger-child { opacity: 0; transform: translateY(20px); transition: opacity 0.6s cubic-bezier(0.32,0.72,0,1), transform 0.6s cubic-bezier(0.32,0.72,0,1); }
+    .stagger-child.visible { opacity: 1; transform: translateY(0); }
+
+    /* RATING star */
+    .rating-star { color: #f59e0b; }
+
+    /* SECTION eyebrow pill */
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 9999px;
+      background: #eff6ff; color: #2563eb;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    /* EXPLORE TILE hover */
+    .explore-tile { transition: transform 0.35s cubic-bezier(0.32,0.72,0,1), box-shadow 0.35s cubic-bezier(0.32,0.72,0,1); cursor: pointer; }
+    .explore-tile:hover { transform: scale(1.025); box-shadow: 0 24px 60px -8px rgba(30,41,59,0.22); }
+
+    /* TRENDING horizontal scroll — snap */
+    .trending-scroll {
+      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    }
+    .trending-scroll::-webkit-scrollbar { display: none; }
+    .trending-card { scroll-snap-align: start; }
+
+    /* SKELETON shimmer */
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* DOUBLE-BEZEL outer shell */
+    .bezel-outer {
+      padding: 6px;
+      border-radius: 2rem;
+      background: rgba(30,41,59,0.02);
+      ring: 1px solid rgba(30,41,59,0.06);
+      box-shadow: 0 0 0 1px rgba(30,41,59,0.06);
+    }
+    /* DOUBLE-BEZEL inner core */
+    .bezel-inner {
+      border-radius: calc(2rem - 0.375rem);
+      background: #ffffff;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+    /* For explore tiles the inner holds the gradient */
+    .bezel-inner-color {
+      border-radius: calc(2rem - 0.375rem);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
+      overflow: hidden;
+    }
+
+    /* PROVIDER CTA connector line between steps */
+    .step-connector { position: relative; }
+    .step-connector::after {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: calc(50% + 28px);
+      width: calc(100% - 56px);
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+    }
+    @media (max-width: 639px) { .step-connector::after { display: none; } }
+
+    /* AMBIENT hero background */
+    .hero-ambient {
+      background: #FDFBF7;
+    }
+
+    /* Scroll indicator bounce */
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0) translateX(-50%); }
+      50% { transform: translateY(6px) translateX(-50%); }
+    }
+    .scroll-indicator { animation: gentle-bounce 2.4s ease-in-out infinite; }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- NAVBAR — light pill (hero is light) -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center justify-between" aria-label="Main navigation">
+      <a href="landing.html" class="flex items-center gap-2.5 cursor-pointer" aria-label="Bulletin Dells — go to homepage">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shadow-soft flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="font-semibold tracking-tight text-sm hidden sm:block text-ink">Bulletin Dells</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-1" role="list">
+        <li><a href="home-listings.html" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Browse</a></li>
+        <!-- ES: Navegar -->
+        <li><a href="#explore" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Explore</a></li>
+        <!-- ES: Explorar -->
+        <li><a href="#trending" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Trending</a></li>
+        <!-- ES: Tendencias -->
+        <li><a href="#new-listings" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">New</a></li>
+        <!-- ES: Nuevos -->
+      </ul>
+      <div class="flex items-center gap-2">
+        <button class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+        <a href="#provider-cta" class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full btn-primary cursor-pointer">
+          List your business
+          <!-- ES: Publica tu negocio -->
+          <span class="w-5 h-5 rounded-full bg-black/[0.10] flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════
+         HERO — clear warm cream, editorial typography
+         ═══════════════════════════════════════════════ -->
+    <section class="hero-ambient min-h-[100dvh] flex flex-col items-center justify-center pt-28 pb-20 px-4 relative overflow-hidden" aria-labelledby="home8-headline">
+
+      <!-- Ambient radial gradient — subtle, warm + brand tones -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+        style="background: radial-gradient(ellipse at 60% 38%, rgba(59,130,246,0.07) 0%, rgba(249,115,22,0.04) 45%, transparent 68%), radial-gradient(ellipse at 20% 70%, rgba(52,211,153,0.05) 0%, transparent 50%);">
+      </div>
+
+      <!-- Subtle dot grid -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+        style="background-image: radial-gradient(circle, rgba(30,41,59,0.06) 1px, transparent 1px); background-size: 28px 28px; mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);">
+      </div>
+
+      <div class="relative z-10 w-full max-w-3xl mx-auto text-center">
+
+        <!-- Location eyebrow -->
+        <div class="fade-up mb-6" style="--i:1">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-[10px] uppercase tracking-[0.18em] font-semibold shadow-soft">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            Wisconsin Dells, WI
+          </span>
+        </div>
+
+        <!-- H1 — editorial bold -->
+        <h1 id="home8-headline" class="fade-up text-5xl sm:text-6xl md:text-7xl font-black text-ink leading-[1.02] tracking-tighter mb-5" style="--i:2">
+          Discover what<br />
+          <span class="relative inline-block">
+            <span class="relative z-10 text-brand-500">Dells</span>
+            <!-- underline accent -->
+            <svg class="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 8" fill="none" preserveAspectRatio="none" aria-hidden="true" style="height:6px"><path d="M2 5.5 C40 2, 100 7, 198 4" stroke="#F97316" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"/></svg>
+          </span>
+          <span class="text-ink"> has to offer.</span>
+          <!-- ES: Descubre lo que Dells tiene para ofrecer. -->
+        </h1>
+
+        <p class="fade-up text-lg text-muted leading-relaxed max-w-[48ch] mx-auto mb-8" style="--i:3">
+          Housing, rides, mechanics, beauty, jobs and more — all local, all verified.
+          <!-- ES: Vivienda, rides, mecánicos, belleza, trabajos y más — todo local, todo verificado. -->
+        </p>
+
+        <!-- Search bar — Double-Bezel -->
+        <div class="fade-up mb-7" style="--i:4">
+          <!-- Outer bezel shell -->
+          <div class="bezel-outer" role="search" aria-label="Search Bulletin Dells">
+            <!-- Inner core -->
+            <div class="bezel-inner search-ring transition-shadow duration-300">
+              <div class="flex items-center bg-white">
+                <div class="pl-5 pr-2 flex-shrink-0" aria-hidden="true">
+                  <svg class="w-5 h-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <label for="hero8-search" class="sr-only">Search services in Wisconsin Dells</label>
+                <input id="hero8-search" type="search"
+                  placeholder="What are you looking for in Dells?"
+                  class="flex-1 py-4 px-3 text-ink placeholder-muted/50 bg-transparent border-none outline-none text-base"
+                  style="border-radius: 0;"
+                />
+                <!-- ES: placeholder="¿Qué buscas en Dells?" -->
+                <div class="p-2 flex-shrink-0">
+                  <button class="btn-primary flex items-center gap-2 bg-accent text-white font-semibold px-5 py-2.5 text-sm cursor-pointer" style="border-radius: calc(2rem - 0.75rem);" type="submit">
+                    Search
+                    <!-- ES: Buscar -->
+                    <span class="w-6 h-6 rounded-full bg-black/[0.10] flex items-center justify-center" aria-hidden="true">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick category pills — light, clean -->
+        <div class="fade-up flex flex-wrap justify-center gap-2 mb-8" style="--i:5" aria-label="Browse categories">
+          <span class="text-muted text-xs self-center mr-1">Quick:</span>
+          <!-- ES: Rápido: -->
+          <a href="home-listings.html" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Car Rental
+          </a>
+          <!-- ES: Renta de Autos -->
+          <a href="#" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Housing
+          </a>
+          <!-- ES: Vivienda -->
+          <a href="#" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">
+            <svg class="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.82 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Airport Rides
+          </a>
+          <!-- ES: Rides al Aeropuerto -->
+          <a href="#" class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">Beauty</a>
+          <!-- ES: Belleza -->
+          <a href="#" class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">Jobs</a>
+          <!-- ES: Empleos -->
+          <a href="#" class="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-ink text-xs font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer shadow-soft">Mechanics</a>
+          <!-- ES: Mecánicos -->
+        </div>
+
+        <!-- Trust micro-signals — dark text on light bg -->
+        <div class="fade-up flex items-center justify-center flex-wrap gap-x-7 gap-y-2" style="--i:5">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="text-muted text-xs">GM-verified listings</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span class="text-muted text-xs">340+ verified providers</span>
+          </div>
+          <!-- ES: 340+ proveedores verificados -->
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            <span class="text-muted text-xs">WhatsApp contact</span>
+          </div>
+          <!-- ES: Contacto por WhatsApp -->
+        </div>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="scroll-indicator absolute bottom-8 left-1/2 flex flex-col items-center gap-1.5" aria-hidden="true">
+        <div class="w-5 h-8 rounded-full border border-slate-300 flex items-start justify-center pt-1.5">
+          <div class="w-1 h-1.5 rounded-full bg-muted/50" style="animation: scroll-dot 1.8s ease-in-out infinite;"></div>
+        </div>
+      </div>
+      <style>
+        @keyframes scroll-dot { 0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(8px);opacity:1} }
+      </style>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         EXPLORE — masonry tiles with Double-Bezel
+         ═══════════════════════════════════════════════ -->
+    <section id="explore" class="py-24 px-4 bg-white" aria-labelledby="explore-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center justify-between mb-10 fade-up">
+          <div>
+            <div class="section-eyebrow mb-3">All Services <!-- ES: Todos los Servicios --></div>
+            <h2 id="explore-heading" class="text-3xl font-black text-ink tracking-tighter">Explore Wisconsin Dells</h2>
+            <!-- ES: Explora Wisconsin Dells -->
+          </div>
+          <a href="home-listings.html" class="group flex items-center gap-2 text-sm text-brand-500 hover:text-brand-700 font-semibold transition-colors duration-200 cursor-pointer">
+            View all
+            <!-- ES: Ver todo -->
+            <span class="w-7 h-7 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center group-hover:bg-brand-100 transition-colors duration-200" aria-hidden="true">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </a>
+        </div>
+
+        <!-- Masonry grid — Double-Bezel on each tile -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 fade-up">
+
+          <!-- HOUSING — tall tile (row-span-2) — Double-Bezel -->
+          <a href="#" class="md:row-span-2 block" style="min-height: 280px;" aria-label="Browse Housing listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 280px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-5"
+                style="background: linear-gradient(145deg, #3b5bdb 0%, #1e3a8a 55%, #0c1a4f 100%); min-height: calc(280px - 12px);">
+                <!-- Photo overlay — preserves category color via mix-blend-overlay -->
+                <img src="https://picsum.photos/seed/housing-dells-tile/600/560" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <!-- Subtle inner texture -->
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 80% 20%, rgba(147,197,253,0.4) 0%, transparent 50%);" aria-hidden="true"></div>
+                <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-3 relative z-10">
+                  <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <p class="text-white font-bold text-xl leading-tight relative z-10">Housing</p>
+                <!-- ES: Vivienda -->
+                <p class="text-white/60 text-xs mt-1 relative z-10">48 listings</p>
+                <!-- ES: 48 anuncios -->
+              </div>
+            </div>
+          </a>
+
+          <!-- CAR RENTAL -->
+          <a href="detail-car-rental.html" class="block" style="min-height: 130px;" aria-label="Browse Car Rental listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 130px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-4"
+                style="background: linear-gradient(145deg, #f97316 0%, #c2410c 100%); min-height: calc(130px - 12px);">
+                <!-- Photo overlay -->
+                <img src="https://picsum.photos/seed/car-rental-tile/600/280" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 20% 80%, rgba(254,215,170,0.5) 0%, transparent 50%);" aria-hidden="true"></div>
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2 relative z-10">
+                  <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </div>
+                <p class="text-white font-semibold text-sm relative z-10">Car Rental</p>
+                <!-- ES: Renta de Autos -->
+                <p class="text-white/65 text-xs relative z-10">12 listings</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- AIRPORT RIDES -->
+          <a href="#" class="block" style="min-height: 130px;" aria-label="Browse Airport Rides listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 130px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-4"
+                style="background: linear-gradient(145deg, #0891b2 0%, #0e4369 100%); min-height: calc(130px - 12px);">
+                <!-- Photo overlay -->
+                <img src="https://picsum.photos/seed/airport-dells-tile/600/280" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 70% 20%, rgba(186,230,253,0.5) 0%, transparent 55%);" aria-hidden="true"></div>
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2 relative z-10">
+                  <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.82 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <p class="text-white font-semibold text-sm relative z-10">Airport Rides</p>
+                <!-- ES: Rides al Aeropuerto -->
+                <p class="text-white/65 text-xs relative z-10">9 listings</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- JOBS — tall tile (row-span-2) -->
+          <a href="#" class="md:row-span-2 block" style="min-height: 280px;" aria-label="Browse Jobs listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 280px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-5"
+                style="background: linear-gradient(145deg, #7c3aed 0%, #4c1d95 55%, #2d1363 100%); min-height: calc(280px - 12px);">
+                <!-- Photo overlay -->
+                <img src="https://picsum.photos/seed/jobs-dells-tile/600/560" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 30% 30%, rgba(216,180,254,0.4) 0%, transparent 55%);" aria-hidden="true"></div>
+                <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center mb-3 relative z-10">
+                  <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <p class="text-white font-bold text-xl leading-tight relative z-10">Jobs</p>
+                <!-- ES: Empleos -->
+                <p class="text-white/60 text-xs mt-1 relative z-10">31 listings</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- BEAUTY -->
+          <a href="#" class="block" style="min-height: 130px;" aria-label="Browse Beauty listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 130px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-4"
+                style="background: linear-gradient(145deg, #ec4899 0%, #9d174d 100%); min-height: calc(130px - 12px);">
+                <!-- Photo overlay -->
+                <img src="https://picsum.photos/seed/beauty-dells-tile/600/280" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 80% 80%, rgba(251,207,232,0.5) 0%, transparent 55%);" aria-hidden="true"></div>
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2 relative z-10">
+                  <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <p class="text-white font-semibold text-sm relative z-10">Beauty</p>
+                <!-- ES: Belleza -->
+                <p class="text-white/65 text-xs relative z-10">23 listings</p>
+              </div>
+            </div>
+          </a>
+
+          <!-- MECHANICS -->
+          <a href="#" class="block" style="min-height: 130px;" aria-label="Browse Mechanics listings">
+            <div class="explore-tile bezel-outer h-full" style="min-height: 130px;">
+              <div class="bezel-inner-color h-full relative flex flex-col justify-end p-4"
+                style="background: linear-gradient(145deg, #57534e 0%, #1c1917 100%); min-height: calc(130px - 12px);">
+                <!-- Photo overlay -->
+                <img src="https://picsum.photos/seed/mechanic-dells-tile/600/280" alt="" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" loading="lazy" aria-hidden="true" />
+                <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 50% 50%, rgba(214,211,209,0.3) 0%, transparent 60%);" aria-hidden="true"></div>
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2 relative z-10">
+                  <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <p class="text-white font-semibold text-sm relative z-10">Mechanics</p>
+                <!-- ES: Mecánicos -->
+                <p class="text-white/65 text-xs relative z-10">17 listings</p>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         TRENDING THIS WEEK — horizontal snap scroll
+         ═══════════════════════════════════════════════ -->
+    <section id="trending" class="py-24 px-4 bg-surface" aria-labelledby="trending-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center justify-between mb-8 fade-up">
+          <div>
+            <div class="section-eyebrow mb-3">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              This Week <!-- ES: Esta Semana -->
+            </div>
+            <h2 id="trending-heading" class="text-3xl font-black text-ink tracking-tighter">Trending in Dells</h2>
+            <!-- ES: Tendencias en Dells -->
+          </div>
+        </div>
+
+        <!-- Horizontal snap scroll row -->
+        <div class="trending-scroll flex gap-4 pb-4 fade-up -mx-4 px-4" role="list" aria-label="Trending listings">
+
+          <!-- Card 1 — SD-VIP — Double-Bezel -->
+          <article class="trending-card flex-shrink-0 w-72" role="listitem">
+            <div class="bezel-outer sdvip-glow card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-36 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/car-rental-dells/600/200" alt="Dells Premier Car Rental" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-sdvip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      Super VIP
+                    </span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-semibold text-ink text-sm leading-tight mb-1">Dells Premier Car Rental</h3>
+                  <!-- ES: Renta de Autos Premier Dells -->
+                  <p class="text-muted text-xs mb-2">Car Rental · Wisconsin Dells</p>
+                  <div class="flex items-center gap-1 mb-3" aria-label="Rating: 5 out of 5 stars">
+                    <span class="rating-star text-xs">★★★★★</span>
+                    <span class="text-xs text-muted">(142)</span>
+                  </div>
+                  <a href="tel:+16082530001" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2 — VIP -->
+          <article class="trending-card flex-shrink-0 w-72" role="listitem">
+            <div class="bezel-outer vip-glow card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-36 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/housing-dells-apt/600/200" alt="Cozy Studio — Downtown Dells" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-vip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">VIP</span>
+                  </div>
+                  <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    GM Approved
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-semibold text-ink text-sm leading-tight mb-1">Cozy Studio — Downtown Dells</h3>
+                  <!-- ES: Estudio Acogedor — Centro de Dells -->
+                  <p class="text-muted text-xs mb-2">Housing · $750/mo</p>
+                  <div class="flex items-center gap-1 mb-3" aria-label="Rating: 4 out of 5 stars">
+                    <span class="rating-star text-xs">★★★★</span><span class="rating-star text-xs opacity-30">★</span>
+                    <span class="text-xs text-muted">(38)</span>
+                  </div>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3 — Regular -->
+          <article class="trending-card flex-shrink-0 w-72" role="listitem">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-36 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/airport-shuttle-dells/600/200" alt="Quick Dells Airport Shuttle" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    GM Approved
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-semibold text-ink text-sm leading-tight mb-1">Quick Dells Airport Shuttle</h3>
+                  <!-- ES: Shuttle Rápido al Aeropuerto -->
+                  <p class="text-muted text-xs mb-2">Airport Rides · From $35</p>
+                  <div class="flex items-center gap-1 mb-3" aria-label="Rating: 5 out of 5 stars">
+                    <span class="rating-star text-xs">★★★★★</span>
+                    <span class="text-xs text-muted">(67)</span>
+                  </div>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 4 — VIP -->
+          <article class="trending-card flex-shrink-0 w-72" role="listitem">
+            <div class="bezel-outer vip-glow card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-36 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/beauty-salon-dells/600/200" alt="Glamour Nails & Spa" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-vip text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">VIP</span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-semibold text-ink text-sm leading-tight mb-1">Glamour Nails & Spa</h3>
+                  <!-- ES: Uñas y Spa Glamour -->
+                  <p class="text-muted text-xs mb-2">Beauty · Wisconsin Dells</p>
+                  <div class="flex items-center gap-1 mb-3" aria-label="Rating: 4.5 out of 5 stars">
+                    <span class="rating-star text-xs">★★★★★</span>
+                    <span class="text-xs text-muted">(91)</span>
+                  </div>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 5 — Regular -->
+          <article class="trending-card flex-shrink-0 w-72" role="listitem">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-36 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/jobs-seasonal-dells/600/200" alt="Seasonal Warehouse Jobs" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-semibold text-ink text-sm leading-tight mb-1">Seasonal Warehouse Jobs</h3>
+                  <!-- ES: Empleos de Temporada en Almacén -->
+                  <p class="text-muted text-xs mb-2">Jobs · $17–22/hr</p>
+                  <div class="flex items-center gap-1 mb-3" aria-label="Rating: 4 out of 5 stars">
+                    <span class="rating-star text-xs">★★★★</span><span class="rating-star text-xs opacity-30">★</span>
+                    <span class="text-xs text-muted">(15)</span>
+                  </div>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         3-COLUMN THEMATIC GRID
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-white" aria-labelledby="thematic-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="mb-10 fade-up">
+          <div class="section-eyebrow mb-3">Browse by sector <!-- ES: Explorar por sector --></div>
+          <h2 id="thematic-heading" class="text-3xl font-black text-ink tracking-tighter">Top Categories</h2>
+          <!-- ES: Categorías Principales -->
+        </div>
+
+        <!-- 3-column with divider lines -->
+        <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 fade-up">
+
+          <!-- HOUSING column -->
+          <div class="md:pr-8 pb-10 md:pb-0">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <h3 class="font-bold text-ink text-sm tracking-tight">Housing</h3>
+                <!-- ES: Vivienda -->
+              </div>
+              <a href="#" class="text-xs text-brand-500 hover:text-brand-700 font-medium transition-colors duration-200 cursor-pointer">See all</a>
+              <!-- ES: Ver todo -->
+            </div>
+            <div class="space-y-3">
+              <!-- mini-card — Double-Bezel compact -->
+              <a href="#" class="block cursor-pointer">
+                <div class="bezel-outer card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/housing-mini-apt/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">2BR Apartment Near WI Dells</p>
+                        <!-- ES: Apartamento 2 Rec. cerca de WI Dells -->
+                        <p class="text-muted text-[10px] mt-0.5">$950/mo</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="badge-vip text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">VIP</span>
+                          <span class="text-[10px] text-muted">★ 4.8 (22)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="block cursor-pointer">
+                <div class="bezel-outer card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/housing-mini-room/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">Shared Room — J1 Friendly</p>
+                        <!-- ES: Cuarto Compartido — Amigable para J1 -->
+                        <p class="text-muted text-[10px] mt-0.5">$400/mo</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="inline-flex items-center gap-0.5 border border-slate-200 text-[8px] font-medium px-1.5 py-0.5 rounded-full text-muted">
+                            <svg class="w-2 h-2 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            GM Approved
+                          </span>
+                          <span class="text-[10px] text-muted">★ 4.5 (11)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- JOBS column -->
+          <div class="md:px-8 py-10 md:py-0">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <h3 class="font-bold text-ink text-sm tracking-tight">Jobs</h3>
+                <!-- ES: Empleos -->
+              </div>
+              <a href="#" class="text-xs text-brand-500 hover:text-brand-700 font-medium transition-colors duration-200 cursor-pointer">See all</a>
+            </div>
+            <div class="space-y-3">
+              <a href="#" class="block cursor-pointer">
+                <div class="bezel-outer card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/jobs-mini-hotel/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">Hotel Front Desk — Summer</p>
+                        <!-- ES: Recepcionista de Hotel — Verano -->
+                        <p class="text-muted text-[10px] mt-0.5">$16/hr · Full time</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="badge-vip text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">VIP</span>
+                          <span class="text-[10px] text-muted">★ 4.7 (8)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="block cursor-pointer">
+                <div class="bezel-outer card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/jobs-mini-bilingual/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">Bilingual Customer Service</p>
+                        <!-- ES: Servicio al Cliente Bilingüe -->
+                        <p class="text-muted text-[10px] mt-0.5">$18/hr · Part time</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="badge-new text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                          <span class="text-[10px] text-muted">★ 5.0 (3)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- TRANSPORT column -->
+          <div class="md:pl-8 pt-10 md:pt-0">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </div>
+                <h3 class="font-bold text-ink text-sm tracking-tight">Transport</h3>
+                <!-- ES: Transporte -->
+              </div>
+              <a href="#" class="text-xs text-brand-500 hover:text-brand-700 font-medium transition-colors duration-200 cursor-pointer">See all</a>
+            </div>
+            <div class="space-y-3">
+              <!-- SD-VIP card -->
+              <a href="detail-car-rental.html" class="block cursor-pointer">
+                <div class="bezel-outer sdvip-glow card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/car-rental-mini/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">Dells Premier Car Rental</p>
+                        <!-- ES: Renta de Autos Premier Dells -->
+                        <p class="text-muted text-[10px] mt-0.5">From $45/day</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="badge-sdvip text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">Super VIP</span>
+                          <span class="text-[10px] text-muted">★ 5.0 (142)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="block cursor-pointer">
+                <div class="bezel-outer card-hover">
+                  <div class="bezel-inner bg-white">
+                    <div class="flex items-center gap-3 p-3.5">
+                      <img src="https://picsum.photos/seed/shuttle-mini/96/96" alt="" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" loading="lazy" aria-hidden="true" />
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-ink text-xs leading-tight truncate">Express Airport Shuttle</p>
+                        <!-- ES: Shuttle Express al Aeropuerto -->
+                        <p class="text-muted text-[10px] mt-0.5">From $35/trip</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="badge-vip text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">VIP</span>
+                          <span class="text-[10px] text-muted">★ 4.9 (67)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         TRUST BANNER — 4 items with colored icons
+         ═══════════════════════════════════════════════ -->
+    <section class="py-16 px-4 bg-white border-y border-slate-100" aria-label="Trust signals">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 fade-up">
+
+          <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 shadow-soft">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <p class="font-bold text-ink text-xs">All Verified</p>
+              <p class="text-muted text-[10px] mt-0.5">ID + Phone checked</p>
+              <!-- ES: ID + Teléfono verificados -->
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-brand-50 to-white border border-brand-100 shadow-soft">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <p class="font-bold text-ink text-xs">GM Approved</p>
+              <p class="text-muted text-[10px] mt-0.5">Every listing reviewed</p>
+              <!-- ES: Cada anuncio revisado -->
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-green-50 to-white border border-green-100 shadow-soft">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            </div>
+            <div>
+              <p class="font-bold text-ink text-xs">Direct Contact</p>
+              <p class="text-muted text-[10px] mt-0.5">WhatsApp · No middlemen</p>
+              <!-- ES: WhatsApp · Sin intermediarios -->
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-orange-50 to-white border border-orange-100 shadow-soft">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div>
+              <p class="font-bold text-ink text-xs">Bilingual EN/ES</p>
+              <p class="text-muted text-[10px] mt-0.5">English & Spanish</p>
+              <!-- ES: Inglés y Español -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         NEW ON PLATFORM — 4 cards Double-Bezel
+         ═══════════════════════════════════════════════ -->
+    <section id="new-listings" class="py-24 px-4 bg-surface" aria-labelledby="new-heading">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center justify-between mb-10 fade-up">
+          <div>
+            <div class="section-eyebrow mb-3" style="background:#dcfce7; color:#16a34a;">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Just Added <!-- ES: Recién Agregados -->
+            </div>
+            <h2 id="new-heading" class="text-3xl font-black text-ink tracking-tighter">New on the Platform</h2>
+            <!-- ES: Nuevos en la Plataforma -->
+          </div>
+          <a href="home-listings.html" class="group flex items-center gap-2 text-sm text-brand-500 hover:text-brand-700 font-semibold transition-colors duration-200 cursor-pointer">
+            See all new
+            <!-- ES: Ver todos los nuevos -->
+            <span class="w-7 h-7 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center group-hover:bg-brand-100 transition-colors duration-200" aria-hidden="true">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 fade-up">
+
+          <!-- New card 1 — Mechanics -->
+          <article class="cursor-pointer">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-40 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/mechanic-dells-new/600/240" alt="QuickFix Auto Mechanic" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-new text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">NEW</span>
+                  </div>
+                  <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    GM Approved
+                  </div>
+                </div>
+                <div class="p-4">
+                  <p class="font-semibold text-ink text-sm leading-tight mb-1">QuickFix Auto Mechanic</p>
+                  <!-- ES: Mecánico QuickFix Auto -->
+                  <p class="text-muted text-xs mb-3">Mechanics · Wisconsin Dells</p>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact on WhatsApp
+                    <!-- ES: Contactar por WhatsApp -->
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- New card 2 — Beauty -->
+          <article class="cursor-pointer">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-40 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/salon-bella-new/600/240" alt="Salon Bella Vista" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-new text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">NEW</span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <p class="font-semibold text-ink text-sm leading-tight mb-1">Salon Bella Vista</p>
+                  <!-- ES: Salón Bella Vista -->
+                  <p class="text-muted text-xs mb-3">Beauty · Hair & Nails</p>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact on WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- New card 3 — Housing -->
+          <article class="cursor-pointer">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-40 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/lakeside-studio-new/600/240" alt="Lakeside Studio Apartment" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-new text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">NEW</span>
+                  </div>
+                  <div class="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-[9px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <svg class="w-2.5 h-2.5 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    GM Approved
+                  </div>
+                </div>
+                <div class="p-4">
+                  <p class="font-semibold text-ink text-sm leading-tight mb-1">Lakeside Studio Apartment</p>
+                  <!-- ES: Apartamento Estudio junto al Lago -->
+                  <p class="text-muted text-xs mb-3">Housing · $680/mo</p>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact on WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- New card 4 — Jobs -->
+          <article class="cursor-pointer">
+            <div class="bezel-outer card-hover h-full">
+              <div class="bezel-inner h-full">
+                <div class="h-40 relative overflow-hidden">
+                  <img src="https://picsum.photos/seed/resort-jobs-new/600/240" alt="Dells Resort Housekeeper" class="w-full h-full object-cover" loading="lazy" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div class="absolute top-3 left-3">
+                    <span class="badge-new text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">NEW</span>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <p class="font-semibold text-ink text-sm leading-tight mb-1">Dells Resort Housekeeper</p>
+                  <!-- ES: Camarero/a de Resort en Dells -->
+                  <p class="text-muted text-xs mb-3">Jobs · $15/hr + tips</p>
+                  <a href="#" class="btn-wa w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ea952] text-white text-xs font-medium py-2.5 rounded-xl transition-colors duration-200 cursor-pointer" aria-label="Contact via WhatsApp">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    Contact on WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         PROVIDER CTA — dark bg, 3 numbered steps
+         ═══════════════════════════════════════════════ -->
+    <section id="provider-cta" class="py-24 px-4" style="background: #1E293B;" aria-labelledby="provider-heading">
+      <div class="max-w-4xl mx-auto text-center">
+
+        <!-- Eyebrow -->
+        <div class="inline-flex items-center gap-2 mb-6">
+          <span class="px-4 py-1.5 rounded-full bg-white/10 border border-white/12 text-white/80 text-[10px] uppercase tracking-[0.18em] font-semibold">
+            For Providers <!-- ES: Para Proveedores -->
+          </span>
+        </div>
+
+        <h2 id="provider-heading" class="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-4">
+          Are you a local provider?
+          <!-- ES: ¿Eres un proveedor local? -->
+        </h2>
+        <p class="text-white/55 text-lg leading-relaxed max-w-[50ch] mx-auto mb-12">
+          List your business on Bulletin Dells and connect directly with customers via WhatsApp — no commissions, no middlemen.
+          <!-- ES: Publica tu negocio en Bulletin Dells y conéctate directamente con clientes por WhatsApp — sin comisiones, sin intermediarios. -->
+        </p>
+
+        <!-- Steps with connector lines -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+
+          <div class="step-connector text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl">1</span>
+            </div>
+            <p class="text-white font-semibold text-sm mb-1">Register & Verify</p>
+            <p class="text-white/45 text-xs">Phone + ID verification</p>
+            <!-- ES: Regístrate y Verifica — Verificación de teléfono + ID -->
+          </div>
+
+          <div class="step-connector text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl">2</span>
+            </div>
+            <p class="text-white font-semibold text-sm mb-1">Create Your Listing</p>
+            <p class="text-white/45 text-xs">Photos, description, pricing</p>
+            <!-- ES: Crea tu Anuncio — Fotos, descripción, precios -->
+          </div>
+
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl">3</span>
+            </div>
+            <p class="text-white font-semibold text-sm mb-1">Go Live After Approval</p>
+            <p class="text-white/45 text-xs">GM reviews & approves</p>
+            <!-- ES: Publica Tras la Aprobación — El GM revisa y aprueba -->
+          </div>
+
+        </div>
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <!-- Button-in-Button primary -->
+          <a href="auth-register.html" class="btn-primary group flex items-center gap-3 bg-accent text-white font-bold px-7 py-3.5 rounded-full cursor-pointer text-sm">
+            Get Started — It's Free
+            <!-- ES: Comenzar — Es Gratis -->
+            <span class="w-8 h-8 rounded-full bg-black/[0.12] flex items-center justify-center group-hover:bg-black/[0.20] transition-colors duration-200" aria-hidden="true">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </span>
+          </a>
+          <a href="home-listings.html" class="flex items-center gap-2 text-white/55 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">
+            Browse as customer
+            <!-- ES: Explorar como cliente -->
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER — 4 columns
+       ═══════════════════════════════════════════════ -->
+  <footer class="bg-slate-900 text-white pt-16 pb-8 px-4" role="contentinfo">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+
+        <div class="col-span-2 md:col-span-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="font-bold text-sm tracking-tight">Bulletin Dells</span>
+          </div>
+          <p class="text-white/45 text-xs leading-relaxed">Your bilingual local marketplace for Wisconsin Dells.</p>
+          <!-- ES: Tu marketplace local bilingüe para Wisconsin Dells. -->
+          <p class="text-white/25 text-[10px] mt-3">Wisconsin Dells, WI 53965</p>
+        </div>
+
+        <div>
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Services <!-- ES: Servicios --></h3>
+          <ul class="space-y-2.5" role="list">
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Housing</a></li>
+            <!-- ES: Vivienda -->
+            <li><a href="detail-car-rental.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Car Rental</a></li>
+            <!-- ES: Renta de Autos -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Airport Rides</a></li>
+            <!-- ES: Rides al Aeropuerto -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Mechanics</a></li>
+            <!-- ES: Mecánicos -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Beauty</a></li>
+            <!-- ES: Belleza -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Jobs</a></li>
+            <!-- ES: Empleos -->
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Platform <!-- ES: Plataforma --></h3>
+          <ul class="space-y-2.5" role="list">
+            <li><a href="auth-register.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">List your business</a></li>
+            <!-- ES: Publica tu negocio -->
+            <li><a href="auth-login.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Sign in</a></li>
+            <!-- ES: Iniciar sesión -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Become VIP</a></li>
+            <!-- ES: Hazte VIP -->
+            <li><a href="home-listings.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Browse all</a></li>
+            <!-- ES: Explorar todo -->
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Legal <!-- ES: Legal --></h3>
+          <ul class="space-y-2.5" role="list">
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Terms of Service</a></li>
+            <!-- ES: Términos de Servicio -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Privacy Policy</a></li>
+            <!-- ES: Política de Privacidad -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Disclaimer</a></li>
+            <!-- ES: Descargo de Responsabilidad -->
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="border-t border-white/8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-white/30 text-xs">© 2025 Bulletin Dells. All rights reserved.</p>
+        <!-- ES: © 2025 Bulletin Dells. Todos los derechos reservados. -->
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 rounded-full bg-white/8 text-white/40 text-[10px] border border-white/10 hover:bg-white/15 transition-colors duration-200 cursor-pointer">EN</button>
+          <button class="px-3 py-1 rounded-full bg-accent/20 text-accent text-[10px] border border-accent/30 cursor-pointer">ES</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // ── IntersectionObserver for fade-up reveals (NEVER window.scroll)
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(el => {
+        if (el.isIntersecting) {
+          el.target.classList.add('visible');
+          fadeObserver.unobserve(el.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -48px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
+
+    // ── Stagger children inside fade-up containers
+    const staggerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const children = entry.target.querySelectorAll('.stagger-child');
+          children.forEach((child, i) => {
+            setTimeout(() => child.classList.add('visible'), i * 80);
+          });
+          staggerObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-stagger]').forEach(el => staggerObserver.observe(el));
+
+    // ── Nav scroll: update pill appearance on scroll (passive, no layout reflow)
+    const navPill = document.querySelector('nav');
+    let ticking = false;
+    document.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 64;
+          navPill.style.boxShadow = scrolled
+            ? '0 8px 32px -8px rgba(30,41,59,0.18), 0 1px 0 rgba(255,255,255,0.9) inset'
+            : '0 4px 24px -4px rgba(30,41,59,0.10), 0 1px 0 rgba(255,255,255,0.9) inset';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skeleton — Listing Detail Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #F8FAFC; }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .sk {
+      background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+
+    .sk-d1 { animation-delay: 0s; }
+    .sk-d2 { animation-delay: 0.08s; }
+    .sk-d3 { animation-delay: 0.16s; }
+    .sk-d4 { animation-delay: 0.24s; }
+    .sk-d5 { animation-delay: 0.32s; }
+    .sk-d6 { animation-delay: 0.40s; }
+
+    /* Nav */
+    .nav-sk {
+      background: white;
+      border-bottom: 1px solid #F1F5F9;
+      padding: 16px 24px;
+    }
+
+    /* Layout: content + sidebar */
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    @media (min-width: 900px) {
+      .detail-layout {
+        grid-template-columns: 1fr 320px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body aria-busy="true">
+
+<!-- NAV -->
+<div class="nav-sk">
+  <div style="max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;">
+    <div class="sk sk-d1" style="width:140px; height:26px;"></div>
+    <div class="sk sk-d2" style="width:90px; height:34px; border-radius:999px;"></div>
+  </div>
+</div>
+
+<!-- HERO IMAGE -->
+<div class="sk sk-d1" style="width:100%; height:clamp(220px, 36vw, 420px); border-radius:0;"></div>
+
+<div class="detail-layout">
+
+  <!-- LEFT: Main content -->
+  <main>
+
+    <!-- Breadcrumb dots -->
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+      <div class="sk sk-d1" style="width:48px; height:11px;"></div>
+      <div style="width:4px; height:4px; border-radius:50%; background:#CBD5E1;"></div>
+      <div class="sk sk-d2" style="width:72px; height:11px;"></div>
+      <div style="width:4px; height:4px; border-radius:50%; background:#CBD5E1;"></div>
+      <div class="sk sk-d3" style="width:100px; height:11px;"></div>
+    </div>
+
+    <!-- Title + badge row -->
+    <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <div class="sk sk-d2" style="height:34px; flex:1; min-width:200px; border-radius:8px;"></div>
+      <div class="sk sk-d3" style="width:56px; height:24px; border-radius:999px; flex-shrink:0; margin-top:5px;"></div>
+    </div>
+
+    <!-- Rating row -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+      <!-- Stars -->
+      <div style="display:flex; gap:4px;">
+        <div class="sk sk-d3" style="width:16px; height:16px; border-radius:3px;"></div>
+        <div class="sk sk-d3" style="width:16px; height:16px; border-radius:3px;"></div>
+        <div class="sk sk-d3" style="width:16px; height:16px; border-radius:3px;"></div>
+        <div class="sk sk-d4" style="width:16px; height:16px; border-radius:3px;"></div>
+        <div class="sk sk-d4" style="width:16px; height:16px; border-radius:3px;"></div>
+      </div>
+      <div class="sk sk-d5" style="width:40px; height:14px;"></div>
+      <div class="sk sk-d5" style="width:70px; height:14px;"></div>
+    </div>
+
+    <!-- Description lines -->
+    <div style="margin-bottom:32px;">
+      <div class="sk sk-d3" style="height:13px; width:100%; margin-bottom:8px;"></div>
+      <div class="sk sk-d4" style="height:13px; width:97%; margin-bottom:8px;"></div>
+      <div class="sk sk-d4" style="height:13px; width:92%; margin-bottom:8px;"></div>
+      <div class="sk sk-d5" style="height:13px; width:88%; margin-bottom:8px;"></div>
+      <div class="sk sk-d5" style="height:13px; width:75%; margin-bottom:8px;"></div>
+    </div>
+
+    <!-- Section label -->
+    <div class="sk sk-d4" style="width:120px; height:16px; margin-bottom:16px;"></div>
+
+    <!-- Thumbnail gallery (5 rects) -->
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px;">
+      <div class="sk sk-d1" style="aspect-ratio:1; border-radius:10px;"></div>
+      <div class="sk sk-d2" style="aspect-ratio:1; border-radius:10px;"></div>
+      <div class="sk sk-d3" style="aspect-ratio:1; border-radius:10px;"></div>
+      <div class="sk sk-d4" style="aspect-ratio:1; border-radius:10px;"></div>
+      <div class="sk sk-d5" style="aspect-ratio:1; border-radius:10px;"></div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT: Sidebar -->
+  <aside>
+    <!-- Provider card — double-bezel -->
+    <div style="
+      padding: 8px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 1.5rem;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    ">
+      <div style="
+        background: white;
+        border-radius: calc(1.5rem - 6px);
+        padding: 24px;
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.8);
+      ">
+        <!-- Avatar circle + name -->
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+          <div class="sk sk-d1" style="width:52px; height:52px; border-radius:50%; flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div class="sk sk-d2" style="height:15px; width:70%; margin-bottom:7px;"></div>
+            <div class="sk sk-d3" style="width:50px; height:18px; border-radius:999px;"></div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="height:1px; background:#F1F5F9; margin-bottom:16px;"></div>
+
+        <!-- Stats row -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+          <div>
+            <div class="sk sk-d3" style="height:22px; width:50%; margin-bottom:5px;"></div>
+            <div class="sk sk-d4" style="height:11px; width:80%;"></div>
+          </div>
+          <div>
+            <div class="sk sk-d4" style="height:22px; width:60%; margin-bottom:5px;"></div>
+            <div class="sk sk-d5" style="height:11px; width:70%;"></div>
+          </div>
+        </div>
+
+        <!-- WhatsApp CTA button -->
+        <div class="sk sk-d5" style="width:100%; height:48px; border-radius:999px;"></div>
+
+        <!-- Phone / link -->
+        <div class="sk sk-d6" style="width:70%; height:12px; margin:12px auto 0;"></div>
+      </div>
+    </div>
+
+    <!-- Map placeholder -->
+    <div style="
+      padding: 8px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 1.5rem;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+    ">
+      <div class="sk sk-d4" style="width:100%; height:160px; border-radius: calc(1.5rem - 6px);"></div>
+    </div>
+  </aside>
+
+</div>
+
+<div role="status" class="sr-only" aria-live="polite">
+  Loading listing details — Cargando detalles del anuncio
+</div>
+
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  BULLETIN DELLS — /manage/{listingId} — Detalle Car Rental — Tab: Vehicles
+  =========================================================================
+  Archivo:    design/mockups/v5/manage/detail-vehicles.html
+  Ruta:       /manage/{listingId}  (Nivel 2 — type-specific)
+  Tab activo: Vehicles
+  =========================================================================
+  DATOS QUE ESPERA DEL BACKEND:
+    - Listing: ProviderListingDto (Id, Title, Status, ProviderTier, CategorySlug)
+    - Vehicles: VehicleDto[]
+        · Id, Make, Model, Year, Type (Sedan/SUV/Truck/Van/Economy)
+        · Transmission (Auto/Manual), HasAC: bool
+        · MaxPassengers: int   (NO MinPassengers — eliminado por decisión de diseño)
+        · PricePerDay, PricePerWeek: decimal
+        · Photos: VehiclePhotoDto[] (uploaded by provider)
+        · IsAvailable: bool
+        · Description: string
+        · Status: same as listing (vehicle edits → listing back to Pending)
+  =========================================================================
+  BINDING BLAZOR:
+    - @foreach (var v in _vehicles) → lista de vehículos
+    - @onclick="StartCreate" → formulario de agregar vehículo
+    - @onclick="() => EditVehicle(v.Id)" → abre form con datos prellenados
+    - @onclick="() => ToggleAvailability(v.Id)" → cambio de disponibilidad
+    - @onclick="() => ConfirmDeleteVehicle(v.Id)" → confirmación antes de delete
+    - Editar vehículo → regresa el LISTING padre a Pending (aviso en tooltip)
+  =========================================================================
+  NOTA: el diseño de este tab es una evolución del mockup anterior
+        manage-layout-unified.html (tab Vehicles), ahora vive dentro
+        del shell de detalle de dos niveles.
+  =========================================================================
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicles — Dells Premier Car Rentals — Bulletin Dells</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',
+              300:'#fdba74',400:'#fb923c',500:'#f97316',
+              600:'#ea580c',700:'#c2410c',
+            },
+            ink: '#0f172a', muted: '#64748b',
+          },
+          fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'] },
+          boxShadow: {
+            soft: '0 4px 24px -4px rgba(30,41,59,0.08)',
+            lift: '0 8px 32px -6px rgba(30,41,59,0.12)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Approved: shield icon + blue-brand (home-8 trust banner pattern) */
+    .status-approved    { background:#dbeafe; color:#1d4ed8; }
+    .status-pending     { background:#fef9c3; color:#854d0e; }
+    .status-rejected    { background:#fee2e2; color:#b91c1c; }
+    .status-needschange { background:#ffedd5; color:#c2410c; }
+    /* VIP: orange gradient + white text (home-8 .badge-vip) */
+    .tier-vip           { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; border:none; }
+    /* Verified: emerald green + check-circle icon (home-8 trust banner) */
+    .tier-verified      { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+    .tier-regular       { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+
+    /* ── Water-drop tab indicator ── */
+    .manage-tablist-wrap { position: relative; }
+    .tab-indicator {
+      position: absolute; bottom: 0; height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(90deg, #f97316, #fb923c);
+      box-shadow: 0 -1px 8px -1px rgba(249,115,22,0.35);
+      transition: left 0.38s cubic-bezier(0.32,0.72,0,1),
+                  width 0.38s cubic-bezier(0.32,0.72,0,1),
+                  opacity 0.2s ease;
+      pointer-events: none;
+      will-change: left, width;
+    }
+    .tab-indicator::after {
+      content: ''; position: absolute; inset: -1px; border-radius: inherit;
+      background: inherit; opacity: 0.25; filter: blur(4px);
+    }
+    .manage-tab { position:relative; transition:color 0.18s cubic-bezier(0.32,0.72,0,1); caret-color:transparent; }
+    .manage-tab[aria-selected="true"] { color:#0f172a; font-weight:600; }
+    .manage-tab:hover { color:#0f172a; }
+
+    /* Vehicle card hover */
+    .v-card {
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1),
+                  box-shadow 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    .v-card:hover { transform:translateY(-2px); box-shadow:0 12px 40px -8px rgba(30,41,59,0.12); }
+
+    /* Spec chip */
+    .spec-chip { background:#f1f5f9; color:#475569; border-radius:8px; padding:3px 8px; font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:4px; }
+
+    /* Tooltip */
+    [data-tooltip] { position:relative; }
+    [data-tooltip]::after {
+      content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px);
+      left:50%; transform:translateX(-50%); white-space:nowrap;
+      background:#1e293b; color:#fff; font-size:11px; padding:5px 9px;
+      border-radius:8px; pointer-events:none; opacity:0;
+      transition:opacity 0.15s ease; z-index:50;
+    }
+    [data-tooltip]:hover::after { opacity:1; }
+
+    /* Form modal overlay */
+    .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.45); z-index:50;
+                     backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;
+                     padding:1rem; opacity:0; pointer-events:none;
+                     transition:opacity 0.2s ease; }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-box { background:#fff; border-radius:1.5rem; padding:1.5rem; max-width:540px; width:100%;
+                 box-shadow:0 24px 64px -12px rgba(30,41,59,0.18);
+                 transform:translateY(12px) scale(0.98);
+                 transition:transform 0.25s cubic-bezier(0.32,0.72,0,1); }
+    .modal-overlay.open .modal-box { transform:translateY(0) scale(1); }
+
+    /* Fade up */
+    .fade-up { opacity:0; transform:translateY(12px);
+               transition:opacity 0.45s ease, transform 0.45s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity:1; transform:translateY(0); }
+
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+      .fade-up { opacity:1; transform:none; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 font-sans antialiased text-ink min-h-[100dvh]">
+
+<!-- ======================================================
+     NAVBAR
+     ====================================================== -->
+<nav class="fixed top-0 inset-x-0 z-40 flex justify-center px-4 py-3"
+     aria-label="Main navigation / Navegación principal">
+  <div class="max-w-6xl w-full flex items-center justify-between px-4 py-2.5 bg-white/92 border border-slate-900/8 rounded-2xl shadow-soft"
+       style="backdrop-filter:blur(20px);">
+    <a href="/" class="flex items-center gap-2 no-underline" aria-label="Bulletin Dells — home">
+      <div class="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center" aria-hidden="true">
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="font-bold text-sm tracking-tight text-ink">Bulletin <span class="text-brand-500">Dells</span></span>
+    </a>
+    <div class="flex items-center gap-2">
+      <button class="text-xs text-muted px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer border-0"
+              aria-label="Switch language / Cambiar idioma">EN / ES</button>
+      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold cursor-pointer"
+           title="Account settings" aria-label="Account menu">P</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     1. BANDA HEADER CON TABS (sticky)
+     ============================================================ -->
+<div class="bg-white border-b border-slate-100 px-4 pt-24 pb-0 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-xs text-muted mb-3" aria-label="Breadcrumb">
+      <a href="index.html" class="hover:text-ink transition-colors duration-150 cursor-pointer">Manage</a>
+      <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="text-ink font-medium truncate max-w-[180px]" aria-current="page">Dells Premier Car Rentals</span>
+    </nav>
+
+    <!-- Título del listing -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+          <svg class="w-5 h-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-lg font-bold text-ink leading-tight">Dells Premier Car Rentals</h1>
+            <span class="status-approved inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Approved <!-- ES: Aprobado -->
+            </span>
+            <span class="tier-vip inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              VIP
+            </span>
+          </div>
+          <p class="text-xs text-muted mt-0.5">Car Rental <span class="text-slate-300 mx-1">·</span> Since March 2024</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        <a href="/listing/dells-premier-car-rentals"
+           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer no-underline"
+           aria-label="View public listing" target="_blank" rel="noopener">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Public view
+        </a>
+        <button type="button"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-xs font-semibold transition-colors duration-150 cursor-pointer"
+                data-tooltip="Editing sends listing back to Pending review"
+                aria-label="Edit listing info">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit listing
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs + water-drop indicator -->
+    <div class="manage-tablist-wrap border-b border-slate-100 -mb-px">
+      <div class="flex items-center gap-0 overflow-x-auto"
+           role="tablist" id="manage-tablist" aria-label="Listing management sections">
+
+        <a href="detail-overview.html"
+           role="tab" aria-selected="false" aria-controls="panel-overview" id="tab-overview"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+
+        <a href="detail-vehicles.html"
+           role="tab" aria-selected="true" aria-controls="panel-vehicles" id="tab-vehicles"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-ink cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          Vehicles
+          <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">3</span>
+        </a>
+
+        <a href="detail-reservations.html"
+           role="tab" aria-selected="false" aria-controls="panel-reservations" id="tab-reservations"
+           class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Reservations
+          <span class="ml-0.5 bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" aria-label="2 pending">2</span>
+        </a>
+
+        <button type="button"
+                role="tab" aria-selected="false" aria-controls="panel-photos" id="tab-photos"
+                class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer border-0 bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Photos
+          <span class="ml-0.5 bg-slate-100 text-muted text-[10px] font-semibold px-1.5 py-0.5 rounded-full">7</span>
+        </button>
+
+        <button type="button"
+                role="tab" aria-selected="false" aria-controls="panel-settings" id="tab-settings"
+                class="manage-tab flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm text-muted cursor-pointer border-0 bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-t-lg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+
+      </div>
+      <div id="tab-indicator" class="tab-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var tablist   = document.getElementById('manage-tablist');
+  var indicator = document.getElementById('tab-indicator');
+  if (!tablist || !indicator) return;
+  function positionIndicator(tab, animate) {
+    if (!animate) indicator.style.transition = 'none';
+    var lr = tablist.getBoundingClientRect();
+    var tr = tab.getBoundingClientRect();
+    indicator.style.left  = (tr.left - lr.left + tablist.scrollLeft) + 'px';
+    indicator.style.width = tr.width + 'px';
+    if (!animate) requestAnimationFrame(function(){ indicator.style.transition = ''; });
+  }
+  var active = tablist.querySelector('[aria-selected="true"]');
+  if (active) positionIndicator(active, false);
+  tablist.querySelectorAll('.manage-tab').forEach(function(tab) {
+    tab.addEventListener('mouseenter', function() { positionIndicator(tab, true); });
+    tab.addEventListener('mouseleave', function() {
+      var sel = tablist.querySelector('[aria-selected="true"]');
+      if (sel) positionIndicator(sel, true);
+    });
+  });
+})();
+</script>
+
+<!-- ============================================================
+     2. PANEL: VEHICLES
+     ============================================================ -->
+<main class="max-w-6xl mx-auto px-4 py-8"
+      id="panel-vehicles" role="tabpanel" aria-labelledby="tab-vehicles" tabindex="0">
+
+  <!-- Sub-header del panel -->
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-6 fade-up">
+    <div>
+      <h2 class="text-base font-semibold text-ink">
+        Your fleet <!-- ES: Tu flota -->
+      </h2>
+      <p class="text-sm text-muted mt-0.5">
+        <!-- Regla de negocio: editar vehículo regresa el listing a Pending -->
+        Editing any vehicle sends the listing back to GM for re-approval.
+        <!-- ES: Editar un vehículo regresa el anuncio a revisión del GM. -->
+      </p>
+    </div>
+    <!-- data-binding: @onclick="OpenAddVehicleModal" disabled="@_busy" -->
+    <button type="button"
+            id="btn-add-vehicle"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-semibold transition-colors duration-150 cursor-pointer"
+            aria-label="Add a new vehicle / Agregar un nuevo vehículo"
+            onclick="document.getElementById('add-vehicle-modal').classList.add('open')">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Add vehicle <!-- ES: Agregar vehículo -->
+    </button>
+  </div>
+
+  <!-- ── Lista de vehículos ── -->
+  <!-- data-binding: @foreach (var v in _vehicles) { } -->
+  <ul class="space-y-4" role="list" aria-label="Fleet vehicles / Vehículos de la flota">
+
+    <!-- Vehicle 1: Available -->
+    <li class="v-card bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden fade-up"
+        aria-label="2022 Toyota Corolla">
+      <div class="flex flex-col sm:flex-row gap-0">
+
+        <!-- Foto del vehículo -->
+        <div class="w-full sm:w-36 h-36 sm:h-auto bg-slate-100 flex-shrink-0 relative overflow-hidden">
+          <!-- data-binding: @(v.Photos.FirstOrDefault()?.Url ?? placeholder) -->
+          <img src="https://picsum.photos/seed/car_a_full/280/220" alt="2022 Toyota Corolla"
+               class="w-full h-full object-cover" loading="lazy" />
+          <!-- Estado de disponibilidad — overlay badge -->
+          <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-lg bg-green-500 text-white shadow-sm">
+            Available <!-- ES: Disponible -->
+          </span>
+        </div>
+
+        <!-- Info del vehículo -->
+        <div class="flex-1 p-4 min-w-0">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <!-- data-binding: @v.Year @v.Make @v.Model -->
+              <h3 class="text-base font-semibold text-ink">2022 Toyota Corolla</h3>
+              <!-- data-binding: @v.Type -->
+              <p class="text-xs text-muted mt-0.5">Sedan</p>
+            </div>
+            <!-- Precios -->
+            <div class="text-right flex-shrink-0">
+              <!-- data-binding: @v.PricePerDay.ToString("C0") -->
+              <p class="text-base font-bold text-ink">$45<span class="text-xs font-normal text-muted">/day</span></p><!-- ES: /día -->
+              <!-- data-binding: @v.PricePerWeek.ToString("C0") -->
+              <p class="text-xs text-muted">$270/week</p><!-- ES: /semana -->
+            </div>
+          </div>
+
+          <!-- Specs: grid de 3 (Max passengers | Transmission | A/C) — MinPassengers eliminado -->
+          <div class="flex flex-wrap gap-2 mb-3">
+            <!-- data-binding: @v.MaxPassengers -->
+            <span class="spec-chip" aria-label="Max 5 passengers">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Max 5 pax <!-- ES: Máx. 5 pas. -->
+            </span>
+            <!-- data-binding: @v.Transmission -->
+            <span class="spec-chip" aria-label="Automatic transmission">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              Automatic <!-- ES: Automático -->
+            </span>
+            <!-- data-binding: @v.HasAC -->
+            <span class="spec-chip" aria-label="Air conditioning included">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+              A/C included <!-- ES: A/C incluido -->
+            </span>
+          </div>
+
+          <!-- Descripción corta -->
+          <!-- data-binding: @v.Description -->
+          <p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">
+            Reliable compact sedan, great fuel economy. Perfect for couples or solo travelers exploring the Dells area.
+            <!-- ES: Sedán compacto confiable, excelente economía de combustible. -->
+          </p>
+
+          <!-- Acciones del vehículo -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Edit vehicle -->
+            <!-- data-binding: @onclick="() => EditVehicle(v.Id)" -->
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                    data-tooltip="Editing this vehicle sends the listing back to Pending"
+                    aria-label="Edit vehicle / Editar vehículo">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit <!-- ES: Editar -->
+            </button>
+
+            <!-- Toggle availability -->
+            <!-- data-binding: @onclick="() => ToggleAvailability(v.Id)" + @v.IsAvailable label -->
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-50 active:scale-[0.98] text-slate-700 hover:text-amber-700 text-xs font-medium border border-slate-200 hover:border-amber-200 transition-colors duration-150 cursor-pointer"
+                    aria-label="Mark as unavailable / Marcar como no disponible">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Mark unavailable <!-- ES: Marcar no disponible -->
+            </button>
+
+            <!-- Delete vehicle -->
+            <!-- data-binding: @onclick="() => ConfirmDeleteVehicle(v.Id)" -->
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-300 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                    aria-label="Delete vehicle / Eliminar vehículo">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete <!-- ES: Eliminar -->
+            </button>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- Vehicle 2: Rented (unavailable) -->
+    <li class="v-card bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden fade-up"
+        aria-label="2023 Honda CR-V — currently rented">
+      <div class="flex flex-col sm:flex-row gap-0">
+        <div class="w-full sm:w-36 h-36 sm:h-auto bg-slate-100 flex-shrink-0 relative overflow-hidden">
+          <img src="https://picsum.photos/seed/car_b_full/280/220" alt="2023 Honda CR-V"
+               class="w-full h-full object-cover opacity-80" loading="lazy" />
+          <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-500 text-white shadow-sm">
+            Rented <!-- ES: Rentado -->
+          </span>
+        </div>
+        <div class="flex-1 p-4 min-w-0">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <h3 class="text-base font-semibold text-ink">2023 Honda CR-V</h3>
+              <p class="text-xs text-muted mt-0.5">SUV</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="text-base font-bold text-ink">$65<span class="text-xs font-normal text-muted">/day</span></p>
+              <p class="text-xs text-muted">$390/week</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Max 7 pax</span>
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Automatic</span>
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>A/C included</span>
+          </div>
+          <!-- Currently rented info -->
+          <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-100">
+            <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <!-- data-binding: @activeReservation.ClientName + @activeReservation.ReturnDate.ToString("MMM dd") -->
+            <p class="text-xs text-amber-800">Rented by <strong>Andrei Bogdan</strong> · Returns May 13</p>
+            <!-- ES: Rentado por <strong>Andrei Bogdan</strong> · Devuelve el 13 de mayo -->
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                    data-tooltip="Editing this vehicle sends the listing back to Pending"
+                    aria-label="Edit vehicle">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button type="button" disabled
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 text-slate-300 text-xs font-medium border border-slate-100 cursor-not-allowed"
+                    data-tooltip="Cannot change availability while vehicle is rented"
+                    aria-disabled="true"
+                    aria-label="Cannot change availability while rented">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Mark unavailable
+            </button>
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-300 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                    aria-label="Delete vehicle">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <!-- Vehicle 3: Available -->
+    <li class="v-card bg-white rounded-2xl border border-slate-200 shadow-soft overflow-hidden fade-up"
+        aria-label="2021 Ford Escape">
+      <div class="flex flex-col sm:flex-row gap-0">
+        <div class="w-full sm:w-36 h-36 sm:h-auto bg-slate-100 flex-shrink-0 relative overflow-hidden">
+          <img src="https://picsum.photos/seed/car_c_full/280/220" alt="2021 Ford Escape"
+               class="w-full h-full object-cover" loading="lazy" />
+          <span class="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-lg bg-green-500 text-white shadow-sm">Available</span>
+        </div>
+        <div class="flex-1 p-4 min-w-0">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <h3 class="text-base font-semibold text-ink">2021 Ford Escape</h3>
+              <p class="text-xs text-muted mt-0.5">SUV</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <p class="text-base font-bold text-ink">$55<span class="text-xs font-normal text-muted">/day</span></p>
+              <p class="text-xs text-muted">$330/week</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Max 5 pax</span>
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Manual</span><!-- ES: Manual -->
+            <span class="spec-chip"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>A/C included</span>
+          </div>
+          <p class="text-xs text-muted leading-relaxed line-clamp-2 mb-3">
+            Versatile mid-size SUV with ample cargo space. Great for families visiting the water parks.
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium border border-slate-200 hover:border-slate-300 transition-colors duration-150 cursor-pointer"
+                    data-tooltip="Editing this vehicle sends the listing back to Pending"
+                    aria-label="Edit vehicle">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-amber-50 active:scale-[0.98] text-slate-700 hover:text-amber-700 text-xs font-medium border border-slate-200 hover:border-amber-200 transition-colors duration-150 cursor-pointer"
+                    aria-label="Mark as unavailable">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Mark unavailable
+            </button>
+            <button type="button"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 active:scale-[0.98] text-slate-300 hover:text-red-600 text-xs font-medium border border-slate-200 hover:border-red-200 transition-colors duration-150 cursor-pointer ml-auto"
+                    aria-label="Delete vehicle">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- Empty state (cuando no hay vehículos) -->
+  <!-- data-binding: @if (_vehicles.Count == 0) -->
+  <!--
+  <div class="text-center py-16" role="status" aria-live="polite">
+    <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+    </div>
+    <h3 class="text-base font-semibold text-ink mb-1">No vehicles yet</h3>
+    <p class="text-sm text-muted mb-4">Add your first vehicle to start receiving rental requests.</p>
+    <button type="button" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold cursor-pointer">
+      + Add vehicle
+    </button>
+  </div>
+  -->
+
+</main>
+
+<!-- ============================================================
+     MODAL: ADD VEHICLE
+     En Blazor: componente separado <AddVehicleModal />
+     Activado via @_showAddModal = true
+     ============================================================ -->
+<div id="add-vehicle-modal"
+     class="modal-overlay"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-title"
+     onclick="if(event.target===this) this.classList.remove('open')">
+  <div class="modal-box" role="document">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 id="modal-title" class="text-base font-bold text-ink">
+          Add Vehicle <!-- ES: Agregar vehículo -->
+        </h2>
+        <p class="text-xs text-amber-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg mt-1 inline-flex items-center gap-1">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Adding a vehicle sends the listing back to Pending review
+          <!-- ES: Agregar un vehículo regresa el anuncio a revisión -->
+        </p>
+      </div>
+      <button type="button"
+              class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center cursor-pointer border-0 transition-colors"
+              aria-label="Close / Cerrar"
+              onclick="document.getElementById('add-vehicle-modal').classList.remove('open')">
+        <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Form — data-binding: VehicleCreateDto -->
+    <form aria-label="Add vehicle form" novalidate>
+      <!-- Make / Model / Year — 3 col -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="flex flex-col gap-1">
+          <label for="v-make" class="text-xs font-semibold text-ink">Make <span class="text-red-400" aria-hidden="true">*</span></label>
+          <input id="v-make" type="text" placeholder="Toyota"
+                 class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted"
+                 required aria-required="true" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="v-model" class="text-xs font-semibold text-ink">Model <span class="text-red-400" aria-hidden="true">*</span></label>
+          <input id="v-model" type="text" placeholder="Corolla"
+                 class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted"
+                 required aria-required="true" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="v-year" class="text-xs font-semibold text-ink">Year <span class="text-red-400" aria-hidden="true">*</span></label>
+          <input id="v-year" type="number" placeholder="2023" min="2000" max="2026"
+                 class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted"
+                 required aria-required="true" />
+        </div>
+      </div>
+
+      <!-- Type / Max passengers / Transmission — 3 col (sin Min passengers) -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="flex flex-col gap-1">
+          <!-- Categorías predefinidas — Regla de negocio: no texto libre -->
+          <label for="v-type" class="text-xs font-semibold text-ink">Type <span class="text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <select id="v-type"
+                    class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink cursor-pointer bg-white"
+                    required aria-required="true">
+              <option value="">Select</option>
+              <option>Sedan</option><option>SUV</option><option>Truck</option>
+              <option>Van</option><option>Economy</option><option>Luxury</option>
+            </select>
+            <svg class="w-3.5 h-3.5 text-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <!-- Max passengers (ÚNICO campo — MinPassengers eliminado) -->
+          <label for="v-max-pax" class="text-xs font-semibold text-ink">Max passengers <span class="text-red-400" aria-hidden="true">*</span></label>
+          <input id="v-max-pax" type="number" placeholder="5" min="1" max="15"
+                 class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted"
+                 required aria-required="true" />
+          <!-- data-binding: VehicleCreateDto.MaxPassengers — NO MinPassengers -->
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="v-trans" class="text-xs font-semibold text-ink">Transmission <span class="text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <select id="v-trans"
+                    class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink cursor-pointer bg-white"
+                    required aria-required="true">
+              <option value="">Select</option>
+              <option>Automatic</option><option>Manual</option>
+            </select>
+            <svg class="w-3.5 h-3.5 text-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price per day / week — 2 col -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="flex flex-col gap-1">
+          <label for="v-price-day" class="text-xs font-semibold text-ink">Price / day (USD) <span class="text-red-400" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm" aria-hidden="true">$</span>
+            <input id="v-price-day" type="number" placeholder="45" min="0" step="0.01"
+                   class="w-full pl-6 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted"
+                   required aria-required="true" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="v-price-week" class="text-xs font-semibold text-ink">Price / week (USD)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm" aria-hidden="true">$</span>
+            <input id="v-price-week" type="number" placeholder="270" min="0" step="0.01"
+                   class="w-full pl-6 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted" />
+          </div>
+        </div>
+      </div>
+
+      <!-- A/C toggle -->
+      <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-slate-200 mb-4 bg-white">
+        <label for="v-ac" class="text-sm text-ink cursor-pointer">Air conditioning (A/C)</label><!-- ES: Aire acondicionado (A/C) -->
+        <!-- data-binding: @bind="VehicleForm.HasAC" -->
+        <input id="v-ac" type="checkbox" class="w-4 h-4 rounded accent-brand-500 cursor-pointer" />
+      </div>
+
+      <!-- Description -->
+      <div class="flex flex-col gap-1 mb-5">
+        <label for="v-desc" class="text-xs font-semibold text-ink">Description</label><!-- ES: Descripción -->
+        <textarea id="v-desc" rows="2" placeholder="Brief description of the vehicle…"
+                  class="px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 text-ink placeholder-muted resize-none"
+                  data-es-placeholder="Descripción breve del vehículo…"></textarea><!-- data-binding: @bind="VehicleForm.Description" -->
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-end gap-2">
+        <button type="button"
+                class="px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-sm font-medium text-slate-700 border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
+                onclick="document.getElementById('add-vehicle-modal').classList.remove('open')"
+                aria-label="Cancel">
+          Cancel <!-- ES: Cancelar -->
+        </button>
+        <!-- data-binding: @onclick="SaveVehicle" disabled="@_busy" -->
+        <button type="submit"
+                class="px-4 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-sm font-semibold text-white transition-colors cursor-pointer"
+                aria-label="Save vehicle / Guardar vehículo">
+          Save vehicle <!-- ES: Guardar vehículo -->
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="border-t border-slate-100 bg-white mt-8 py-6">
+  <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-xs text-muted">&copy; 2025 Bulletin Dells · Wisconsin Dells, WI</p>
+    <div class="flex items-center gap-4 text-xs text-muted">
+      <a href="/terms" class="hover:text-ink transition-colors cursor-pointer">Terms</a>
+      <a href="/privacy" class="hover:text-ink transition-colors cursor-pointer">Privacy</a>
+      <a href="/help" class="hover:text-ink transition-colors cursor-pointer">Help</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // IntersectionObserver fade-up
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+  // Cerrar modal con Escape — En Blazor: @onkeydown en el componente + FocusTrap
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('add-vehicle-modal').classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>

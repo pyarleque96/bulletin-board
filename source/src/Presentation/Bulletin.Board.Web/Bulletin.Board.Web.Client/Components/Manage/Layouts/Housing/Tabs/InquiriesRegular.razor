@@ -1,0 +1,10 @@
+@* Housing · InquiriesRegular — delega en el InquiriesTab compartido (Regular). *@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Layouts.Housing.Tabs
+@using Bulletin.Board.Web.Client.Models
+@using Bulletin.Board.Web.Client.Components.Manage.Shared
+
+<InquiriesTab Listing="Listing" IsVip="false" />
+
+@code {
+    [Parameter, EditorRequired] public ListingDetailDto Listing { get; set; } = default!;
+}

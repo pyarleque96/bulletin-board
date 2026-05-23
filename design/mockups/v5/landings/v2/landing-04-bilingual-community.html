@@ -1,0 +1,627 @@
+<!--
+  PROPUESTA 04 — "Bilingual & community-driven"
+  Filosofía: Cálido, storytelling, fotografía humana. EN/ES toggle prominente, lenguaje dual lado-a-lado en heading,
+  protagonismo de J1 students/trabajadores temporada/familias locales. Cards de testimonios reales (placeholders),
+  language switch hero, mapa conceptual de la comunidad.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Bulletin Dells — Hecho para la comunidad de Wisconsin Dells</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: {
+      brand: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' },
+      accent: { DEFAULT:'#F97316', 600:'#ea580c', 700:'#c2410c' },
+      warm: { 50:'#FFFAF0', 100:'#FEF3E2', 200:'#FDE5BD' },
+      ink: '#1E293B', muted: '#64748B'
+    },
+    fontFamily: { sans: ['"DM Sans"','system-ui','sans-serif'], serif: ['"DM Serif Display"','Georgia','serif'] }
+  } } };
+</script>
+<style>
+  html, body { background:#FFFAF0; }
+  body { font-family:'DM Sans', sans-serif; color:#1E293B; -webkit-font-smoothing:antialiased; }
+
+  .hero-bg {
+    background:
+      radial-gradient(circle at 75% 25%, rgba(249,115,22,0.22), transparent 55%),
+      radial-gradient(circle at 20% 75%, rgba(59,130,246,0.18), transparent 55%),
+      linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+  }
+  .hero-grid-lines { position:absolute; inset:0; pointer-events:none;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:72px 72px; mask-image: radial-gradient(circle at 50% 40%, #000 40%, transparent 80%); }
+
+  .bezel-outer { padding:6px; border-radius:2rem; background:rgba(255,255,255,0.06); box-shadow:0 0 0 1px rgba(255,255,255,0.10); }
+  .bezel-inner { border-radius:calc(2rem - 6px); background:#fff; }
+  .bezel-warm-outer { padding:5px; border-radius:1.75rem; background:rgba(249,115,22,0.08); box-shadow:0 0 0 1px rgba(249,115,22,0.15); }
+  .bezel-warm-inner { border-radius:calc(1.75rem - 5px); background:#fff; }
+
+  .eyebrow { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:9999px; font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; }
+
+  .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1);} 50% { opacity:0.5; transform:scale(1.4);} }
+  .fade-up { opacity:0; transform:translateY(16px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .fade-up { opacity:1; transform:none; } .pulse-dot { animation:none; } }
+
+  .lang-toggle { display:inline-flex; padding:3px; border-radius:9999px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); }
+  .lang-toggle button { padding:6px 14px; font-size:11px; font-weight:700; border-radius:9999px; color:rgba(255,255,255,0.55); transition: all 200ms; cursor:pointer; }
+  .lang-toggle button.active { background:#fff; color:#1E293B; }
+  .lang-toggle-light { background:#fff; border:1px solid rgba(15,23,42,0.10); }
+  .lang-toggle-light button { color:rgba(30,41,59,0.55); }
+  .lang-toggle-light button.active { background:#F97316; color:#fff; }
+
+  .wa-btn { background:#25D366; color:#fff; }
+  .wa-btn:hover { background:#1ebe5d; }
+  .star { color:#F59E0B; }
+
+  .hover-lift { transition: transform 300ms cubic-bezier(0.32,0.72,0,1), box-shadow 300ms ease; }
+  .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 20px 48px -12px rgba(15,23,42,0.10); }
+
+  /* Quote-style decoration */
+  .quote-mark { font-family:'DM Serif Display', serif; font-size:5rem; line-height:0.4; color:#F97316; }
+
+  .skip-link { position:absolute; top:-40px; left:8px; background:#1E293B; color:#fff; padding:8px 12px; z-index:100; border-radius:6px; transition: top 200ms; }
+  .skip-link:focus { top:8px; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content / Saltar al contenido</a>
+
+<!-- ═══════════════════ NAVBAR ═══════════════════ -->
+<header class="fixed top-3 inset-x-3 sm:inset-x-6 z-40">
+  <nav class="max-w-7xl mx-auto rounded-full bg-white/92 backdrop-blur-xl ring-1 ring-black/5 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.10)] px-4 sm:px-6 py-2.5 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-2xl bg-accent flex items-center justify-center"><span class="font-black text-white text-sm">BD</span></div>
+      <span class="hidden sm:inline font-black text-ink tracking-tight">Bulletin<span class="text-accent">Dells</span></span>
+    </a>
+    <ul class="hidden md:flex items-center gap-1 text-sm">
+      <li><a href="/browse" class="px-3 py-2 rounded-full text-ink hover:bg-warm-50 transition-colors">Browse · Buscar</a></li>
+      <li><a href="#community" class="px-3 py-2 rounded-full text-ink hover:bg-warm-50 transition-colors">Community · Comunidad</a></li>
+      <li><a href="/how-it-works" class="px-3 py-2 rounded-full text-ink hover:bg-warm-50 transition-colors">How it works</a></li>
+    </ul>
+    <div class="flex items-center gap-2">
+      <div class="lang-toggle lang-toggle-light" role="group" aria-label="Language toggle">
+        <button class="active" aria-pressed="true">EN</button>
+        <button aria-pressed="false">ES</button>
+      </div>
+      <a href="/account/register" class="hidden sm:inline-flex text-xs font-bold px-3.5 py-2 rounded-full bg-ink text-white hover:bg-slate-700 transition-colors">List your service</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ═══════════════════ HERO — bilingual headline ═══════════════════ -->
+<section class="hero-bg min-h-[100dvh] flex flex-col items-center justify-center pt-28 pb-20 px-4 relative overflow-hidden" aria-labelledby="hero-headline">
+  <div class="hero-grid-lines" aria-hidden="true"></div>
+  <div class="relative z-10 max-w-3xl w-full mx-auto flex flex-col items-center text-center space-y-8">
+
+    <!-- Big EN/ES lang switch in hero -->
+    <div class="fade-up flex items-center gap-3">
+      <div class="lang-toggle" role="group" aria-label="Hero language switch">
+        <button class="active" aria-pressed="true">English</button>
+        <button aria-pressed="false">Español</button>
+      </div>
+      <span class="text-white/60 text-xs">Read in your language · Lee en tu idioma</span>
+    </div>
+
+    <div class="fade-up" style="transition-delay:80ms;">
+      <span class="eyebrow bg-white/15 text-white/90 border border-white/20 backdrop-blur-sm">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+        Made by Dells, for Dells · Hecho por Dells, para Dells
+      </span>
+    </div>
+
+    <div class="fade-up space-y-4" style="transition-delay:160ms;">
+      <h1 id="hero-headline" class="text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[1.0] tracking-tighter">
+        <span class="block">Your neighbors in</span>
+        <span class="block">
+          <span class="relative inline-block text-brand-500">Dells<svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 120 10" preserveAspectRatio="none" style="height:6px;"><path d="M2,6 Q30,1 60,6 Q90,11 118,5" stroke="#F97316" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>, just a tap away.
+        </span>
+      </h1>
+      <p class="font-serif italic text-2xl md:text-3xl text-accent/90 tracking-tight leading-tight">Tus vecinos en Dells, a un solo toque.</p>
+      <p class="text-base md:text-lg text-white/70 leading-relaxed max-w-[54ch] mx-auto pt-2">
+        Built with J1 students, seasonal workers and local families in mind. Real people, real conversations, by WhatsApp.
+        <span class="block mt-1 italic text-white/45 text-sm">Pensado para estudiantes J1, trabajadores de temporada y familias locales.</span>
+      </p>
+    </div>
+
+    <div class="fade-up w-full max-w-3xl" style="transition-delay:240ms;" role="search">
+      <div class="bezel-outer">
+        <div class="bezel-inner">
+          <div class="flex items-center">
+            <div class="pl-5 pr-2"><svg class="w-5 h-5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+            <label for="hero-search" class="sr-only">Search</label>
+            <input id="hero-search" type="search" placeholder="What do you need? · ¿Qué buscas?" class="flex-1 py-4 px-3 text-ink placeholder-muted/60 bg-transparent border-none outline-none text-base"/>
+            <button class="group m-2 inline-flex items-center gap-2.5 bg-accent hover:bg-orange-600 text-white text-sm font-bold pl-4 pr-2 py-2.5 rounded-full transition-colors">
+              Search · Buscar
+              <span class="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up flex flex-wrap items-center justify-center gap-2" style="transition-delay:320ms;">
+      <a class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors" href="/browse?category=housing">Housing · Vivienda</a>
+      <a class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors" href="/browse?category=jobs">Jobs · Trabajos</a>
+      <a class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors" href="/browse?category=transportation">Rides · Transporte</a>
+      <a class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors" href="/browse?category=beauty">Beauty · Belleza</a>
+      <a class="px-3.5 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-medium border border-white/20 hover:bg-white/25 transition-colors" href="/browse?category=mechanics">Mechanics · Mecánicos</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ WHO WE SERVE — community segments ═══════════════════ -->
+<section id="community" class="py-20 px-4 bg-warm-50" aria-labelledby="who-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="fade-up text-center mb-12">
+      <span class="eyebrow bg-warm-100 text-orange-700">Built for · Hecho para</span>
+      <h2 id="who-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-3">A platform for everyone in Dells.</h2>
+      <p class="font-serif italic text-xl text-accent mt-2">Una plataforma para toda la comunidad de Dells.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up">
+      <div class="hover-lift relative rounded-3xl overflow-hidden bg-white ring-1 ring-orange-100 p-6 flex flex-col">
+        <div class="w-14 h-14 rounded-2xl bg-warm-100 flex items-center justify-center mb-4">
+          <svg class="w-7 h-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M3 21v-2a7 7 0 0 1 7-7h4a7 7 0 0 1 7 7v2"/><path d="M16 7l3 1.5L16 10"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-2xl tracking-tight">J1 Students</h3>
+        <p class="font-serif italic text-base text-accent">Estudiantes J1</p>
+        <p class="text-muted text-sm mt-2 leading-relaxed">Find housing, jobs and rides quickly. Most providers speak English and Spanish.</p>
+        <p class="text-muted/85 text-xs italic mt-1">Encuentra vivienda, trabajos y transporte rápido. Muchos proveedores hablan inglés y español.</p>
+      </div>
+      <div class="hover-lift relative rounded-3xl overflow-hidden bg-white ring-1 ring-blue-100 p-6 flex flex-col">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+          <svg class="w-7 h-7 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-2xl tracking-tight">Seasonal Workers</h3>
+        <p class="font-serif italic text-base text-brand-600">Trabajadores de temporada</p>
+        <p class="text-muted text-sm mt-2 leading-relaxed">Mechanics, transport, beauty and quick housing — for whoever lands in Dells for the summer.</p>
+        <p class="text-muted/85 text-xs italic mt-1">Mecánicos, transporte, belleza y vivienda rápida — para quien llega de temporada.</p>
+      </div>
+      <div class="hover-lift relative rounded-3xl overflow-hidden bg-white ring-1 ring-emerald-100 p-6 flex flex-col">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
+          <svg class="w-7 h-7 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2 4 4 8-8 2 2-10 10z"/><path d="M20 22H4a2 2 0 0 1-2-2V4"/></svg>
+        </div>
+        <h3 class="font-black text-ink text-2xl tracking-tight">Local Families</h3>
+        <p class="font-serif italic text-base text-emerald-600">Familias locales</p>
+        <p class="text-muted text-sm mt-2 leading-relaxed">Curated, hand-reviewed providers you can trust — for things you needed yesterday.</p>
+        <p class="text-muted/85 text-xs italic mt-1">Proveedores curados y revisados a mano — para lo que necesitas hoy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CATEGORIES — bilingual labels, image-led ═══════════════════ -->
+<section class="py-20 px-4 bg-white" aria-labelledby="cat-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="fade-up flex flex-col sm:flex-row items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="eyebrow bg-blue-50 text-brand-700">Explore · Explorar</span>
+        <h2 id="cat-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-3">Browse by category</h2>
+        <p class="font-serif italic text-xl text-accent mt-1">Explora por categoría</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 fade-up">
+      <a href="/browse?category=housing" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-housing/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Housing</h3>
+            <p class="font-serif italic text-sm text-accent">Vivienda</p>
+            <p class="text-muted text-xs mt-1">142 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=jobs" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-jobs/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Jobs</h3>
+            <p class="font-serif italic text-sm text-accent">Trabajos</p>
+            <p class="text-muted text-xs mt-1">53 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=car_rentals" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-cars/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Car Rentals</h3>
+            <p class="font-serif italic text-sm text-accent">Renta de autos</p>
+            <p class="text-muted text-xs mt-1">38 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=airport_rides" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-air/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Airport Rides</h3>
+            <p class="font-serif italic text-sm text-accent">Aeropuerto</p>
+            <p class="text-muted text-xs mt-1">24 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=mechanics" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-mech/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Mechanics</h3>
+            <p class="font-serif italic text-sm text-accent">Mecánicos</p>
+            <p class="text-muted text-xs mt-1">19 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=transportation" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-trans/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Transportation</h3>
+            <p class="font-serif italic text-sm text-accent">Transporte</p>
+            <p class="text-muted text-xs mt-1">27 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=beauty" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-beauty/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Beauty</h3>
+            <p class="font-serif italic text-sm text-accent">Belleza</p>
+            <p class="text-muted text-xs mt-1">31 listings</p>
+          </div>
+        </div>
+      </a>
+      <a href="/browse?category=restaurants" class="hover-lift bezel-warm-outer">
+        <div class="bezel-warm-inner overflow-hidden">
+          <div class="aspect-[4/3] bg-slate-100 relative">
+            <img src="https://picsum.photos/seed/b-food/400/300" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          </div>
+          <div class="p-4">
+            <h3 class="font-black text-ink text-base tracking-tight">Restaurants</h3>
+            <p class="font-serif italic text-sm text-accent">Restaurantes</p>
+            <p class="text-muted text-xs mt-1">17 listings</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ STORIES / TESTIMONIALS + featured listings ═══════════════════ -->
+<section class="py-20 px-4 bg-warm-50" aria-labelledby="stories-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="fade-up text-center mb-12">
+      <span class="eyebrow bg-warm-100 text-orange-700">Top providers · Mejores proveedores</span>
+      <h2 id="stories-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-3">Voices from our community.</h2>
+      <p class="font-serif italic text-xl text-accent mt-1">Voces de nuestra comunidad.</p>
+    </div>
+
+    <!-- GM Featured + 3 cards -->
+    <article class="fade-up rounded-3xl overflow-hidden bg-white ring-1 ring-amber-200 shadow-[0_24px_56px_-12px_rgba(245,158,11,0.18)] mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-12">
+        <div class="md:col-span-6 relative aspect-video md:aspect-auto md:min-h-[340px]">
+          <img src="https://picsum.photos/seed/com-feat/900/600" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider">★ GM Featured</span>
+        </div>
+        <div class="md:col-span-6 p-7 sm:p-9 flex flex-col gap-3 self-center">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/marisol-face/64/64" alt="Marisol R." class="w-12 h-12 rounded-full ring-2 ring-white shadow-soft"/>
+            <div>
+              <p class="text-sm font-bold text-ink">Marisol Ramírez</p>
+              <p class="text-[10px] text-muted uppercase tracking-wider">Host · Housing · ★ VIP</p>
+            </div>
+          </div>
+          <span class="quote-mark" aria-hidden="true">"</span>
+          <p class="text-lg text-ink/85 font-serif italic leading-snug -mt-7">"I host J1 students every summer. Bulletin Dells brings me three new guests a week — and the GM emails me before each booking. Es como tener un asistente."</p>
+          <h3 class="text-xl font-black text-ink tracking-tight mt-1">Lakeside cabin · 4 guests · downtown Dells</h3>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="star">★★★★★</span><span class="font-bold text-ink">4.9</span><span class="text-muted">(127)</span>
+          </div>
+          <a href="#" class="wa-btn inline-flex w-fit items-center gap-2 font-bold text-sm px-5 py-3 rounded-full mt-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.8L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+            WhatsApp Marisol
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up">
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-orange-200">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/com-tony/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider">★ VIP</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <img src="https://picsum.photos/seed/tony-face/40/40" alt="" class="w-7 h-7 rounded-full"/>
+            <p class="text-sm font-bold text-ink">Tony Mazzini · Mechanics</p>
+          </div>
+          <p class="text-muted text-sm italic">"My garage has been in Dells since 2002 — bilingual customers find me here in minutes."</p>
+          <div class="flex items-center gap-1.5 text-xs mt-2"><span class="star">★★★★★</span><span class="font-bold">4.8</span></div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full mt-3">WhatsApp Tony</a>
+        </div>
+      </article>
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-orange-200">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/com-dells-exp/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-wider">★ VIP</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <img src="https://picsum.photos/seed/dells-face/40/40" alt="" class="w-7 h-7 rounded-full"/>
+            <p class="text-sm font-bold text-ink">Dells Express · Airport rides</p>
+          </div>
+          <p class="text-muted text-sm italic">"Drivers bilingüe. We take J1 students to MSN, MKE and ORD — 24/7."</p>
+          <div class="flex items-center gap-1.5 text-xs mt-2"><span class="star">★★★★★</span><span class="font-bold">4.95</span></div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full mt-3">WhatsApp Dells Express</a>
+        </div>
+      </article>
+      <article class="hover-lift bg-white rounded-2xl overflow-hidden ring-1 ring-emerald-300">
+        <div class="relative aspect-[4/3]">
+          <img src="https://picsum.photos/seed/com-bella/600/450" alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover"/>
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider">✓ Verified</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <img src="https://picsum.photos/seed/bella-face/40/40" alt="" class="w-7 h-7 rounded-full"/>
+            <p class="text-sm font-bold text-ink">Bella Studio · Beauty</p>
+          </div>
+          <p class="text-muted text-sm italic">"Stylists bilingual. Hair, nails, braids. Walk-ins welcome on Saturdays."</p>
+          <div class="flex items-center gap-1.5 text-xs mt-2"><span class="star">★★★★★</span><span class="font-bold">4.7</span></div>
+          <a href="#" class="block text-center wa-btn text-xs font-bold px-3 py-2.5 rounded-full mt-3">WhatsApp Bella</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TIERS — warm, side-by-side, recommendation Verified ═══════════════════ -->
+<section class="py-24 px-4 bg-white" aria-labelledby="tiers-heading">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow bg-warm-100 text-orange-700">Pricing · Precios</span>
+      <h2 id="tiers-heading" class="text-3xl sm:text-5xl font-black text-ink tracking-tighter mt-4">Free to list. Pay to stand out.</h2>
+      <p class="font-serif italic text-xl text-accent mt-2">Listar es gratis. Destacar tiene precio.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up">
+      <div class="bezel-warm-outer"><div class="bezel-warm-inner p-7">
+        <span class="eyebrow bg-slate-100 text-slate-600 mb-4">Regular</span>
+        <h3 class="font-black text-ink text-2xl tracking-tight mt-3">Get listed</h3>
+        <p class="font-serif italic text-base text-accent">Aparece en el catálogo</p>
+        <p class="text-muted text-sm mt-1 mb-6">Free · Gratis</p>
+        <ul class="space-y-2.5 text-sm text-ink/70 mb-6">
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Listing in your category</li>
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> 3 GM-approved photos</li>
+          <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> WhatsApp contact</li>
+          <li class="flex gap-2 text-slate-300"><span>✗</span> Verified badge</li>
+          <li class="flex gap-2 text-slate-300"><span>✗</span> Priority placement</li>
+        </ul>
+        <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full border border-slate-200 hover:bg-warm-50 transition-colors">Start free · Empezar gratis</a>
+      </div></div>
+
+      <div class="relative rounded-[2rem]" style="background:linear-gradient(135deg,#FFFAF0 0%,#fff 100%); box-shadow:0 0 0 2px rgba(249,115,22,0.30), 0 24px 56px -8px rgba(249,115,22,0.18);">
+        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+          <span class="px-4 py-1 rounded-full bg-accent text-white text-[10px] font-black uppercase tracking-wider shadow-soft">Most chosen · Más elegido</span>
+        </div>
+        <div class="p-7 pt-9">
+          <span class="eyebrow bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 mb-4">✓ Verified</span>
+          <h3 class="font-black text-ink text-2xl tracking-tight mt-3">Build community trust</h3>
+          <p class="font-serif italic text-base text-accent">Genera confianza</p>
+          <p class="text-muted text-sm mt-1 mb-6">Free after verification · Gratis tras verificación</p>
+          <ul class="space-y-2.5 text-sm text-ink/80 mb-6">
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Everything in Regular</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Phone + ID + social verified</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Verified badge on listings</li>
+            <li class="flex gap-2"><span class="text-emerald-500 font-bold">✓</span> Up to 8 photos</li>
+            <li class="flex gap-2 text-slate-300"><span>✗</span> VIP priority placement</li>
+          </ul>
+          <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">Get verified · Verificarme</a>
+        </div>
+      </div>
+
+      <div class="bezel-warm-outer"><div class="bezel-warm-inner p-7">
+        <span class="eyebrow text-white" style="background:linear-gradient(135deg,#fb923c,#f97316);">★ VIP</span>
+        <h3 class="font-black text-ink text-2xl tracking-tight mt-3">Be at the top</h3>
+        <p class="font-serif italic text-base text-accent">Aparece primero</p>
+        <p class="text-muted text-sm mt-1 mb-6">Ask for pricing · Consultar</p>
+        <ul class="space-y-2.5 text-sm text-ink/70 mb-6">
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Everything in Verified</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> VIP badge + top placement</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Unlimited photos (GM-curated)</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Analytics dashboard</li>
+          <li class="flex gap-2"><span class="text-accent font-bold">✓</span> Eligible for GM Featured</li>
+        </ul>
+        <a href="/account/register" class="block text-center w-full text-sm font-bold py-3 rounded-full border-2 border-accent text-accent hover:bg-warm-50 transition-colors">Upgrade · Subir a VIP</a>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TRUST — 4 horizontal rules with bilingual ═══════════════════ -->
+<section class="py-24 px-4 bg-warm-50" aria-labelledby="rules-heading">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12 fade-up">
+      <span class="eyebrow bg-warm-100 text-orange-700">Our promises · Nuestras promesas</span>
+      <h2 id="rules-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter mt-4">A safe community starts with rules.</h2>
+      <p class="font-serif italic text-lg text-accent mt-1">Una comunidad segura empieza con reglas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8 fade-up">
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div><h3 class="font-bold text-ink text-base mb-1">Every listing approved manually</h3><p class="text-muted text-sm">Cada anuncio aprobado a mano por nuestro GM antes de aparecer públicamente.</p></div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><h3 class="font-bold text-ink text-base mb-1">VIP needs full verification</h3><p class="text-muted text-sm">Sin verificación de teléfono, ID y redes — no hay VIP. Sin excepciones.</p></div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div><h3 class="font-bold text-ink text-base mb-1">Real ratings, real contacts</h3><p class="text-muted text-sm">Solo califica quien contactó al proveedor. El GM revisa cada reseña antes de publicarla.</p></div>
+      </div>
+      <div class="flex gap-5">
+        <div class="w-10 h-10 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12"/></svg></div>
+        <div><h3 class="font-bold text-ink text-base mb-1">WhatsApp + GM email copy</h3><p class="text-muted text-sm">Tú contactas por WhatsApp. El GM recibe email de cada interacción para auditoría.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ BECOME A PROVIDER — bilingual narrative steps ═══════════════════ -->
+<section class="py-24 px-4 bg-ink" aria-labelledby="prov-heading">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <span class="eyebrow bg-white/10 text-white/80 border border-white/15">For providers · Para proveedores</span>
+      <h2 id="prov-heading" class="text-3xl sm:text-5xl font-black text-white tracking-tighter mt-4">Five steps. One community.</h2>
+      <p class="font-serif italic text-xl text-accent mt-1">Cinco pasos, una comunidad.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 fade-up">
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);"><span class="text-white font-black text-xl">1</span></div>
+        <h3 class="text-white font-bold text-sm">Sign up</h3>
+        <p class="text-white/45 text-xs italic mt-0.5">Crea cuenta</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);"><span class="text-white font-black text-xl">2</span></div>
+        <h3 class="text-white font-bold text-sm">Upload photos</h3>
+        <p class="text-white/45 text-xs italic mt-0.5">Sube fotos</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);"><span class="text-white font-black text-xl">3</span></div>
+        <h3 class="text-white font-bold text-sm">Verify identity</h3>
+        <p class="text-white/45 text-xs italic mt-0.5">Verifica identidad</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-4" style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);"><span class="text-white font-black text-xl">4</span></div>
+        <h3 class="text-white font-bold text-sm">GM reviews</h3>
+        <p class="text-white/45 text-xs italic mt-0.5">El GM revisa</p>
+      </div>
+      <div class="text-center">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(249,115,22,0.20); border:1px solid rgba(249,115,22,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);"><span class="text-accent font-black text-xl">5</span></div>
+        <h3 class="text-white font-bold text-sm">Go live</h3>
+        <p class="text-white/45 text-xs italic mt-0.5">Publica</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 fade-up">
+      <a href="/account/register" class="group inline-flex items-center gap-3 bg-accent text-white font-bold px-7 py-3.5 rounded-full hover:bg-orange-600 transition-colors text-sm">
+        Become a provider · Ser proveedor
+        <span class="w-8 h-8 rounded-full bg-black/[0.12] flex items-center justify-center group-hover:bg-black/[0.20] transition-colors"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+      </a>
+      <a href="/how-it-works" class="inline-flex items-center gap-2 text-white/55 hover:text-white text-sm font-medium transition-colors">Read the guide · Lee la guía</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FINAL CTA + FOOTER ═══════════════════ -->
+<section class="py-20 px-4 bg-warm-50" aria-labelledby="final">
+  <div class="max-w-3xl mx-auto text-center fade-up">
+    <h2 id="final" class="text-4xl sm:text-5xl font-black text-ink tracking-tighter">Welcome to Dells.</h2>
+    <p class="font-serif italic text-3xl text-accent mt-2">Bienvenido a Dells.</p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+      <a href="/browse" class="group inline-flex items-center gap-3 bg-ink text-white font-bold px-7 py-3.5 rounded-full hover:bg-slate-700 transition-colors text-sm">
+        Browse · Buscar
+        <span class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+      </a>
+      <a href="/account/register" class="inline-flex items-center gap-2 text-ink text-sm font-bold px-6 py-3.5 rounded-full border border-slate-200 hover:bg-white transition-colors">List your service · Anuncia tu servicio</a>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-ink text-white py-16 px-4" role="contentinfo">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8">
+    <div class="col-span-2">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-9 h-9 rounded-2xl bg-accent flex items-center justify-center"><span class="font-black text-white text-sm">BD</span></div>
+        <span class="font-black text-lg">Bulletin<span class="text-accent">Dells</span></span>
+      </div>
+      <p class="text-white/55 text-xs leading-relaxed max-w-[36ch]">Made by and for the bilingual community of Wisconsin Dells.</p>
+      <p class="text-white/40 text-[11px] italic mt-2 max-w-[36ch]">Hecho por y para la comunidad bilingüe de Wisconsin Dells.</p>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Browse · Buscar</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="/browse?category=housing" class="hover:text-white">Housing · Vivienda</a></li>
+        <li><a href="/browse?category=jobs" class="hover:text-white">Jobs · Trabajos</a></li>
+        <li><a href="/browse?category=mechanics" class="hover:text-white">Mechanics · Mecánicos</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Community · Comunidad</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="#community" class="hover:text-white">Who we serve</a></li>
+        <li><a href="/how-it-works" class="hover:text-white">How it works</a></li>
+        <li><a href="/account/register" class="hover:text-white">Become a provider</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white text-xs font-bold uppercase tracking-wider mb-3">Legal</h4>
+      <ul class="space-y-2 text-xs text-white/60">
+        <li><a href="#" class="hover:text-white">Terms · Términos</a></li>
+        <li><a href="#" class="hover:text-white">Privacy · Privacidad</a></li>
+        <li><a href="#" class="hover:text-white">Waiver · Exoneración</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto pt-8 mt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="text-[11px] text-white/40">© 2026 Bulletin Dells · Wisconsin Dells, WI · A platform — not a service provider.</p>
+    <div class="lang-toggle"><button class="active">EN</button><button>ES</button></div>
+  </div>
+</footer>
+
+</main>
+
+<script>
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
+      return;
+    }
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+  })();
+
+  // Lang toggle visual demo
+  document.querySelectorAll('.lang-toggle').forEach(function (group) {
+    group.querySelectorAll('button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        group.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+        btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+@Bulletin.Board.API_HostAddress = http://localhost:5076
+
+GET {{Bulletin.Board.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,39 @@
+@namespace Bulletin.Board.Web.Client.Components.Manage.Shared
+@inject IStringLocalizer<SharedResource> _localizer
+
+@* PendingReviewTooltip — wrapper visual con tooltip + sr-only para anunciar la
+   regla #5: cualquier edición regresa el listing a Pending review. *@
+
+<span class="pending-tooltip @CssClass" tabindex="0" aria-describedby="@_tooltipId">
+    @ChildContent
+    <span class="pending-tooltip__bubble" role="tooltip" id="@_tooltipId" aria-hidden="true">
+        @_localizer["Banner_EditingReturnsPending"]
+    </span>
+    <span class="sr-only">@_localizer["Banner_EditingReturnsPending"]</span>
+</span>
+
+<style>
+    .pending-tooltip { position: relative; display: inline-flex; }
+    .pending-tooltip__bubble {
+        position: absolute; bottom: calc(100% + 8px); left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b; color: #fff;
+        font-size: 11px; line-height: 1.35;
+        padding: 6px 10px; border-radius: 8px;
+        white-space: normal; min-width: 180px; max-width: 240px; text-align: center;
+        pointer-events: none; opacity: 0;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 60;
+    }
+    .pending-tooltip:hover .pending-tooltip__bubble,
+    .pending-tooltip:focus-visible .pending-tooltip__bubble {
+        opacity: 1; transform: translateX(-50%) translateY(-2px);
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+
+    private readonly string _tooltipId = $"pending-tip-{Guid.NewGuid():N}";
+}

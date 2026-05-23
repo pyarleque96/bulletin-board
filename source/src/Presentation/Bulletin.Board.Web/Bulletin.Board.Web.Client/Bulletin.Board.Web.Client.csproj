@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+  </ItemGroup>
+
+  <!--
+    NEUTRAL resource (.resx — no culture suffix):
+    The BlazorWebAssembly SDK strips the subfolder path when embedding .resx files,
+    so without an explicit LogicalName the embedded resource ends up as
+    "Bulletin.Board.Web.Client.SharedResource.resources" instead of the
+    "Bulletin.Board.Web.Client.Resources.SharedResource.resources" name that
+    ResourceManagerStringLocalizerFactory expects
+    (formula: AssemblyName + ResourcesPath + TypeName).
+
+    SATELLITE resources (.es.resx, .en.resx):
+    These are compiled by MSBuild into *separate* satellite assemblies
+    (es/Bulletin.Board.Web.Client.resources.dll, etc.).
+    The LogicalName controls the resource name *inside* the satellite DLL.
+    ResourceManager strips the culture suffix when resolving the resource name,
+    so the LogicalName must match the neutral resource name exactly.
+    The culture is encoded in the satellite DLL path, not the embedded resource name.
+
+    Generator and LastGenOutput are cleared to prevent MSBuild from generating a
+    Designer.cs for any of these files.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\SharedResource.resx">
+      <LogicalName>Bulletin.Board.Web.Client.Resources.SharedResource.resources</LogicalName>
+      <Generator></Generator>
+      <LastGenOutput></LastGenOutput>
+    </EmbeddedResource>
+    <!--
+      For satellite .resx files the LogicalName controls the resource name *inside*
+      the satellite DLL (es/Bulletin.Board.Web.Client.resources.dll).
+      ResourceManager strips the culture portion and looks for the base name, so the
+      correct value is identical to the neutral resource name.
+    -->
+    <EmbeddedResource Update="Resources\SharedResource.es.resx">
+      <LogicalName>Bulletin.Board.Web.Client.Resources.SharedResource.resources</LogicalName>
+      <Generator></Generator>
+      <LastGenOutput></LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\SharedResource.en.resx">
+      <LogicalName>Bulletin.Board.Web.Client.Resources.SharedResource.resources</LogicalName>
+      <Generator></Generator>
+      <LastGenOutput></LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

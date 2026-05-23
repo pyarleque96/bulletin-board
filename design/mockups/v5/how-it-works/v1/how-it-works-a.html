@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works — Bulletin Dells</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,300&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50:'#eff6ff', 100:'#dbeafe', 200:'#bfdbfe', 500:'#3B82F6', 600:'#2563eb', 700:'#1d4ed8', 900:'#1e3a8a' },
+            accent: '#F97316',
+            surface: '#FDFBF7',
+            ink: '#1E293B',
+            muted: '#64748B',
+          },
+          boxShadow: {
+            'soft':    '0 4px 24px -4px rgba(30,41,59,0.08)',
+            'lift':    '0 12px 40px -8px rgba(30,41,59,0.14)',
+            'float':   '0 24px 64px -12px rgba(30,41,59,0.18)',
+            'diffuse': '0 32px 80px -16px rgba(30,41,59,0.10)',
+          },
+          transitionTimingFunction: { 'spring': 'cubic-bezier(0.32,0.72,0,1)' }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* Grain overlay — fixed, pointer-events-none, never on scroll container */
+    .grain-overlay {
+      position: fixed; inset: 0; z-index: 50; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.3;
+    }
+
+    /* NAV PILL */
+    .nav-pill {
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(30,41,59,0.08);
+      box-shadow: 0 4px 24px -4px rgba(30,41,59,0.10), 0 1px 0 rgba(255,255,255,0.9) inset;
+    }
+
+    /* BUTTON spring */
+    .btn-primary { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s cubic-bezier(0.32,0.72,0,1); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -4px rgba(249,115,22,0.35); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary { transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s ease; }
+    .btn-secondary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -4px rgba(30,41,59,0.12); }
+    .btn-secondary:active { transform: scale(0.98); }
+
+    /* SECTION eyebrow pill */
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 9999px;
+      background: #eff6ff; color: #2563eb;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    /* FADE-UP scroll reveal */
+    .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.32,0.72,0,1), transform 0.7s cubic-bezier(0.32,0.72,0,1); }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* STAGGER children */
+    .stagger-child { opacity: 0; transform: translateY(20px); transition: opacity 0.6s cubic-bezier(0.32,0.72,0,1), transform 0.6s cubic-bezier(0.32,0.72,0,1); }
+    .stagger-child.visible { opacity: 1; transform: translateY(0); }
+
+    /* DOUBLE-BEZEL */
+    .bezel-outer {
+      padding: 6px; border-radius: 2rem;
+      background: rgba(30,41,59,0.02);
+      box-shadow: 0 0 0 1px rgba(30,41,59,0.06);
+    }
+    .bezel-inner {
+      border-radius: calc(2rem - 0.375rem);
+      background: #ffffff;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+
+    /* STEP connector line between numbered steps */
+    .step-connector { position: relative; }
+    .step-connector::after {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: calc(50% + 32px);
+      width: calc(100% - 64px);
+      height: 1px;
+      background: linear-gradient(90deg, rgba(30,41,59,0.15), rgba(30,41,59,0.06));
+    }
+    @media (max-width: 767px) { .step-connector::after { display: none; } }
+
+    /* STEP connector line — dark bg variant */
+    .step-connector-dark::after {
+      background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
+    }
+
+    /* CARD hover spring */
+    .card-hover { transition: transform 0.4s cubic-bezier(0.32,0.72,0,1), box-shadow 0.4s cubic-bezier(0.32,0.72,0,1); cursor: default; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 24px 64px -12px rgba(30,41,59,0.14); }
+
+    /* ACCORDION */
+    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.32,0.72,0,1); }
+    .accordion-item.open .accordion-body { max-height: 200px; }
+    .accordion-item.open .accordion-chevron { transform: rotate(180deg); }
+    .accordion-chevron { transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); }
+
+    /* VIP tier highlight */
+    .tier-vip { box-shadow: 0 0 0 2px rgba(249,115,22,0.3), 0 16px 48px -8px rgba(249,115,22,0.12); }
+
+    /* Scroll indicator dot animation */
+    @keyframes scroll-dot { 0%,100%{transform:translateY(0);opacity:.5} 50%{transform:translateY(8px);opacity:1} }
+  </style>
+</head>
+<body class="font-sans bg-surface text-ink antialiased">
+
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       NAVBAR — identical to home-8
+       ═══════════════════════════════════════════════ -->
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-6xl px-4" role="banner">
+    <nav class="nav-pill rounded-full px-5 py-3 flex items-center justify-between" aria-label="Main navigation">
+      <a href="home-8.html" class="flex items-center gap-2.5 cursor-pointer" aria-label="Bulletin Dells — go to homepage">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shadow-soft flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="font-semibold tracking-tight text-sm hidden sm:block text-ink">Bulletin Dells</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-1" role="list">
+        <!-- data-i18n="nav.browse" -->
+        <li><a href="home-8.html" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Browse</a></li>
+        <!-- data-i18n="nav.explore" -->
+        <li><a href="home-8.html#explore" class="px-3 py-1.5 rounded-full text-sm text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer">Explore</a></li>
+        <!-- data-i18n="nav.how_it_works" — active state -->
+        <li><a href="how-it-works.html" class="px-3 py-1.5 rounded-full text-sm text-ink bg-slate-100 font-semibold cursor-pointer" aria-current="page">How it works</a></li>
+      </ul>
+      <div class="flex items-center gap-2">
+        <!-- data-i18n="nav.lang_toggle" -->
+        <button class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted hover:text-ink hover:bg-slate-100 transition-colors duration-200 cursor-pointer" aria-label="Switch language">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          EN / ES
+        </button>
+        <!-- data-i18n="nav.list_business" -->
+        <a href="auth-register.html" class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full btn-primary cursor-pointer">
+          List your business
+          <span class="w-5 h-5 rounded-full bg-black/[0.10] flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ═══════════════════════════════════════════════
+         HERO — Propuesta A "Editorial Twin"
+         min-h-[88vh], centered max-w-3xl, H1 text-5xl→7xl
+         "Works" underline SVG accent, dot-grid + ambient gradient,
+         stat pills row, scroll indicator — mirrors home-8 hero language
+         ═══════════════════════════════════════════════ -->
+    <section class="min-h-[88vh] flex flex-col items-center justify-center pt-28 pb-20 px-4 bg-surface relative overflow-hidden" aria-labelledby="hero-heading">
+
+      <!-- Ambient radial gradient — warm + brand tones, same as home-8 line 212–214 -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+        style="background: radial-gradient(ellipse at 60% 38%, rgba(59,130,246,0.07) 0%, rgba(249,115,22,0.04) 45%, transparent 68%), radial-gradient(ellipse at 20% 70%, rgba(52,211,153,0.05) 0%, transparent 50%);">
+      </div>
+
+      <!-- Subtle dot grid — same as home-8 lines 217–219 -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+        style="background-image: radial-gradient(circle, rgba(30,41,59,0.06) 1px, transparent 1px); background-size: 28px 28px; mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);">
+      </div>
+
+      <div class="relative z-10 w-full max-w-3xl mx-auto text-center">
+
+        <!-- Eyebrow -->
+        <!-- data-i18n="hiw.hero_eyebrow" -->
+        <div class="fade-up mb-6" style="--i:1">
+          <span class="section-eyebrow">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Platform guide
+          </span>
+        </div>
+
+        <!-- H1 — editorial bold with "Works" underline accent (mirrors home-8 lines 232–241) -->
+        <!-- data-i18n="hiw.hero_title" -->
+        <h1 id="hero-heading" class="fade-up text-5xl sm:text-6xl md:text-7xl font-black text-ink leading-[1.02] tracking-tighter mb-5" style="--i:2">
+          How Bulletin Dells
+          <!-- ES: Cómo Funciona Bulletin Dells -->
+          <span class="relative inline-block">
+            <span class="relative z-10">Works</span>
+            <!-- Accent underline SVG — same stroke motif as home-8 line 237 -->
+            <svg class="absolute -bottom-1 left-0 w-full" viewBox="0 0 160 8" fill="none" preserveAspectRatio="none" aria-hidden="true" style="height:6px"><path d="M2 5.5 C32 2, 80 7, 158 4" stroke="#F97316" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"/></svg>
+          </span>
+        </h1>
+
+        <!-- Subtitle -->
+        <!-- data-i18n="hiw.hero_subtitle" -->
+        <p class="fade-up text-lg text-muted leading-relaxed max-w-[52ch] mx-auto mb-8" style="--i:3">
+          A bilingual, moderated marketplace connecting customers with trusted local providers across Wisconsin Dells — no middlemen, no commissions.
+          <!-- ES: Un marketplace bilingüe y moderado que conecta clientes con proveedores locales de confianza en Wisconsin Dells — sin intermediarios, sin comisiones. -->
+        </p>
+
+        <!-- 2 CTAs -->
+        <div class="fade-up flex flex-col sm:flex-row items-center justify-center gap-3 mb-10" style="--i:4">
+          <!-- data-i18n="hiw.cta_browse" -->
+          <a href="home-8.html" class="btn-secondary group inline-flex items-center justify-center gap-2 bg-white border border-slate-200 text-ink font-semibold text-sm px-6 py-3 rounded-full shadow-soft cursor-pointer">
+            Browse listings
+            <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-brand-100 transition-colors duration-200" aria-hidden="true">
+              <svg class="w-3.5 h-3.5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </a>
+          <!-- data-i18n="hiw.cta_become_provider" -->
+          <a href="auth-register.html" class="btn-primary group inline-flex items-center justify-center gap-2 bg-accent text-white font-semibold text-sm px-6 py-3 rounded-full cursor-pointer">
+            Become a provider
+            <span class="w-6 h-6 rounded-full bg-black/[0.10] flex items-center justify-center group-hover:bg-black/[0.18] transition-colors duration-200" aria-hidden="true">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </span>
+          </a>
+        </div>
+
+        <!-- Trust micro-signals / stat pills (mirrors home-8 lines 307–322) -->
+        <!-- data-i18n="hiw.heroA_trust_row" (container label) -->
+        <div class="fade-up flex items-center justify-center flex-wrap gap-x-7 gap-y-2" style="--i:5">
+          <!-- data-i18n="hiw.heroA_stat1" -->
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span class="text-muted text-xs">340+ verified providers</span>
+            <!-- ES: 340+ proveedores verificados -->
+          </div>
+          <!-- data-i18n="hiw.heroA_stat2" -->
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="text-muted text-xs">GM-approved listings</span>
+            <!-- ES: Anuncios aprobados por el GM -->
+          </div>
+          <!-- data-i18n="hiw.heroA_stat3" -->
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            <span class="text-muted text-xs">WhatsApp contact</span>
+            <!-- ES: Contacto por WhatsApp -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Scroll indicator (mirrors home-8 lines 326–333) -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5" aria-hidden="true">
+        <div class="w-5 h-8 rounded-full border border-slate-300 flex items-start justify-center pt-1.5">
+          <div class="w-1 h-1.5 rounded-full bg-muted/50" style="animation: scroll-dot 1.8s ease-in-out infinite;"></div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         FOR CUSTOMERS — 4 numbered steps
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-white border-y border-slate-100" aria-labelledby="customers-heading">
+      <div class="max-w-6xl mx-auto">
+
+        <div class="text-center mb-14 fade-up">
+          <!-- data-i18n="hiw.customers_eyebrow" -->
+          <div class="section-eyebrow mb-4 mx-auto" style="background:#dbeafe; color:#2563eb;">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            For Customers
+          </div>
+          <!-- data-i18n="hiw.customers_title" -->
+          <h2 id="customers-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter">Find what you need in 4 steps</h2>
+          <!-- data-i18n="hiw.customers_subtitle" -->
+          <p class="text-muted text-base mt-3 max-w-[44ch] mx-auto leading-relaxed">Browse verified local services, connect instantly via WhatsApp, and leave a verified rating after your experience.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 fade-up" data-stagger>
+
+          <!-- Step 1 -->
+          <div class="step-connector stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mx-auto mb-5 shadow-soft">
+              <span class="text-brand-600 font-black text-xl" aria-hidden="true">1</span>
+            </div>
+            <!-- data-i18n="hiw.customers_step1_title" -->
+            <h3 class="font-bold text-ink text-sm mb-2">Discover</h3>
+            <!-- data-i18n="hiw.customers_step1_body" -->
+            <p class="text-muted text-xs leading-relaxed">Browse GM-approved listings by category — housing, rides, mechanics, beauty, jobs and more.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-connector stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center mx-auto mb-5 shadow-soft">
+              <span class="text-green-600 font-black text-xl" aria-hidden="true">2</span>
+            </div>
+            <!-- data-i18n="hiw.customers_step2_title" -->
+            <h3 class="font-bold text-ink text-sm mb-2">Contact via WhatsApp</h3>
+            <!-- data-i18n="hiw.customers_step2_body" -->
+            <p class="text-muted text-xs leading-relaxed">Tap the WhatsApp button to open a direct conversation with the provider. No login required to browse.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-connector stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center mx-auto mb-5 shadow-soft">
+              <span class="text-accent font-black text-xl" aria-hidden="true">3</span>
+            </div>
+            <!-- data-i18n="hiw.customers_step3_title" -->
+            <h3 class="font-bold text-ink text-sm mb-2">Meet the provider</h3>
+            <!-- data-i18n="hiw.customers_step3_body" -->
+            <p class="text-muted text-xs leading-relaxed">A brief legal disclaimer clarifies the platform only connects you — the service is between you and the provider.</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-5 shadow-soft">
+              <span class="text-amber-600 font-black text-xl" aria-hidden="true">4</span>
+            </div>
+            <!-- data-i18n="hiw.customers_step4_title" -->
+            <h3 class="font-bold text-ink text-sm mb-2">Leave a verified rating</h3>
+            <!-- data-i18n="hiw.customers_step4_body" -->
+            <p class="text-muted text-xs leading-relaxed">Only customers who contacted a provider through the platform can rate them. All ratings are reviewed before publishing.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         FOR PROVIDERS — 5 numbered steps, dark bg
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4" style="background: #1E293B;" aria-labelledby="providers-heading">
+      <div class="max-w-6xl mx-auto">
+
+        <div class="text-center mb-14 fade-up">
+          <!-- data-i18n="hiw.providers_eyebrow" -->
+          <div class="inline-flex items-center gap-2 mb-4">
+            <span class="px-4 py-1.5 rounded-full bg-white/10 border border-white/12 text-white/80 text-[10px] uppercase tracking-[0.18em] font-semibold flex items-center gap-2">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              For Providers
+            </span>
+          </div>
+          <!-- data-i18n="hiw.providers_title" -->
+          <h2 id="providers-heading" class="text-3xl sm:text-4xl font-black text-white tracking-tighter">Publish your listing in 5 steps</h2>
+          <!-- data-i18n="hiw.providers_subtitle" -->
+          <p class="text-white/55 text-base mt-3 max-w-[48ch] mx-auto leading-relaxed">From registration to going live — and upgrading to VIP when you're ready.</p>
+        </div>
+
+        <!-- 5-column grid on lg, 3+2 on md, single on mobile -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12 fade-up" data-stagger>
+
+          <!-- Step 1 -->
+          <div class="step-connector step-connector-dark stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-5"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl" aria-hidden="true">1</span>
+            </div>
+            <!-- data-i18n="hiw.providers_step1_title" -->
+            <h3 class="text-white font-bold text-sm mb-2">Register</h3>
+            <!-- data-i18n="hiw.providers_step1_body" -->
+            <p class="text-white/45 text-xs leading-relaxed">Create your account with email and a strong password. Free to start.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-connector step-connector-dark stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-5"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl" aria-hidden="true">2</span>
+            </div>
+            <!-- data-i18n="hiw.providers_step2_title" -->
+            <h3 class="text-white font-bold text-sm mb-2">Verify</h3>
+            <!-- data-i18n="hiw.providers_step2_body" -->
+            <p class="text-white/45 text-xs leading-relaxed">Confirm your phone number, upload a government-issued ID or passport, and link your social media profiles.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-connector step-connector-dark stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-5"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl" aria-hidden="true">3</span>
+            </div>
+            <!-- data-i18n="hiw.providers_step3_title" -->
+            <h3 class="text-white font-bold text-sm mb-2">Create listing</h3>
+            <!-- data-i18n="hiw.providers_step3_body" -->
+            <p class="text-white/45 text-xs leading-relaxed">Pick a category, write your description, set pricing, and upload photos. Edits always reset status to Pending.</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-connector step-connector-dark stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mx-auto mb-5"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);">
+              <span class="text-white font-black text-xl" aria-hidden="true">4</span>
+            </div>
+            <!-- data-i18n="hiw.providers_step4_title" -->
+            <h3 class="text-white font-bold text-sm mb-2">GM approval</h3>
+            <!-- data-i18n="hiw.providers_step4_body" -->
+            <p class="text-white/45 text-xs leading-relaxed">The General Manager reviews your listing and photos, then approves, requests changes, or rejects with feedback.</p>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="stagger-child text-center">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style="background: rgba(249,115,22,0.20); border: 1px solid rgba(249,115,22,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);">
+              <span class="text-accent font-black text-xl" aria-hidden="true">5</span>
+            </div>
+            <!-- data-i18n="hiw.providers_step5_title" -->
+            <h3 class="text-white font-bold text-sm mb-2">Go live</h3>
+            <!-- data-i18n="hiw.providers_step5_body" -->
+            <p class="text-white/45 text-xs leading-relaxed">Your listing is now public. Upgrade to VIP for higher ranking and a verified badge that builds customer trust.</p>
+          </div>
+
+        </div>
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 fade-up">
+          <!-- data-i18n="hiw.providers_cta_primary" -->
+          <a href="auth-register.html" class="btn-primary group flex items-center gap-3 bg-accent text-white font-bold px-7 py-3.5 rounded-full cursor-pointer text-sm">
+            Get Started — It's Free
+            <span class="w-8 h-8 rounded-full bg-black/[0.12] flex items-center justify-center group-hover:bg-black/[0.20] transition-colors duration-200" aria-hidden="true">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </span>
+          </a>
+          <!-- data-i18n="hiw.providers_cta_secondary" -->
+          <a href="home-8.html" class="flex items-center gap-2 text-white/55 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">
+            Browse as customer
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         TRUST & SAFETY — 4 rule cards
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-surface" aria-labelledby="trust-heading">
+      <div class="max-w-6xl mx-auto">
+
+        <div class="text-center mb-14 fade-up">
+          <!-- data-i18n="hiw.trust_eyebrow" -->
+          <div class="section-eyebrow mb-4 mx-auto" style="background:#dcfce7; color:#16a34a;">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Trust &amp; Safety
+          </div>
+          <!-- data-i18n="hiw.trust_title" -->
+          <h2 id="trust-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter">Built for confidence, not just convenience</h2>
+          <!-- data-i18n="hiw.trust_subtitle" -->
+          <p class="text-muted text-base mt-3 max-w-[46ch] mx-auto leading-relaxed">Four non-negotiable rules that protect every interaction on the platform.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 fade-up" data-stagger>
+
+          <!-- Rule 1 — GM Approved -->
+          <div class="bezel-outer card-hover stagger-child">
+            <div class="bezel-inner p-6">
+              <div class="w-11 h-11 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center mb-4">
+                <svg class="w-5 h-5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <!-- data-i18n="hiw.trust_card1_title" -->
+              <h3 class="font-bold text-ink text-sm mb-2">GM-approved listings</h3>
+              <!-- data-i18n="hiw.trust_card1_body" -->
+              <p class="text-muted text-xs leading-relaxed">No listing goes public without manual review and approval by the General Manager. Zero exceptions.</p>
+            </div>
+          </div>
+
+          <!-- Rule 2 — Verified providers -->
+          <div class="bezel-outer card-hover stagger-child">
+            <div class="bezel-inner p-6">
+              <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-4">
+                <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <!-- data-i18n="hiw.trust_card2_title" -->
+              <h3 class="font-bold text-ink text-sm mb-2">Verified providers</h3>
+              <!-- data-i18n="hiw.trust_card2_body" -->
+              <p class="text-muted text-xs leading-relaxed">Every provider confirms their phone number, government ID or passport, and social media presence before going VIP.</p>
+            </div>
+          </div>
+
+          <!-- Rule 3 — Verified ratings -->
+          <div class="bezel-outer card-hover stagger-child">
+            <div class="bezel-inner p-6">
+              <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center mb-4">
+                <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <!-- data-i18n="hiw.trust_card3_title" -->
+              <h3 class="font-bold text-ink text-sm mb-2">Verified ratings only</h3>
+              <!-- data-i18n="hiw.trust_card3_body" -->
+              <p class="text-muted text-xs leading-relaxed">Only customers who contacted a provider through the platform can rate them. All ratings pass GM review before publishing.</p>
+            </div>
+          </div>
+
+          <!-- Rule 4 — Legal waiver -->
+          <div class="bezel-outer card-hover stagger-child">
+            <div class="bezel-inner p-6">
+              <div class="w-11 h-11 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-4">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <!-- data-i18n="hiw.trust_card4_title" -->
+              <h3 class="font-bold text-ink text-sm mb-2">Legal waiver on first contact</h3>
+              <!-- data-i18n="hiw.trust_card4_body" -->
+              <p class="text-muted text-xs leading-relaxed">Before your first meaningful interaction, a clear disclaimer confirms Bulletin Dells connects — it does not provide the service.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         PROVIDER TIERS — 3 columns, VIP highlighted
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-white border-y border-slate-100" aria-labelledby="tiers-heading">
+      <div class="max-w-6xl mx-auto">
+
+        <div class="text-center mb-14 fade-up">
+          <!-- data-i18n="hiw.tiers_eyebrow" -->
+          <div class="section-eyebrow mb-4 mx-auto" style="background:#fff7ed; color:#c2410c;">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Provider tiers
+          </div>
+          <!-- data-i18n="hiw.tiers_title" -->
+          <h2 id="tiers-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter">Choose your visibility level</h2>
+          <!-- data-i18n="hiw.tiers_subtitle" -->
+          <p class="text-muted text-base mt-3 max-w-[44ch] mx-auto leading-relaxed">All providers start as Regular. Verification is required before unlocking VIP benefits.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-up">
+
+          <!-- Regular -->
+          <div class="bezel-outer">
+            <div class="bezel-inner p-7">
+              <div class="flex items-center gap-2 mb-5">
+                <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wide">Regular</span>
+              </div>
+              <!-- data-i18n="hiw.tier_regular_title" -->
+              <h3 class="font-black text-ink text-xl tracking-tight mb-1">Free</h3>
+              <!-- data-i18n="hiw.tier_regular_price" -->
+              <p class="text-muted text-xs mb-6">No cost to list your business</p>
+              <ul class="space-y-3" role="list">
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_regular_b1" -->
+                  Public listing after GM approval
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_regular_b2" -->
+                  WhatsApp direct contact
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_regular_b3" -->
+                  Receive verified ratings
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-slate-300">
+                  <svg class="w-4 h-4 text-slate-200 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <!-- data-i18n="hiw.tier_regular_missing1" -->
+                  Verified badge
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-slate-300">
+                  <svg class="w-4 h-4 text-slate-200 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <!-- data-i18n="hiw.tier_regular_missing2" -->
+                  Priority ranking
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Verified -->
+          <div class="bezel-outer">
+            <div class="bezel-inner p-7">
+              <div class="flex items-center gap-2 mb-5">
+                <span class="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Verified
+                </span>
+              </div>
+              <!-- data-i18n="hiw.tier_verified_title" -->
+              <h3 class="font-black text-ink text-xl tracking-tight mb-1">Free</h3>
+              <!-- data-i18n="hiw.tier_verified_price" -->
+              <p class="text-muted text-xs mb-6">Complete identity verification</p>
+              <ul class="space-y-3" role="list">
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_verified_b1" -->
+                  Everything in Regular
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_verified_b2" -->
+                  Verified badge on listing
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_verified_b3" -->
+                  Higher trust from customers
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_verified_b4" -->
+                  Eligible to apply for VIP
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-slate-300">
+                  <svg class="w-4 h-4 text-slate-200 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <!-- data-i18n="hiw.tier_verified_missing1" -->
+                  Priority ranking boost
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- VIP — highlighted -->
+          <div class="relative tier-vip rounded-[2rem] overflow-visible" style="background: linear-gradient(135deg,#fff7ed 0%,#fff 100%); box-shadow: 0 0 0 2px rgba(249,115,22,0.25), 0 16px 48px -8px rgba(249,115,22,0.12);">
+            <!-- Popular label -->
+            <!-- data-i18n="hiw.tier_vip_popular" -->
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+              <span class="px-4 py-1 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wide shadow-soft whitespace-nowrap">Most visible</span>
+            </div>
+            <div class="p-7 pt-9">
+              <div class="flex items-center gap-2 mb-5">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5"
+                  style="background: linear-gradient(135deg,#fb923c,#f97316); color: white;">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  VIP
+                </span>
+              </div>
+              <!-- data-i18n="hiw.tier_vip_title" -->
+              <h3 class="font-black text-ink text-xl tracking-tight mb-1">Paid tier</h3>
+              <!-- data-i18n="hiw.tier_vip_price" -->
+              <p class="text-muted text-xs mb-6">Requires verification — pricing by GM</p>
+              <ul class="space-y-3" role="list">
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_vip_b1" -->
+                  Everything in Verified
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_vip_b2" -->
+                  Priority ranking in search results
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_vip_b3" -->
+                  Orange VIP badge on listing card
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_vip_b4" -->
+                  VIP glow border on card
+                </li>
+                <li class="flex items-start gap-2.5 text-xs text-muted">
+                  <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                  <!-- data-i18n="hiw.tier_vip_b5" -->
+                  Maximum exposure to customers
+                </li>
+              </ul>
+              <!-- data-i18n="hiw.tier_vip_cta" -->
+              <a href="auth-register.html" class="btn-primary mt-6 w-full flex items-center justify-center gap-2 bg-accent text-white text-sm font-semibold py-3 rounded-full cursor-pointer">
+                Become VIP
+                <span class="w-6 h-6 rounded-full bg-black/[0.10] flex items-center justify-center" aria-hidden="true">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                </span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         FAQ — 5 questions, accordion (static JS)
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4 bg-surface" aria-labelledby="faq-heading">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="text-center mb-14 fade-up">
+          <!-- data-i18n="hiw.faq_eyebrow" -->
+          <div class="section-eyebrow mb-4 mx-auto">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            FAQ
+          </div>
+          <!-- data-i18n="hiw.faq_title" -->
+          <h2 id="faq-heading" class="text-3xl sm:text-4xl font-black text-ink tracking-tighter">Frequently asked questions</h2>
+        </div>
+
+        <div class="space-y-3 fade-up" role="list">
+
+          <!-- Q1 -->
+          <div class="accordion-item bezel-outer cursor-pointer" role="listitem">
+            <div class="bezel-inner">
+              <button
+                class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left"
+                aria-expanded="false"
+                aria-controls="faq-a1"
+                id="faq-q1"
+              >
+                <!-- data-i18n="hiw.faq_q1" -->
+                <span class="font-semibold text-ink text-sm">How does provider verification work?</span>
+                <svg class="accordion-chevron w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body" id="faq-a1" role="region" aria-labelledby="faq-q1">
+                <!-- data-i18n="hiw.faq_a1" -->
+                <p class="px-5 pb-5 text-muted text-xs leading-relaxed">After registering, you confirm your phone number via SMS. Then you upload a government-issued ID or passport and link at least one social media profile. A General Manager reviews the documents and approves your Verified status. You cannot become VIP without completing all three verification steps.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="accordion-item bezel-outer cursor-pointer" role="listitem">
+            <div class="bezel-inner">
+              <button
+                class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left"
+                aria-expanded="false"
+                aria-controls="faq-a2"
+                id="faq-q2"
+              >
+                <!-- data-i18n="hiw.faq_q2" -->
+                <span class="font-semibold text-ink text-sm">How long does listing approval take?</span>
+                <svg class="accordion-chevron w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body" id="faq-a2" role="region" aria-labelledby="faq-q2">
+                <!-- data-i18n="hiw.faq_a2" -->
+                <p class="px-5 pb-5 text-muted text-xs leading-relaxed">The General Manager typically reviews listings within 24–48 hours. You will receive an email or WhatsApp notification when your listing is approved, rejected, or flagged for changes. Listings do not expire while awaiting approval.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="accordion-item bezel-outer cursor-pointer" role="listitem">
+            <div class="bezel-inner">
+              <button
+                class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left"
+                aria-expanded="false"
+                aria-controls="faq-a3"
+                id="faq-q3"
+              >
+                <!-- data-i18n="hiw.faq_q3" -->
+                <span class="font-semibold text-ink text-sm">What happens if my listing is rejected?</span>
+                <svg class="accordion-chevron w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body" id="faq-a3" role="region" aria-labelledby="faq-q3">
+                <!-- data-i18n="hiw.faq_a3" -->
+                <p class="px-5 pb-5 text-muted text-xs leading-relaxed">The GM will send you feedback explaining the reason. You can edit your listing based on that feedback and resubmit. Every time you edit a listing — even after approval — it returns to Pending status for re-review before going live again.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="accordion-item bezel-outer cursor-pointer" role="listitem">
+            <div class="bezel-inner">
+              <button
+                class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left"
+                aria-expanded="false"
+                aria-controls="faq-a4"
+                id="faq-q4"
+              >
+                <!-- data-i18n="hiw.faq_q4" -->
+                <span class="font-semibold text-ink text-sm">How do ratings work?</span>
+                <svg class="accordion-chevron w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body" id="faq-a4" role="region" aria-labelledby="faq-q4">
+                <!-- data-i18n="hiw.faq_a4" -->
+                <p class="px-5 pb-5 text-muted text-xs leading-relaxed">Only customers who contacted a provider via the platform's WhatsApp button are eligible to leave a rating. This prevents fake or malicious reviews. All submitted ratings are reviewed by the GM before they appear publicly on the listing.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="accordion-item bezel-outer cursor-pointer" role="listitem">
+            <div class="bezel-inner">
+              <button
+                class="accordion-trigger w-full flex items-center justify-between gap-4 p-5 text-left"
+                aria-expanded="false"
+                aria-controls="faq-a5"
+                id="faq-q5"
+              >
+                <!-- data-i18n="hiw.faq_q5" -->
+                <span class="font-semibold text-ink text-sm">How much does VIP cost?</span>
+                <svg class="accordion-chevron w-4 h-4 text-muted flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="accordion-body" id="faq-a5" role="region" aria-labelledby="faq-q5">
+                <!-- data-i18n="hiw.faq_a5" -->
+                <p class="px-5 pb-5 text-muted text-xs leading-relaxed">VIP pricing is set by the General Manager and may vary by category or season. Contact us via WhatsApp to get current rates. You must be Verified before applying for VIP. Regular listing is always free.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════
+         FINAL CTA — "Ready to get started?"
+         ═══════════════════════════════════════════════ -->
+    <section class="py-24 px-4" style="background: #1E293B;" aria-labelledby="final-cta-heading">
+      <div class="max-w-2xl mx-auto text-center fade-up">
+        <!-- data-i18n="hiw.final_cta_eyebrow" -->
+        <div class="inline-flex items-center gap-2 mb-6">
+          <span class="px-4 py-1.5 rounded-full bg-white/10 border border-white/12 text-white/80 text-[10px] uppercase tracking-[0.18em] font-semibold">
+            Get started
+          </span>
+        </div>
+        <!-- data-i18n="hiw.final_cta_title" -->
+        <h2 id="final-cta-heading" class="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-4">
+          Ready to get started?
+        </h2>
+        <!-- data-i18n="hiw.final_cta_subtitle" -->
+        <p class="text-white/55 text-lg leading-relaxed max-w-[44ch] mx-auto mb-10">
+          Browse local services right now — or list your business and reach customers in Wisconsin Dells today.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <!-- data-i18n="hiw.final_cta_btn_browse" -->
+          <a href="home-8.html" class="btn-secondary group flex items-center gap-2 bg-white text-ink font-semibold text-sm px-7 py-3.5 rounded-full cursor-pointer">
+            Browse listings
+            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-brand-50 transition-colors duration-200" aria-hidden="true">
+              <svg class="w-4 h-4 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </a>
+          <!-- data-i18n="hiw.final_cta_btn_provider" -->
+          <a href="auth-register.html" class="btn-primary group flex items-center gap-3 bg-accent text-white font-bold px-7 py-3.5 rounded-full cursor-pointer text-sm">
+            List your business — it's free
+            <span class="w-8 h-8 rounded-full bg-black/[0.12] flex items-center justify-center group-hover:bg-black/[0.20] transition-colors duration-200" aria-hidden="true">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER — identical to home-8
+       ═══════════════════════════════════════════════ -->
+  <footer class="bg-slate-900 text-white pt-16 pb-8 px-4" role="contentinfo">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+
+        <div class="col-span-2 md:col-span-1">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="font-bold text-sm tracking-tight">Bulletin Dells</span>
+          </div>
+          <!-- data-i18n="footer.tagline" -->
+          <p class="text-white/45 text-xs leading-relaxed">Your bilingual local marketplace for Wisconsin Dells.</p>
+          <p class="text-white/25 text-[10px] mt-3">Wisconsin Dells, WI 53965</p>
+        </div>
+
+        <div>
+          <!-- data-i18n="footer.services_heading" -->
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Services</h3>
+          <ul class="space-y-2.5" role="list">
+            <!-- data-i18n="footer.housing" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Housing</a></li>
+            <!-- data-i18n="footer.car_rental" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Car Rental</a></li>
+            <!-- data-i18n="footer.airport_rides" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Airport Rides</a></li>
+            <!-- data-i18n="footer.mechanics" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Mechanics</a></li>
+            <!-- data-i18n="footer.beauty" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Beauty</a></li>
+            <!-- data-i18n="footer.jobs" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Jobs</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <!-- data-i18n="footer.platform_heading" -->
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Platform</h3>
+          <ul class="space-y-2.5" role="list">
+            <!-- data-i18n="footer.list_business" -->
+            <li><a href="auth-register.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">List your business</a></li>
+            <!-- data-i18n="footer.sign_in" -->
+            <li><a href="auth-login.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Sign in</a></li>
+            <!-- data-i18n="footer.become_vip" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Become VIP</a></li>
+            <!-- data-i18n="footer.browse_all" -->
+            <li><a href="home-8.html" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Browse all</a></li>
+            <!-- data-i18n="footer.how_it_works" — active -->
+            <li><a href="how-it-works.html" class="text-white font-medium text-xs cursor-pointer">How it works</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <!-- data-i18n="footer.legal_heading" -->
+          <h3 class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-4">Legal</h3>
+          <ul class="space-y-2.5" role="list">
+            <!-- data-i18n="footer.terms" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Terms of Service</a></li>
+            <!-- data-i18n="footer.privacy" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Privacy Policy</a></li>
+            <!-- data-i18n="footer.disclaimer" -->
+            <li><a href="#" class="text-white/45 hover:text-white text-xs transition-colors duration-200 cursor-pointer">Disclaimer</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="border-t border-white/8 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- data-i18n="footer.copyright" -->
+        <p class="text-white/30 text-xs">© 2025 Bulletin Dells. All rights reserved.</p>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 rounded-full bg-white/8 text-white/40 text-[10px] border border-white/10 hover:bg-white/15 transition-colors duration-200 cursor-pointer">EN</button>
+          <button class="px-3 py-1 rounded-full bg-accent/20 text-accent text-[10px] border border-accent/30 cursor-pointer">ES</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <script>
+    // ── IntersectionObserver for fade-up reveals (NEVER window.scroll)
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(el => {
+        if (el.isIntersecting) {
+          el.target.classList.add('visible');
+          fadeObserver.unobserve(el.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -48px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => fadeObserver.observe(el));
+
+    // ── Stagger children inside [data-stagger] containers
+    // Replace with Blazor @ref + JS interop if needed
+    const staggerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const children = entry.target.querySelectorAll('.stagger-child');
+          children.forEach((child, i) => {
+            setTimeout(() => child.classList.add('visible'), i * 90);
+          });
+          staggerObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('[data-stagger]').forEach(el => staggerObserver.observe(el));
+
+    // ── Nav shadow on scroll (passive, requestAnimationFrame, no layout reflow)
+    const navPill = document.querySelector('nav');
+    let ticking = false;
+    document.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 64;
+          navPill.style.boxShadow = scrolled
+            ? '0 8px 32px -8px rgba(30,41,59,0.18), 0 1px 0 rgba(255,255,255,0.9) inset'
+            : '0 4px 24px -4px rgba(30,41,59,0.10), 0 1px 0 rgba(255,255,255,0.9) inset';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // ── Accordion — static HTML, replace toggle with Blazor @onclick if needed
+    document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const item = trigger.closest('.accordion-item');
+        const isOpen = item.classList.contains('open');
+
+        // Close all open items first
+        document.querySelectorAll('.accordion-item.open').forEach(openItem => {
+          openItem.classList.remove('open');
+          openItem.querySelector('.accordion-trigger').setAttribute('aria-expanded', 'false');
+        });
+
+        // Toggle clicked item
+        if (!isOpen) {
+          item.classList.add('open');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  </script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     I18N KEYS
+     Add these keys to your .resx resource files (Strings.en.resx / Strings.es.resx).
+     Bind with data-i18n attributes or @Localizer["key"] in Blazor components.
+═══════════════════════════════════════════════════════════════════════
+
+KEY                               EN                                                  ES
+────────────────────────────────────────────────────────────────────────────────────────────────
+
+nav.browse                        Browse                                               Navegar
+nav.explore                       Explore                                              Explorar
+nav.how_it_works                  How it works                                         Cómo funciona
+nav.lang_toggle                   EN / ES                                              EN / ES
+nav.list_business                 List your business                                   Publica tu negocio
+
+hiw.hero_eyebrow                  Platform guide                                       Guía de la plataforma
+hiw.hero_title                    How Bulletin Dells Works                             Cómo Funciona Bulletin Dells
+hiw.hero_subtitle                 A bilingual, moderated marketplace connecting…       Un marketplace bilingüe y moderado que conecta…
+hiw.cta_browse                    Browse listings                                      Explorar anuncios
+hiw.cta_become_provider           Become a provider                                    Conviértete en proveedor
+
+hiw.heroA_stat1                   340+ verified providers                              340+ proveedores verificados
+hiw.heroA_stat2                   GM-approved listings                                 Anuncios aprobados por el GM
+hiw.heroA_stat3                   WhatsApp contact                                     Contacto por WhatsApp
+
+hiw.customers_eyebrow             For Customers                                        Para Clientes
+hiw.customers_title               Find what you need in 4 steps                        Encuentra lo que necesitas en 4 pasos
+hiw.customers_subtitle            Browse verified local services…                      Explora servicios locales verificados…
+hiw.customers_step1_title         Discover                                             Descubre
+hiw.customers_step1_body          Browse GM-approved listings by category…             Explora anuncios aprobados por el GM por categoría…
+hiw.customers_step2_title         Contact via WhatsApp                                 Contacta por WhatsApp
+hiw.customers_step2_body          Tap the WhatsApp button to open a direct…            Toca el botón de WhatsApp para abrir una conversación…
+hiw.customers_step3_title         Meet the provider                                    Conoce al proveedor
+hiw.customers_step3_body          A brief legal disclaimer clarifies…                  Un breve aviso legal aclara que la plataforma…
+hiw.customers_step4_title         Leave a verified rating                              Deja una calificación verificada
+hiw.customers_step4_body          Only customers who contacted a provider…             Solo los clientes que contactaron al proveedor…
+
+hiw.providers_eyebrow             For Providers                                        Para Proveedores
+hiw.providers_title               Publish your listing in 5 steps                      Publica tu anuncio en 5 pasos
+hiw.providers_subtitle            From registration to going live…                     Desde el registro hasta publicarte…
+hiw.providers_step1_title         Register                                             Regístrate
+hiw.providers_step1_body          Create your account with email…                      Crea tu cuenta con correo electrónico…
+hiw.providers_step2_title         Verify                                               Verifica
+hiw.providers_step2_body          Confirm your phone number, upload a government…      Confirma tu número de teléfono, sube un ID…
+hiw.providers_step3_title         Create listing                                       Crea tu anuncio
+hiw.providers_step3_body          Pick a category, write your description…             Elige una categoría, escribe tu descripción…
+hiw.providers_step4_title         GM approval                                          Aprobación del GM
+hiw.providers_step4_body          The General Manager reviews your listing…            El Gerente General revisa tu anuncio y fotos…
+hiw.providers_step5_title         Go live                                              Publícate
+hiw.providers_step5_body          Your listing is now public. Upgrade to VIP…         Tu anuncio es ahora público. Actualiza a VIP…
+hiw.providers_cta_primary         Get Started — It's Free                              Comenzar — Es Gratis
+hiw.providers_cta_secondary       Browse as customer                                   Explorar como cliente
+
+hiw.trust_eyebrow                 Trust & Safety                                       Confianza y Seguridad
+hiw.trust_title                   Built for confidence, not just convenience           Construido para la confianza, no solo la conveniencia
+hiw.trust_subtitle                Four non-negotiable rules…                           Cuatro reglas innegociables…
+hiw.trust_card1_title             GM-approved listings                                 Anuncios aprobados por el GM
+hiw.trust_card1_body              No listing goes public without manual review…        Ningún anuncio se publica sin revisión manual…
+hiw.trust_card2_title             Verified providers                                   Proveedores verificados
+hiw.trust_card2_body              Every provider confirms their phone number…          Cada proveedor confirma su número de teléfono…
+hiw.trust_card3_title             Verified ratings only                                Solo calificaciones verificadas
+hiw.trust_card3_body              Only customers who contacted a provider…             Solo los clientes que contactaron al proveedor…
+hiw.trust_card4_title             Legal waiver on first contact                        Aviso legal en el primer contacto
+hiw.trust_card4_body              Before your first meaningful interaction…            Antes de tu primera interacción significativa…
+
+hiw.tiers_eyebrow                 Provider tiers                                       Niveles de proveedor
+hiw.tiers_title                   Choose your visibility level                         Elige tu nivel de visibilidad
+hiw.tiers_subtitle                All providers start as Regular…                      Todos los proveedores comienzan como Regular…
+hiw.tier_regular_title            Free                                                 Gratis
+hiw.tier_regular_price            No cost to list your business                        Sin costo para publicar tu negocio
+hiw.tier_regular_b1               Public listing after GM approval                     Anuncio público tras aprobación del GM
+hiw.tier_regular_b2               WhatsApp direct contact                              Contacto directo por WhatsApp
+hiw.tier_regular_b3               Receive verified ratings                             Recibir calificaciones verificadas
+hiw.tier_regular_missing1         Verified badge                                       Insignia de verificado
+hiw.tier_regular_missing2         Priority ranking                                     Ranking prioritario
+hiw.tier_verified_title           Free                                                 Gratis
+hiw.tier_verified_price           Complete identity verification                       Completa la verificación de identidad
+hiw.tier_verified_b1              Everything in Regular                                Todo lo de Regular
+hiw.tier_verified_b2              Verified badge on listing                            Insignia de verificado en el anuncio
+hiw.tier_verified_b3              Higher trust from customers                          Mayor confianza de los clientes
+hiw.tier_verified_b4              Eligible to apply for VIP                            Elegible para solicitar VIP
+hiw.tier_verified_missing1        Priority ranking boost                               Impulso en el ranking prioritario
+hiw.tier_vip_popular              Most visible                                         Más visible
+hiw.tier_vip_title                Paid tier                                            Nivel de pago
+hiw.tier_vip_price                Requires verification — pricing by GM               Requiere verificación — precio definido por el GM
+hiw.tier_vip_b1                   Everything in Verified                               Todo lo de Verificado
+hiw.tier_vip_b2                   Priority ranking in search results                   Ranking prioritario en resultados de búsqueda
+hiw.tier_vip_b3                   Orange VIP badge on listing card                     Insignia VIP naranja en la tarjeta del anuncio
+hiw.tier_vip_b4                   VIP glow border on card                              Borde VIP con brillo en la tarjeta
+hiw.tier_vip_b5                   Maximum exposure to customers                        Máxima exposición ante clientes
+hiw.tier_vip_cta                  Become VIP                                           Hazte VIP
+
+hiw.faq_eyebrow                   FAQ                                                  Preguntas Frecuentes
+hiw.faq_title                     Frequently asked questions                           Preguntas frecuentes
+hiw.faq_q1                        How does provider verification work?                 ¿Cómo funciona la verificación del proveedor?
+hiw.faq_a1                        After registering, you confirm your phone…           Tras registrarte, confirmas tu teléfono…
+hiw.faq_q2                        How long does listing approval take?                 ¿Cuánto tarda la aprobación del anuncio?
+hiw.faq_a2                        The General Manager typically reviews…               El Gerente General normalmente revisa…
+hiw.faq_q3                        What happens if my listing is rejected?              ¿Qué pasa si rechazan mi anuncio?
+hiw.faq_a3                        The GM will send you feedback explaining…            El GM te enviará comentarios explicando…
+hiw.faq_q4                        How do ratings work?                                 ¿Cómo funcionan las calificaciones?
+hiw.faq_a4                        Only customers who contacted a provider…             Solo los clientes que contactaron al proveedor…
+hiw.faq_q5                        How much does VIP cost?                              ¿Cuánto cuesta VIP?
+hiw.faq_a5                        VIP pricing is set by the General Manager…          El precio VIP lo define el Gerente General…
+
+hiw.final_cta_eyebrow             Get started                                          Comienza ahora
+hiw.final_cta_title               Ready to get started?                                ¿Listo para comenzar?
+hiw.final_cta_subtitle            Browse local services right now…                     Explora servicios locales ahora mismo…
+hiw.final_cta_btn_browse          Browse listings                                      Explorar anuncios
+hiw.final_cta_btn_provider        List your business — it's free                       Publica tu negocio — es gratis
+
+footer.tagline                    Your bilingual local marketplace for Wisconsin Dells. Tu marketplace local bilingüe para Wisconsin Dells.
+footer.services_heading           Services                                              Servicios
+footer.housing                    Housing                                               Vivienda
+footer.car_rental                 Car Rental                                           Renta de Autos
+footer.airport_rides              Airport Rides                                        Rides al Aeropuerto
+footer.mechanics                  Mechanics                                            Mecánicos
+footer.beauty                     Beauty                                               Belleza
+footer.jobs                       Jobs                                                 Empleos
+footer.platform_heading           Platform                                             Plataforma
+footer.list_business              List your business                                   Publica tu negocio
+footer.sign_in                    Sign in                                              Iniciar sesión
+footer.become_vip                 Become VIP                                           Hazte VIP
+footer.browse_all                 Browse all                                           Explorar todo
+footer.how_it_works               How it works                                         Cómo funciona
+footer.legal_heading              Legal                                                Legal
+footer.terms                      Terms of Service                                     Términos de Servicio
+footer.privacy                    Privacy Policy                                       Política de Privacidad
+footer.disclaimer                 Disclaimer                                           Descargo de Responsabilidad
+footer.copyright                  © 2025 Bulletin Dells. All rights reserved.         © 2025 Bulletin Dells. Todos los derechos reservados.
+
+-->
+</body>
+</html>

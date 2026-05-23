@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Primary Button — Gradient Picker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { background:#050B14; font-family:'DM Sans',sans-serif; color:#E2E8F0; min-height:100vh; padding:48px 24px; }
+  .swatch { transition: transform 260ms cubic-bezier(0.32,0.72,0,1), box-shadow 260ms ease, filter 260ms ease; position:relative; overflow:hidden; }
+  .swatch::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%); transform:translateX(-120%); transition:transform 700ms cubic-bezier(0.16,1,0.3,1); pointer-events:none; }
+  .swatch:hover { transform:translateY(-3px); filter:brightness(1.08) saturate(1.10); }
+  .swatch:hover::after { transform:translateX(120%); }
+
+  /* The 10 candidates */
+  .g1  { background: linear-gradient(135deg, #F59E0B, #F97316); }
+  .g2  { background: linear-gradient(135deg, #60a5fa 0%, #F59E0B 28%, #F97316 70%, #ea580c 100%); }
+  .g3  { background: linear-gradient(135deg, #60a5fa 0%, #F97316 30%, #ea580c 100%); }
+  .g4  { background: linear-gradient(135deg, #93c5fd 0%, #F59E0B 35%, #F97316 100%); }
+  .g5  { background: linear-gradient(135deg, #3b82f6 0%, #F97316 50%, #ea580c 100%); }
+  .g6  { background: linear-gradient(135deg, #60a5fa 0%, #c4b5fd 25%, #fb923c 60%, #F97316 100%); }
+  .g7  { background: linear-gradient(135deg, #60a5fa 0%, #bfdbfe 30%, #ffffff 50%, #fed7aa 70%, #F97316 100%); }
+  .g8  { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 30%, #F97316 65%, #ea580c 100%); }
+  .g9  { background: linear-gradient(135deg, #F97316 0%, #F59E0B 50%, #60a5fa 100%); }
+  .g10 { background: linear-gradient(135deg, #fb923c 0%, #F97316 40%, #ea580c 75%, #60a5fa 100%); }
+
+  .card { background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+  .num { font-family: 'DM Sans'; font-weight: 900; color: rgba(255,255,255,0.30); font-size: 0.625rem; letter-spacing: 0.18em; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.65rem; color: rgba(255,255,255,0.55); line-height: 1.5; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black tracking-tight mb-2 text-white">Primary Button — 10 Gradient Options</h1>
+  <p class="text-white/55 text-sm mb-10">Hover sobre cada botón para ver el shine sweep. Dime el número que prefieres.</p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 01 · Pure orange (v2 original)</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g1" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">linear-gradient(135deg, #F59E0B, #F97316)</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 02 · Orange dominant + celeste corner</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g2" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#60a5fa 0% · #F59E0B 28% · #F97316 70% · #ea580c 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 03 · Sharp celeste → orange</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g3" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#60a5fa 0% · #F97316 30% · #ea580c 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 04 · Pastel celeste → gold → orange</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g4" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#93c5fd 0% · #F59E0B 35% · #F97316 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 05 · 50/50 blue → orange</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g5" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#3b82f6 0% · #F97316 50% · #ea580c 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 06 · Celeste → lavender → orange</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g6" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#60a5fa · #c4b5fd 25% · #fb923c 60% · #F97316 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 07 · Tornasol (celeste → white → orange)</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g7" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#60a5fa · #bfdbfe 30% · #ffffff 50% · #fed7aa 70% · #F97316</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 08 · Blue-heavy → orange</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g8" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#60a5fa · #3b82f6 30% · #F97316 65% · #ea580c 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 09 · Inverse — orange → celeste corner</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g9" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#F97316 0% · #F59E0B 50% · #60a5fa 100%</code>
+    </div>
+
+    <div class="card rounded-2xl p-5">
+      <div class="num mb-3">OPTION 10 · Orange → deep → celeste tip</div>
+      <button class="swatch w-full text-white font-bold py-3.5 px-6 rounded-full text-sm g10" style="box-shadow:0 0 24px rgba(249,115,22,0.4);">Get started →</button>
+      <code class="block mt-3">#fb923c · #F97316 40% · #ea580c 75% · #60a5fa 100%</code>
+    </div>
+
+  </div>
+
+  <div class="mt-12 card rounded-2xl p-6">
+    <h2 class="text-lg font-bold text-white mb-3">How to use the one you pick</h2>
+    <p class="text-white/55 text-sm leading-relaxed">Dime el número (ej: "quiero la 4") y reemplazo el gradient actual de <code style="color:#fbbf24">.brand-text</code> y <code style="color:#fbbf24">.btn-primary</code> en <code style="color:#fbbf24">landing-05-dark-general-v3.html</code>.</p>
+  </div>
+</div>
+
+</body>
+</html>

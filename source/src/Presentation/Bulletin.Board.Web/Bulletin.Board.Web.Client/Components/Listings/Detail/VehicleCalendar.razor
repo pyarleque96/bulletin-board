@@ -1,0 +1,247 @@
+@* Shared calendar component used by both the public availability viewer and the
+   owner-side editor. Mode is controlled by IsEditor. The component is purely visual:
+   it fetches blackouts and emits callbacks; it does NOT call mutate endpoints itself —
+   the parent owns the create/delete decision so it can wrap with confirmations and toasts. *@
+@using Bulletin.Board.Web.Client.Models
+
+<div class="bg-white rounded-2xl border border-slate-100 p-4">
+
+    <header class="flex items-center justify-between mb-3 gap-2">
+        <button type="button" @onclick="PrevMonth" disabled="@_busy"
+                class="px-2 py-1 rounded-lg hover:bg-slate-100 text-ink text-sm" aria-label="Previous month">
+            ‹
+        </button>
+        <h4 class="text-sm font-semibold text-ink">@_currentMonth.ToString("MMMM yyyy")</h4>
+        <button type="button" @onclick="NextMonth" disabled="@_busy"
+                class="px-2 py-1 rounded-lg hover:bg-slate-100 text-ink text-sm" aria-label="Next month">
+            ›
+        </button>
+    </header>
+
+    <div class="grid grid-cols-7 gap-1 text-center text-[10px] uppercase tracking-wider text-muted mb-1">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="grid grid-cols-7 gap-1">
+            @for (var i = 0; i < 42; i++)
+            {
+                <div class="h-9 bg-slate-50 rounded-lg animate-pulse"></div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-7 gap-1">
+            @foreach (var cell in _cells)
+            {
+                <button type="button"
+                        @onclick="() => OnDayClick(cell)"
+                        disabled="@(!cell.IsClickable || _busy)"
+                        title="@cell.Tooltip"
+                        class="@CellClass(cell)">
+                    @cell.Date.Day
+                </button>
+            }
+        </div>
+    }
+
+    @if (IsEditor && _selectionStart.HasValue)
+    {
+        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+            <p class="text-xs text-muted">
+                Range: <strong class="text-ink">@_selectionStart.Value.ToString("MMM d")</strong>
+                @if (_selectionEnd.HasValue && _selectionEnd != _selectionStart)
+                {
+                    <text> → <strong class="text-ink">@_selectionEnd.Value.ToString("MMM d")</strong></text>
+                }
+            </p>
+            <div class="flex items-center gap-2">
+                <select @bind="_pendingReason" class="text-xs rounded-lg border border-slate-200 px-2 py-1">
+                    <option value="Manual">Manual</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
+                <button type="button" @onclick="ConfirmAdd" disabled="@_busy"
+                        class="px-3 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold disabled:opacity-50">
+                    Block range
+                </button>
+                <button type="button" @onclick="ClearSelection" disabled="@_busy"
+                        class="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-ink text-xs">
+                    Clear
+                </button>
+            </div>
+        </div>
+    }
+
+    <footer class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-3 text-[10px] text-muted">
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-white border border-slate-200"></span>Available</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-100 border border-red-200"></span>Blocked</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-slate-100"></span>Past</span>
+    </footer>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid VehicleId { get; set; }
+    [Parameter] public bool IsEditor { get; set; }
+
+    /// <summary>(start, end, reason) — parent decides whether to confirm and call API.</summary>
+    [Parameter] public EventCallback<(DateOnly Start, DateOnly End, string Reason)> OnAddBlackout { get; set; }
+
+    /// <summary>(blackoutId, reason) — parent decides whether to confirm and call API.</summary>
+    [Parameter] public EventCallback<(Guid BlackoutId, string Reason)> OnRemoveBlackout { get; set; }
+
+    [Inject] private IListingsService _listings { get; set; } = default!;
+
+    private DateOnly _currentMonth = DateOnly.FromDateTime(DateTime.Today.Date.AddDays(-DateTime.Today.Day + 1));
+    private DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private bool _loading = true;
+    private bool _busy;
+    private List<DayCell> _cells = new();
+    private VehicleAvailabilityDto? _data;
+    private DateOnly? _selectionStart;
+    private DateOnly? _selectionEnd;
+    private string _pendingReason = "Manual";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    /// <summary>Public refresh hook so parents can force a reload after mutations.</summary>
+    public async Task RefreshAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var first = _currentMonth;
+        var last = first.AddMonths(1).AddDays(-1);
+        _data = await _listings.GetVehicleAvailabilityAsync(VehicleId, first, last);
+        _cells = BuildCells(first);
+        _loading = false;
+    }
+
+    private List<DayCell> BuildCells(DateOnly monthFirst)
+    {
+        var cells = new List<DayCell>(42);
+        var leadingBlanks = (int)monthFirst.DayOfWeek;            // Sun = 0
+        var startOfGrid = monthFirst.AddDays(-leadingBlanks);
+
+        for (var i = 0; i < 42; i++)
+        {
+            var d = startOfGrid.AddDays(i);
+            var inMonth = d.Month == monthFirst.Month;
+            var inPast = d < _today;
+            var blackout = _data?.Blackouts.FirstOrDefault(b => d >= b.StartDate && d <= b.EndDate);
+
+            cells.Add(new DayCell(
+                Date: d,
+                InMonth: inMonth,
+                IsPast: inPast,
+                Blackout: blackout,
+                IsClickable: inMonth && (!inPast || (IsEditor && blackout is not null))));
+        }
+        return cells;
+    }
+
+    private void OnDayClick(DayCell cell)
+    {
+        if (!IsEditor)
+            return;  // viewer mode: no interaction.
+
+        if (cell.Blackout is not null)
+        {
+            // Owner clicked an existing blackout → emit removal request.
+            OnRemoveBlackout.InvokeAsync((cell.Blackout.Id, cell.Blackout.Reason));
+            return;
+        }
+
+        if (cell.IsPast) return;
+
+        if (_selectionStart is null)
+        {
+            _selectionStart = cell.Date;
+            _selectionEnd = cell.Date;
+        }
+        else if (_selectionEnd == _selectionStart)
+        {
+            // Second click extends the range. Order start/end correctly.
+            if (cell.Date < _selectionStart) { _selectionEnd = _selectionStart; _selectionStart = cell.Date; }
+            else                              { _selectionEnd = cell.Date; }
+        }
+        else
+        {
+            // Third click resets selection.
+            _selectionStart = cell.Date;
+            _selectionEnd = cell.Date;
+        }
+    }
+
+    private async Task ConfirmAdd()
+    {
+        if (_selectionStart is null || _selectionEnd is null) return;
+        _busy = true;
+        await OnAddBlackout.InvokeAsync((_selectionStart.Value, _selectionEnd.Value, _pendingReason));
+        ClearSelection();
+        _busy = false;
+    }
+
+    private void ClearSelection()
+    {
+        _selectionStart = null;
+        _selectionEnd = null;
+    }
+
+    private async Task PrevMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(-1);
+        await LoadAsync();
+    }
+
+    private async Task NextMonth()
+    {
+        _currentMonth = _currentMonth.AddMonths(1);
+        await LoadAsync();
+    }
+
+    private string CellClass(DayCell cell)
+    {
+        if (!cell.InMonth)
+            return "h-9 rounded-lg text-[11px] text-slate-300";
+
+        var inSelection = _selectionStart.HasValue && _selectionEnd.HasValue
+                          && cell.Date >= _selectionStart && cell.Date <= _selectionEnd;
+
+        var baseClass = "h-9 rounded-lg text-[11px] font-medium transition-colors ";
+
+        if (inSelection)
+            return baseClass + "bg-brand-500 text-white border border-brand-600";
+
+        if (cell.Blackout is not null)
+            return baseClass + (IsEditor && cell.Blackout.Reason != "Reserved"
+                ? "bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 cursor-pointer"
+                : "bg-red-100 text-red-700 border border-red-200 cursor-default");
+
+        if (cell.IsPast)
+            return baseClass + "bg-slate-50 text-slate-400 cursor-default";
+
+        if (cell.Date == _today)
+            return baseClass + "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100";
+
+        return baseClass + (IsEditor
+            ? "bg-white text-ink border border-slate-200 hover:bg-slate-50 cursor-pointer"
+            : "bg-white text-ink border border-slate-200 cursor-default");
+    }
+
+    private record DayCell(
+        DateOnly Date,
+        bool InMonth,
+        bool IsPast,
+        BlackoutRangeDto? Blackout,
+        bool IsClickable)
+    {
+        public string Tooltip => Blackout is null
+            ? string.Empty
+            : $"{Blackout.Reason} blackout · {Blackout.StartDate:MMM d} – {Blackout.EndDate:MMM d}";
+    }
+}
